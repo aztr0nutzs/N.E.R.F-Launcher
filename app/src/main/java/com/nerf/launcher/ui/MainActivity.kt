@@ -57,6 +57,14 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
         // Observe configuration changes (single source of truth)
         setupConfigObservers()
+
+        // Safe navigation trigger to open SettingsActivity (since no XML edits are allowed)
+        val openSettings = { _: android.view.View ->
+            startActivity(android.content.Intent(this, SettingsActivity::class.java))
+            true
+        }
+        binding.taskbarView.setOnLongClickListener(openSettings)
+        binding.root.setOnLongClickListener(openSettings)
     }
 
     private fun setupRecyclerView() {
