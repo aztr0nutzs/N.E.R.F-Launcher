@@ -2,14 +2,16 @@ package com.nerf.launcher.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.databinding.ItemAppBinding
 import com.nerf.launcher.model.AppInfo
 
 class AppListAdapter(
-    private var items: List<AppInfo>,
+    @Suppress("UNUSED_PARAMETER") initialItems: List<AppInfo> = emptyList(),
     private val onAppClicked: (AppInfo) -> Unit
-) : RecyclerView.Adapter<AppListAdapter.AppViewHolder>() {
+) : ListAdapter<AppInfo, AppListAdapter.AppViewHolder>(AppDiffCallback) {
 
     inner class AppViewHolder(val binding: ItemAppBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -24,7 +26,7 @@ class AppListAdapter(
     }
 
     override fun onBindViewHolder(holder: AppViewHolder, position: Int) {
-        val app = items[position]
+        val app = getItem(position)
         holder.binding.appIcon.setImageDrawable(app.icon)
         holder.binding.appName.text = app.appName
         holder.binding.root.setOnClickListener {
@@ -32,10 +34,16 @@ class AppListAdapter(
         }
     }
 
-    override fun getItemCount(): Int = items.size
+    companion object {
+        private val AppDiffCallback = object : DiffUtil.ItemCallback<AppInfo>() {
+            override fun areItemsTheSame(oldItem: AppInfo, newItem: AppInfo): Boolean {
+                return oldItem.packageName == newItem.packageName && 
+                       oldItem.className == newItem.className
+            }
 
-    fun submitList(newItems: List<AppInfo>) {
-        items = newItems
-        notifyDataSetChanged()
+            override fun areContentsTheSame(oldItem: AppInfo, newItem: AppInfo): Boolean {
+                return oldItem == newItem
+            }
+        }
     }
 }
