@@ -168,7 +168,7 @@ class TaskbarView @JvmOverloads constructor(
                     ?: ThemeRepository.CLASSIC_NERF
                 val isLightTheme = isColorLight(baseTheme.primary)
                 val iconTint = if (isLightTheme) {
-                    ContextCompat.getColor(context, R.color.nerf_on_background)
+                    ContextCompat.getColor(context, R.color.black)
                 } else {
                     ContextCompat.getColor(context, R.color.nerf_on_background)
                 }
