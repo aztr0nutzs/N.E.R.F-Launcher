@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.NerfLauncher" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand colors. -->
+        <item name="colorPrimary">@color/nerf_primary</item>
+        <item name="colorPrimaryVariant">@color/nerf_primary_dark</item>
+        <item name="colorOnPrimary">@color/nerf_on_primary</item>
+
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/nerf_secondary</item>
+        <item name="colorSecondaryVariant">@color/nerf_secondary</item>
+        <item name="colorOnSecondary">@color/nerf_on_secondary</item>
+
+        <!-- Background & surface. -->
+        <item name="android:colorBackground">@color/nerf_background</item>
+        <item name="colorSurface">@color/nerf_surface</item>
+        <item name="colorOnBackground">@color/nerf_on_background</item>
+        <item name="colorOnSurface">@color/nerf_on_surface</item>
+
+        <!-- Status bar. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="android:navigationBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+
+        <!-- Material button style. -->
+        <item name="materialButtonStyle">@style/Widget.NerfLauncher.Button</item>
+
+        <!-- Text appearances. -->
+        <item name="android:textAppearanceHeadline5">@style/TextAppearance.NerfLauncher.Headline5</item>
+        <item name="android:textAppearanceBody1">@style/TextAppearance.NerfLauncher.Body1</item>
+        <item name="android:textAppearanceCaption">@style/TextAppearance.NerfLauncher.Caption</item>
+
+        <!-- Window background. -->
+        <item name="android:windowBackground">@color/nerf_background</item>
+    </style>
+
+    <!-- Custom Button style with press bounce & glow. -->
+    <style name="Widget.NerfLauncher.Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:background">@drawable/button_background</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:textColor">@color/nerf_on_primary</item>
+        <item name="android:stateListAnimator">@anim/button_press</item>
+        <item name="android:elevation">2dp</item>
+    </style>
+
+    <!-- Text appearances. -->
+    <style name="TextAppearance.NerfLauncher.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="android:textColor">@color/nerf_on_background</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Body1" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textColor">@color/nerf_on_background</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Caption" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textColor">@color/nerf_on_background</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+</resources>

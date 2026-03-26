@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no"/>
+<title>N-CORE SENTINEL MK8 — Interactive Suit</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:#000;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:100vh;font-family:'Courier New',monospace;
+  color:#fff;user-select:none;overflow:hidden;}
+#hud-top{width:100%;max-width:520px;padding:6px 10px;display:flex;justify-content:space-between;
+  align-items:center;background:rgba(0,0,0,0.92);border-bottom:1px solid rgba(0,200,255,0.35);}
+#s1{font-size:10px;letter-spacing:2px;color:#ff9500;text-shadow:0 0 8px #ff9500;}
+#s2{font-size:10px;letter-spacing:2px;color:#00d4ff;text-shadow:0 0 8px #00d4ff;}
+#s3{font-size:10px;letter-spacing:2px;color:#00ff44;text-shadow:0 0 8px #00ff44;text-align:right;min-width:140px;}
+#scene{position:relative;width:100%;max-width:520px;}
+#robot-img{width:100%;display:block;pointer-events:none;}
+#eye-canvas{position:absolute;inset:0;pointer-events:none;}
+#visor{position:absolute;top:0;left:0;width:100%;height:44%;pointer-events:none;
+  opacity:0;transition:opacity .35s;overflow:hidden;
+  background:linear-gradient(180deg,rgba(0,180,255,.14),transparent);}
+#visor.on{opacity:1;}
+.sl{position:absolute;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(0,255,255,.55),transparent);
+  animation:sd 3s linear infinite;}
+@keyframes sd{0%{top:-2px}100%{top:100%}}
+.zone{position:absolute;cursor:pointer;border-radius:50%;z-index:10;}
+.zone::after{content:'';position:absolute;inset:-4px;border-radius:inherit;
+  border:2px solid transparent;transition:border-color .25s,box-shadow .25s;}
+.zone:hover::after{border-color:currentColor;box-shadow:0 0 12px currentColor;}
+.zone.on::after{border-color:currentColor;box-shadow:0 0 16px currentColor,0 0 32px rgba(255,255,255,.08);}
+.zp{animation:zp 2.2s infinite;}
+@keyframes zp{0%,100%{box-shadow:0 0 0 0 rgba(0,200,255,.45)}50%{box-shadow:0 0 0 10px rgba(0,200,255,0)}}
+.panel{position:absolute;background:rgba(2,7,20,.96);border:1px solid;border-radius:8px;
+  backdrop-filter:blur(5px);pointer-events:auto;z-index:20;
+  transition:opacity .3s cubic-bezier(.34,1.56,.64,1),transform .3s cubic-bezier(.34,1.56,.64,1);}
+.panel.off{opacity:0;transform:scale(.04);pointer-events:none;}
+.panel.on{opacity:1;transform:scale(1);}
+.ph{padding:5px 9px;border-bottom:1px solid rgba(255,255,255,.1);
+  display:flex;justify-content:space-between;align-items:center;font-size:9px;letter-spacing:1.5px;}
+.px{cursor:pointer;padding:0 5px;opacity:.6;font-size:13px;}
+.px:hover{opacity:1;}
+.btn{display:inline-block;padding:4px 11px;border-radius:14px;border:1px solid;
+  cursor:pointer;font-size:9px;letter-spacing:2px;margin:2px;
+  font-family:'Courier New',monospace;font-weight:bold;
+  background:transparent;transition:filter .18s,transform .15s;}
+.btn:hover{filter:brightness(1.4);}
+.btn:active{transform:scale(.93);}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:rgba(0,6,20,.97);border:1px solid #ff9500;border-radius:6px;
+  padding:6px 18px;font-size:10px;letter-spacing:2px;color:#ff9500;
+  text-shadow:0 0 8px #ff9500;opacity:0;pointer-events:none;transition:opacity .25s;z-index:999;}
+#toast.on{opacity:1;}
+.proj{position:absolute;width:9px;height:9px;border-radius:50%;pointer-events:none;
+  animation:pf .48s forwards;z-index:30;}
+@keyframes pf{0%{opacity:1;transform:scale(1) translateY(0)}100%{opacity:0;transform:scale(.3) translateY(-130px)}}
+.dc{height:15px;border-radius:3px;cursor:pointer;transition:all .2s;border:1px solid;}
+.dc:hover:not(.used){filter:brightness(1.4);}
+.dc.used{background:rgba(0,0,0,.6)!important;border-color:#222!important;cursor:default;}
+.bar{height:7px;border-radius:4px;overflow:hidden;margin-bottom:4px;background:rgba(255,255,255,.07);}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s;}
+</style>
+</head>
+<body>
+<div id="hud-top">
+  <div id="s1">■ N-CORE SENTINEL MK8 ■</div>
+  <div id="s2">MODE: <span id="modeVal">STANDBY</span></div>
+  <div id="s3">TAP SUIT TO INTERACT</div>
+</div>
+<div id="scene">
+  <img id="robot-img" src="1000044972.jpg" alt="N-Core Sentinel MK8"/>
+  <canvas id="eye-canvas"></canvas>
+  <div id="visor"><div class="sl"></div><div class="sl" style="animation-delay:-1.5s"></div></div>
+  <div class="zone zp" id="z-eyes" style="left:40%;top:19%;width:20%;padding-top:6%;color:#ff9500;" onclick="toggle('eyes')"></div>
+  <div class="zone" id="z-helmet" style="left:35%;top:5%;width:30%;padding-top:12%;color:#00d4ff;border-radius:14px;" onclick="toggle('helmet')"></div>
+  <div class="zone" id="z-core" style="left:30%;top:39%;width:40%;padding-top:36%;color:#ff9500;border-radius:50%;" onclick="toggle('core')"></div>
+  <div class="zone" id="z-lplate" style="left:14%;top:37%;width:18%;padding-top:20%;color:#00ff44;border-radius:12px;" onclick="toggle('lplate')"></div>
+  <div class="zone" id="z-rplate" style="left:68%;top:37%;width:18%;padding-top:20%;color:#00ff44;border-radius:12px;" onclick="toggle('rplate')"></div>
+  <div class="zone zp" id="z-lshoulder" style="left:6%;top:28%;width:16%;padding-top:16%;color:#ff6600;" onclick="toggle('lshoulder')"></div>
+  <div class="zone zp" id="z-rshoulder" style="left:78%;top:28%;width:16%;padding-top:16%;color:#ff6600;" onclick="toggle('rshoulder')"></div>
+  <div class="zone" id="z-belt" style="left:28%;top:63%;width:44%;padding-top:14%;color:#00aaff;border-radius:20px;" onclick="toggle('belt')"></div>
+  <div class="panel off" id="p-eyes" style="left:5%;top:7%;width:90%;border-color:#ff9500;transform-origin:50% 20%;">
+    <div class="ph" style="color:#ff9500;"><span>👁 OPTICAL MATRIX — ACTIVE</span><span class="px" onclick="close('eyes')">✕</span></div>
+    <div style="padding:7px 9px;display:grid;grid-template-columns:1fr 1fr;gap:7px;">
+      <div><div style="font-size:9px;color:#666;margin-bottom:5px;">EYE COLOR MODE</div><div id="eyeBtns" style="display:flex;flex-wrap:wrap;gap:3px;"></div></div>
+      <div>
+        <div style="font-size:9px;color:#666;margin-bottom:3px;">ACTIVE MODE</div>
+        <div id="eyeModeName" style="font-size:11px;color:#ff9500;font-weight:bold;">COMBAT</div>
+        <div style="margin-top:5px;font-size:9px;color:#666;">FOVEAL GAIN</div>
+        <div class="bar"><div id="eyeGain" class="bar-fill" style="width:60%;background:linear-gradient(90deg,#ff6600,#ffcc00);"></div></div>
+        <div style="font-size:9px;color:#666;margin-top:3px;">THREAT DETECT <span style="color:#00ff44;">ACTIVE</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel off" id="p-helmet" style="left:5%;top:2%;width:68%;border-color:#00d4ff;transform-origin:50% 5%;">
+    <div class="ph" style="color:#00d4ff;"><span>⬡ TACTICAL VISOR</span><span class="px" onclick="close('helmet')">✕</span></div>
+    <div style="padding:7px 8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:9px;">
+      <canvas id="radarC" width="108" height="70"></canvas>
+      <div>
+        <div style="color:#666;margin-bottom:3px;">SUIT STATUS</div>
+        <div>SHIELDS <span style="color:#00ff44;">■■■■■ 100%</span></div>
+        <div style="margin-top:2px;">POWER <span style="color:#00d4ff;">■■■■■ 100%</span></div>
+        <div style="margin-top:2px;">TEMP <span style="color:#ff4444;">■□□□□ 24°C</span></div>
+        <div style="margin-top:2px;">AMMO <span style="color:#ff9500;">■■■■□ 80%</span></div>
+      </div>
+      <div style="grid-column:1/-1;">
+        <div style="color:#666;margin-bottom:2px;">TARGET LOCK</div>
+        <div style="color:#ff4444;animation:blink 1s infinite alternate;">◎ SCANNING... NO HOSTILES DETECTED</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel off" id="p-core" style="left:3%;top:35%;width:94%;border-color:#ff9500;transform-origin:50% 50%;">
+    <div class="ph" style="color:#ff9500;"><span>⚡ N-CORE REACTOR — MARK VIII</span><span class="px" onclick="close('core')">✕</span></div>
+    <div style="padding:7px 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <canvas id="coreC" width="148" height="148"></canvas>
+      <div style="flex:1;min-width:130px;font-size:9px;">
+        <div style="color:#666;margin-bottom:2px;">OUTPUT</div>
+        <div class="bar"><div id="cOut" class="bar-fill" style="width:68%;background:linear-gradient(90deg,#ff6600,#ffcc00);"></div></div>
+        <div style="color:#666;margin-bottom:2px;">THERMAL</div>
+        <div class="bar"><div class="bar-fill" style="width:34%;background:linear-gradient(90deg,#0088ff,#00ffcc);"></div></div>
+        <div style="margin:3px 0;">FREQ <span id="cFreq" style="color:#ff9500;">685.1 THz</span></div>
+        <div style="margin:3px 0;">UPTIME <span id="cUp" style="color:#00ff44;">00:00:00</span></div>
+        <div style="margin:3px 0;">RAM <span style="color:#00d4ff;">8GC ALLOCATED</span></div>
+        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px;">
+          <button class="btn" style="color:#00ff44;border-color:#00ff44;" onclick="cBoost()">⚡ BOOST</button>
+          <button class="btn" style="color:#ff4444;border-color:#ff4444;" onclick="cOverload()">☢ OVERLOAD</button>
+          <button class="btn" style="color:#00d4ff;border-color:#00d4ff;" onclick="cShield()">🛡 SHIELD</button>
+          <button class="btn" style="color:#ff00cc;border-color:#ff00cc;" onclick="cLaunch()">🚀 LAUNCH</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel off" id="p-lplate" style="left:2%;top:42%;width:42%;border-color:#00ff44;transform-origin:0% 50%;">
+    <div class="ph" style="color:#00ff44;"><span>ARMORY — L</span><span class="px" onclick="close('lplate')">✕</span></div>
+    <div style="padding:6px 7px;">
+      <div id="rackL" style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;"></div>
+      <div id="rackLInfo" style="font-size:9px;color:#666;margin-top:4px;">DARTS: 9/9 — TAP TO FIRE</div>
+      <div style="margin-top:4px;">
+        <button class="btn" style="color:#00ff44;border-color:#00ff44;" onclick="rackReload('L')">↺ RELOAD</button>
+        <button class="btn" style="color:#ffcc00;border-color:#ffcc00;" onclick="rackBurst('L')">💥 BURST</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel off" id="p-rplate" style="right:2%;top:42%;width:42%;border-color:#00ff44;transform-origin:100% 50%;">
+    <div class="ph" style="color:#00ff44;"><span>ARMORY — R</span><span class="px" onclick="close('rplate')">✕</span></div>
+    <div style="padding:6px 7px;">
+      <div id="rackR" style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;"></div>
+      <div id="rackRInfo" style="font-size:9px;color:#666;margin-top:4px;">DARTS: 9/9 — TAP TO FIRE</div>
+      <div style="margin-top:4px;">
+        <button class="btn" style="color:#00ff44;border-color:#00ff44;" onclick="rackReload('R')">↺ RELOAD</button>
+        <button class="btn" style="color:#ffcc00;border-color:#ffcc00;" onclick="rackBurst('R')">💥 BURST</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel off" id="p-lshoulder" style="left:2%;top:24%;width:38%;border-color:#ff6600;transform-origin:0% 50%;">
+    <div class="ph" style="color:#ff6600;"><span>TURRET — L</span><span class="px" onclick="close('lshoulder')">✕</span></div>
+    <div style="padding:6px 7px;font-size:9px;">
+      <canvas id="turretLC" width="130" height="70"></canvas>
+      <div style="margin-top:3px;display:flex;gap:3px;flex-wrap:wrap;">
+        <button class="btn" style="color:#ff6600;border-color:#ff6600;" onclick="turretFire('L')">🔥 FIRE</button>
+        <button class="btn" style="color:#ffcc00;border-color:#ffcc00;" onclick="turretSweep('L')">↔ SWEEP</button>
+        <button class="btn" style="color:#00d4ff;border-color:#00d4ff;" onclick="turretLock('L')">🎯 LOCK</button>
+      </div>
+      <div id="tLStatus" style="color:#666;margin-top:3px;">STATUS: IDLE</div>
+    </div>
+  </div>
+  <div class="panel off" id="p-rshoulder" style="right:2%;top:24%;width:38%;border-color:#ff6600;transform-origin:100% 50%;">
+    <div class="ph" style="color:#ff6600;"><span>TURRET — R</span><span class="px" onclick="close('rshoulder')">✕</span></div>
+    <div style="padding:6px 7px;font-size:9px;">
+      <canvas id="turretRC" width="130" height="70"></canvas>
+      <div style="margin-top:3px;display:flex;gap:3px;flex-wrap:wrap;">
+        <button class="btn" style="color:#ff6600;border-color:#ff6600;" onclick="turretFire('R')">🔥 FIRE</button>
+        <button class="btn" style="color:#ffcc00;border-color:#ffcc00;" onclick="turretSweep('R')">↔ SWEEP</button>
+        <button class="btn" style="color:#00d4ff;border-color:#00d4ff;" onclick="turretLock('R')">🎯 LOCK</button>
+      </div>
+      <div id="tRStatus" style="color:#666;margin-top:3px;">STATUS: IDLE</div>
+    </div>
+  </div>
+  <div class="panel off" id="p-belt" style="left:6%;top:63%;width:88%;border-color:#00aaff;transform-origin:50% 0%;">
+    <div class="ph" style="color:#00aaff;"><span>⬡ UTILITY BELT — MODULES</span><span class="px" onclick="close('belt')">✕</span></div>
+    <div style="padding:7px 8px;font-size:9px;">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:5px;">
+        <div id="mod0" onclick="activateMod(0)" style="border:1px solid #00aaff;border-radius:5px;padding:5px;text-align:center;cursor:pointer;color:#00aaff;transition:all .2s;"><div style="font-size:14px;">🛡</div><div style="font-size:8px;letter-spacing:1px;">SHIELD GEL</div></div>
+        <div id="mod1" onclick="activateMod(1)" style="border:1px solid #ff9500;border-radius:5px;padding:5px;text-align:center;cursor:pointer;color:#ff9500;transition:all .2s;"><div style="font-size:14px;">🧲</div><div style="font-size:8px;letter-spacing:1px;">MAG DARTS</div></div>
+        <div id="mod2" onclick="activateMod(2)" style="border:1px solid #00ff44;border-radius:5px;padding:5px;text-align:center;cursor:pointer;color:#00ff44;transition:all .2s;"><div style="font-size:14px;">🚁</div><div style="font-size:8px;letter-spacing:1px;">SCOUT DRONE</div></div>
+        <div id="mod3" onclick="activateMod(3)" style="border:1px solid #ff00cc;border-radius:5px;padding:5px;text-align:center;cursor:pointer;color:#ff00cc;transition:all .2s;"><div style="font-size:14px;">👁</div><div style="font-size:8px;letter-spacing:1px;">CLOAK</div></div>
+      </div>
+      <div id="beltStatus" style="color:#666;">SELECT A MODULE TO DEPLOY</div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+<style>@keyframes blink{0%{opacity:.5}100%{opacity:1}}</style>
+<script>
+var S={eyes:0,helmet:0,core:0,lplate:0,rplate:0,lshoulder:0,rshoulder:0,belt:0};
+var eyeIdx=0,eyeAnimId,coreAnimId,radarId,coreUptime=0,coreUpInt,rackLCount=9,rackRCount=9;
+var EM=[{n:'COMBAT',c:'#ff9500',g:'255,149,0'},{n:'RECON',c:'#00d4ff',g:'0,212,255'},
+  {n:'STEALTH',c:'#00ff44',g:'0,255,68'},{n:'ALERT',c:'#ff4444',g:'255,68,68'},
+  {n:'TACTICAL',c:'#ff00cc',g:'255,0,204'},{n:'SEARCH',c:'#ffffff',g:'255,255,255'}];
+function toggle(id){
+  S[id]=S[id]?0:1;
+  var p=document.getElementById('p-'+id),z=document.getElementById('z-'+id);
+  if(p)p.className='panel '+(S[id]?'on':'off');
+  if(z)z.classList.toggle('on',!!S[id]);
+  if(S[id]){
+    document.getElementById('modeVal').textContent=id.toUpperCase();
+    if(id==='eyes'){buildEyeBtns();startEyes();}
+    if(id==='helmet'){startHelmet();}
+    if(id==='core'){startCore();}
+    if(id==='lplate'){buildRack('L');}
+    if(id==='rplate'){buildRack('R');}
+    if(id==='lshoulder'){drawTurret('L');}
+    if(id==='rshoulder'){drawTurret('R');}
+  }else{
+    if(id==='helmet'){document.getElementById('visor').className='';cancelAnimationFrame(radarId);}
+    if(id==='core'){cancelAnimationFrame(coreAnimId);clearInterval(coreUpInt);}
+    if(id==='eyes'){cancelAnimationFrame(eyeAnimId);var c=document.getElementById('eye-canvas');c.getContext('2d').clearRect(0,0,c.width,c.height);}
+  }
+}
+function close(id){if(S[id])toggle(id);}
+function buildEyeBtns(){
+  var w=document.getElementById('eyeBtns');w.innerHTML='';
+  EM.forEach(function(m,i){var b=document.createElement('button');b.className='btn';b.textContent=m.n;b.style.borderColor=m.c;b.style.color=m.c;b.onclick=function(){setEye(i);};w.appendChild(b);});
+  setEye(eyeIdx);
+}
+function setEye(i){eyeIdx=i;document.getElementById('eyeModeName').textContent=EM[i].n;document.getElementById('eyeGain').style.width=(40+i*10)+'%';toast('👁 EYE MODE: '+EM[i].n);}
+function startEyes(){
+  var c=document.getElementById('eye-canvas'),ctx=c.getContext('2d'),img=document.getElementById('robot-img');
+  function frame(t){
+    var w=c.width=img.clientWidth,h=c.height=img.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    var m=EM[eyeIdx],p=.6+.4*Math.sin(t*.05);
+    [{cx:.454,cy:.235,rw:.055,rh:.022},{cx:.546,cy:.235,rw:.05,rh:.022}].forEach(function(e){
+      var ex=e.cx*w,ey=e.cy*h,ew=e.rw*w,eh=e.rh*h;
+      var g=ctx.createRadialGradient(ex,ey,0,ex,ey,ew*2.8*p);
+      g.addColorStop(0,'rgba('+m.g+','+(0.75*p)+')');g.addColorStop(.5,'rgba('+m.g+','+(0.3*p)+')');g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g;ctx.fillRect(ex-ew*2.5,ey-eh*3,ew*5,eh*6);
+      ctx.save();ctx.fillStyle=m.c;ctx.shadowColor=m.c;ctx.shadowBlur=22*p;
+      ctx.beginPath();ctx.ellipse(ex,ey,ew,eh*.7,0,0,Math.PI*2);ctx.fill();ctx.restore();
+    });
+    eyeAnimId=requestAnimationFrame(function(){frame(t+1);});
+  }
+  cancelAnimationFrame(eyeAnimId);frame(0);
+}
+function startHelmet(){
+  document.getElementById('visor').className='on';
+  var c=document.getElementById('radarC'),ctx=c.getContext('2d'),f=0;
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.strokeStyle='rgba(0,212,255,.3)';ctx.lineWidth=1;
+    [17,30,43].forEach(function(r){ctx.beginPath();ctx.arc(54,35,r,0,Math.PI*2);ctx.stroke();});
+    ctx.strokeStyle='rgba(0,212,255,.18)';
+    ctx.beginPath();ctx.moveTo(54,4);ctx.lineTo(54,66);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(7,35);ctx.lineTo(101,35);ctx.stroke();
+    var a=f*.05;ctx.save();ctx.translate(54,35);ctx.rotate(a);
+    ctx.fillStyle='rgba(0,255,68,.17)';ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,44,-.45,.45);ctx.closePath();ctx.fill();ctx.restore();
+    if(f%90<45){var bx=54+Math.cos(a+1.1)*26,by=35+Math.sin(a+1.1)*19;ctx.fillStyle='rgba(255,68,68,'+(.5+.5*Math.sin(f*.18))+')';ctx.beginPath();ctx.arc(bx,by,2.5,0,Math.PI*2);ctx.fill();}
+    f++;radarId=requestAnimationFrame(draw);
+  }
+  draw();toast('⬡ TACTICAL VISOR ENGAGED');
+}
+function startCore(){
+  coreUptime=0;
+  coreUpInt=setInterval(function(){coreUptime++;var h=String(Math.floor(coreUptime/3600)).padStart(2,'0'),m=String(Math.floor(coreUptime/60)%60).padStart(2,'0'),s=String(coreUptime%60).padStart(2,'0');document.getElementById('cUp').textContent=h+':'+m+':'+s;document.getElementById('cFreq').textContent=(685+Math.random()*.4).toFixed(1)+' THz';},1000);
+  var c=document.getElementById('coreC'),ctx=c.getContext('2d'),t=0,CX=74,CY=74,R=66;
+  function draw(){
+    ctx.clearRect(0,0,148,148);var p=.5+.5*Math.sin(t*.042);
+    ctx.fillStyle='#04060e';ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fill();
+    [['#00ff44',.56],['#00aaff',.72],['#ff9500',.88]].forEach(function(rc){ctx.strokeStyle=rc[0]+'33';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(CX,CY,R*rc[1],0,Math.PI*2);ctx.stroke();});
+    [[' #ff6600',0,90],['#00aaff',90,180],['#ff00cc',180,270],['#00ff44',270,360]].forEach(function(sg){var sa=sg[1]*Math.PI/180,ea=sg[2]*Math.PI/180;ctx.strokeStyle=sg[0].trim();ctx.lineWidth=3;ctx.shadowColor=sg[0].trim();ctx.shadowBlur=8;ctx.beginPath();ctx.arc(CX,CY,R*.9,sa,ea);ctx.stroke();});
+    ctx.shadowBlur=0;
+    var sa=t*.048;ctx.save();ctx.strokeStyle='rgba(255,149,0,'+(0.55+p*.35)+')';ctx.lineWidth=3;ctx.shadowColor='#ff9500';ctx.shadowBlur=14;ctx.beginPath();ctx.arc(CX,CY,R*.82,sa,sa+.95);ctx.stroke();ctx.restore();
+    var g=ctx.createRadialGradient(CX,CY,0,CX,CY,30);g.addColorStop(0,'rgba(255,'+(110+p*80)+',0,0.96)');g.addColorStop(.65,'rgba(140,55,0,.65)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(CX,CY,30,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(30,10,0,.9)';ctx.beginPath();rr(ctx,CX-16,CY-16,32,32,5);ctx.fill();ctx.strokeStyle='rgba(255,100,0,'+(0.7+p*.25)+')';ctx.lineWidth=2;ctx.beginPath();rr(ctx,CX-16,CY-16,32,32,5);ctx.stroke();
+    ctx.fillStyle='rgba(255,'+(80+p*70)+',0,'+(0.88+p*.1)+')';ctx.font='bold 20px Arial Black,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#ff6600';ctx.shadowBlur=16;ctx.fillText('N',CX,CY+1);ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(255,149,0,'+(0.4+p*.35)+')';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.stroke();
+    t++;coreAnimId=requestAnimationFrame(draw);
+  }
+  cancelAnimationFrame(coreAnimId);draw();toast('⚡ N-CORE REACTOR ACTIVE — 685.1 THz');
+}
+function rr(ctx,x,y,w,h,r){ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+function cBoost(){document.getElementById('cOut').style.width='100%';toast('⚡ OUTPUT BOOST — +42% POWER SURGE');}
+function cOverload(){toast('☢ OVERLOAD VECTOR — THERMAL VENT ENGAGED');}
+function cShield(){toast('🛡 PLANAR ENERGY SHIELD — 4m PROJECTED');}
+function cLaunch(){toast('🚀 MICRO-ROCKET ARRAY LAUNCHED');}
+function buildRack(side){
+  var r=document.getElementById('rack'+side),cnt=side==='L'?rackLCount:rackRCount;
+  r.innerHTML='';
+  for(var i=0;i<9;i++){var d=document.createElement('div');d.className='dc'+(i>=cnt?' used':'');d.style.background=i>=cnt?'rgba(0,0,0,.6)':'rgba(0,255,68,.2)';d.style.borderColor=i>=cnt?'#1a2a1a':'rgba(0,255,68,.7)';
+    (function(idx,el,sd){el.onclick=function(){if(el.classList.contains('used'))return;el.classList.add('used');el.style.background='rgba(0,0,0,.6)';el.style.borderColor='#1a2a1a';if(sd==='L'){rackLCount--;document.getElementById('rackLInfo').textContent='DARTS: '+rackLCount+'/9';}else{rackRCount--;document.getElementById('rackRInfo').textContent='DARTS: '+rackRCount+'/9';}toast('DART '+(idx+1)+' FIRED FROM '+sd+' RACK');spawnProj(sd==='L'?15:85,45,'#00ff44');};})(i,d,side);r.appendChild(d);}
+  document.getElementById('rack'+side+'Info').textContent='DARTS: '+cnt+'/9 — TAP TO FIRE';
+}
+function rackReload(s){if(s==='L')rackLCount=9;else rackRCount=9;buildRack(s);toast('↺ '+s+' RACK RELOADED — 9/9');}
+function rackBurst(s){var n=Math.min(3,s==='L'?rackLCount:rackRCount);if(n===0){toast('⚠ '+s+' RACK EMPTY');return;}for(var i=0;i<n;i++){(function(i2){setTimeout(function(){spawnProj(s==='L'?15:85,45,'#ffcc00');},i2*120);})(i);}if(s==='L')rackLCount-=n;else rackRCount-=n;buildRack(s);toast('💥 '+n+'-DART BURST FROM '+s+' RACK');}
+function drawTurret(side){var c=document.getElementById('turret'+side+'C'),ctx=c.getContext('2d');ctx.clearRect(0,0,130,70);ctx.fillStyle='#0d1220';ctx.beginPath();rr(ctx,8,8,114,54,7);ctx.fill();ctx.strokeStyle='#ff6600';ctx.lineWidth=1.8;ctx.beginPath();rr(ctx,8,8,114,54,7);ctx.stroke();ctx.fillStyle='#1a0800';ctx.beginPath();rr(ctx,12,25,80,20,5);ctx.fill();ctx.strokeStyle='rgba(255,102,0,.7)';ctx.lineWidth=1.5;ctx.beginPath();rr(ctx,12,25,80,20,5);ctx.stroke();ctx.fillStyle='#0a0a12';ctx.beginPath();ctx.arc(14,35,7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ff9500';ctx.lineWidth=1.5;ctx.stroke();for(var i=0;i<5;i++){ctx.fillStyle=i<4?'rgba(255,102,0,.7)':'#0a0a12';ctx.fillRect(100+i*3,22,2,16);}ctx.fillStyle='rgba(255,102,0,.8)';ctx.font='bold 8px Courier New';ctx.textAlign='center';ctx.fillText('N-TURRET MK3',65,20);}
+function turretFire(s){toast('🔥 TURRET '+s+' — BURST FIRE');document.getElementById('t'+s+'Status').textContent='STATUS: FIRING';spawnProj(s==='L'?7:93,26,'#ff6600');setTimeout(function(){document.getElementById('t'+s+'Status').textContent='STATUS: IDLE';},800);}
+function turretSweep(s){toast('↔ TURRET '+s+' — ARC SWEEP 180°');document.getElementById('t'+s+'Status').textContent='STATUS: SWEEPING';setTimeout(function(){document.getElementById('t'+s+'Status').textContent='STATUS: IDLE';},1500);}
+function turretLock(s){toast('🎯 TURRET '+s+' — TARGET ACQUIRED');document.getElementById('t'+s+'Status').textContent='STATUS: LOCKED';}
+var modMsgs=['🛡 SHIELD GEL DEPLOYED — 6m RADIUS','🧲 MAG DARTS LOADED — HOMING ACTIVE','🚁 SCOUT DRONE LAUNCHED','👁 CLOAK ENGAGED — OPTICAL STEALTH'];
+var modCols=['#00aaff','#ff9500','#00ff44','#ff00cc'],modActive=[-1];
+function activateMod(i){if(modActive[0]>=0){var pv=document.getElementById('mod'+modActive[0]);if(pv)pv.style.background='transparent';}modActive[0]=i;var el=document.getElementById('mod'+i);function h(c){return parseInt(c.slice(1,3),16)+','+parseInt(c.slice(3,5),16)+','+parseInt(c.slice(5,7),16);}if(el)el.style.background='rgba('+h(modCols[i])+',.22)';document.getElementById('beltStatus').textContent=modMsgs[i];document.getElementById('beltStatus').style.color=modCols[i];toast(modMsgs[i]);}
+function spawnProj(x,y,color){var sc=document.getElementById('scene'),p=document.createElement('div');p.className='proj';p.style.left=x+'%';p.style.top=y+'%';p.style.background=color;p.style.boxShadow='0 0 8px '+color;sc.appendChild(p);setTimeout(function(){p.remove();},520);}
+var toastT;function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.className='on';clearTimeout(toastT);toastT=setTimeout(function(){t.className='';},2400);document.getElementById('s3').textContent=msg.length>28?msg.slice(0,28)+'…':msg;}
+window.addEventListener('load',function(){var img=document.getElementById('robot-img');function sz(){var c=document.getElementById('eye-canvas');c.width=img.clientWidth;c.height=img.clientHeight;}img.onload=sz;sz();toast('■ N-CORE SENTINEL MK8 ONLINE — TAP ZONES ■');});
+window.addEventListener('resize',function(){var img=document.getElementById('robot-img');var c=document.getElementById('eye-canvas');c.width=img.clientWidth;c.height=img.clientHeight;if(S.eyes)startEyes();});
+</script>
+</body>
+</html>

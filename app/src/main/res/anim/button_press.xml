@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pressed -->
+    <item android:state_pressed="true">
+        <set>
+            <scale
+                android:duration="100"
+                android:fromXScale="1.0"
+                android:toXScale="0.95"
+                android:fromYScale="1.0"
+                android:toYScale="0.95"
+                android:pivotX="50%"
+                android:pivotY="50%" />
+            <alpha
+                android:duration="100"
+                android:fromAlpha="1.0"
+                android:toAlpha="0.8" />
+        </set>
+    </item>
+    <!-- Focused -->
+    <item android:state_focused="true">
+        <set>
+            <scale
+                android:duration="150"
+                android:fromXScale="1.0"
+                android:toXScale="1.04"
+                android:fromYScale="1.0"
+                android:toYScale="1.04"
+                android:pivotX="50%"
+                android:pivotY="50%" />
+            <alpha
+                android:duration="150"
+                android:fromAlpha="1.0"
+                android:toAlpha="0.9" />
+        </set>
+    </item>
+    <!-- Default -->
+    <item>
+        <set>
+            <scale
+                android:duration="0"
+                android:fromXScale="1.0"
+                android:toXScale="1.0"
+                android:fromYScale="1.0"
+                android:toYScale="1.0" />
+            <alpha
+                android:duration="0"
+                android:fromAlpha="1.0"
+                android:toAlpha="1.0" />
+        </set>
+    </item>
+</selector>

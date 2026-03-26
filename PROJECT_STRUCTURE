@@ -1,0 +1,92 @@
+NerfLauncher/
+├─ settings.gradle
+├─ build.gradle
+├─ gradle.properties
+├─ app/
+│  ├─ build.gradle
+│  ├─ proguard-rules.pro
+│  ├─ src/
+│  │  ├─ main/
+│  │  │  ├─ AndroidManifest.xml
+│  │  │  ├─ java/
+│  │  │  │  └─ com/
+│  │  │  │     └─ nerf/
+│  │  │  │        └─ launcher/
+│  │  │  │           ├─ LauncherApplication.kt
+│  │  │  │           ├─ model/
+│  │  │  │           │  └─ AppInfo.kt
+│  │  │  │           ├─ ui/
+│  │  │  │           │  ├─ MainActivity.kt
+│  │  │  │           │  ├─ HudController.kt
+│  │  │  │           │  ├─ TaskbarView.kt
+│  │  │  │           │  ├─ TaskbarController.kt
+│  │  │  │           │  ├─ SettingsActivity.kt
+│  │  │  │           │  └─ SettingsAdapter.kt
+│  │  │  │           ├─ adapter/
+│  │  │  │           │  └─ AppAdapter.kt
+│  │  │  │           ├─ util/
+│  │  │  │           │  ├─ AppUtils.kt
+│  │  │  │           │  ├─ IconPackManager.kt
+│  │  │  │           │  ├─ IconCache.kt
+│  │  │  │           │  ├─ IconProvider.kt
+│  │  │  │           │  ├─ NerfTheme.kt
+│  │  │  │           │  ├─ ThemeRepository.kt
+│  │  │  │           │  ├─ PreferencesManager.kt
+│  │  │  │           │  ├─ ThemeManager.kt
+│  │  │  │           │  ├─ UIUpdateManager.kt
+│  │  │  │           │  ├─ StatusBarManager.kt
+│  │  │  │           │  ├─ SettingType.kt
+│  │  │  │           │  └─ SettingItem.kt
+│  │  │  │           ├─ viewmodel/
+│  │  │  │           │  ├─ LauncherViewModel.kt
+│  │  │  │           │  └─ HomeViewModel.kt
+│  │  │  │  └─ res/
+│  │  │     ├─ layout/
+│  │  │     │  ├─ activity_main.xml
+│  │  │     │  ├─ item_app.xml
+│  │  │     │  ├─ hud_layout.xml
+│  │  │     │  ├─ activity_settings.xml
+│  │  │     │  └─ item_setting.xml
+│  │  │     ├─ drawable/
+│  │  │     │  ├─ button_background.xml
+│  │  │     │  ├─ panel_background.xml
+│  │  │     │  ├─ item_background.xml
+│  │  │     │  └─ gradient_background.xml
+│  │  │     ├─ anim/
+│  │  │     │  ├─ button_press.xml
+│  │  │     │  ├─ icon_glow.xml
+│  │  │     │  ├─ widget_expand.xml
+│  │  │     │  ├─ widget_collapse.xml
+│  │  │     │  ├─ hud_recoil.xml
+│  │  │     │  ├─ background_pulse.xml
+│  │  │     │  └─ gradient_anim.xml
+│  │  │     ├─ values/
+│  │  │     │  ├─ colors.xml
+│  │  │     │  ├─ styles.xml
+│  │  │     │  ├─ strings.xml
+│  │  │     │  ├─ dimens.xml
+│  │  │     │  └─ themes.xml
+│  │  │     ├─ mipmap-anydpi-v26/
+│  │  │     │  ├─ ic_launcher.xml
+│  │  │     │  └─ ic_launcher_round.xml
+│  │  │     ├─ mipmap-hdpi/
+│  │  │     │  ├─ ic_launcher.png
+│  │  │     │  └─ ic_launcher_round.png
+│  │  │     ├─ mipmap-mdpi/
+│  │  │     │  ├─ ic_launcher.png
+│  │  │     │  └─ ic_launcher_round.png
+│  │  │     ├─ mipmap-xhdpi/
+│  │  │     │  ├─ ic_launcher.png
+│  │  │     │  └─ ic_launcher_round.png
+│  │  │     ├─ mipmap-xxhdpi/
+│  │  │     │  ├─ ic_launcher.png
+│  │  │     │  └─ ic_launcher_round.png
+│  │  │     ├─ mipmap-xxxhdpi/
+│  │  │     │  ├─ ic_launcher.png
+│  │  │     │  └─ ic_launcher_round.png
+│  │  │     └─ assets/
+│  │  │        └─ icon_packs/
+│  │  │           ├─ system/          (placeholder – system icons are used via PackageManager)
+│  │  │           ├─ nerf/            (Nerf‑style icons, e.g. com.example.app.png)
+│  │  │           └─ minimal/         (Minimal icon set)
+│  │  └─ test/ and androidTest/ (unit‑test folders – can be left empty)

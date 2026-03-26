@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>N-Core Sentinel — Interactive Suit (MK8)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{
+  background:#000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  font-family:"Courier New",monospace;
+  color:#fff;
+  user-select:none;
+  overflow:hidden;
+}
+#hud-top{
+  width:100%;
+  max-width:512px;
+  padding:6px 10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid rgba(0,200,255,0.4);
+  background:rgba(0,0,0,0.9);
+}
+#suit-status{
+  font-size:11px;
+  letter-spacing:2px;
+  color:#ff9500;
+  text-shadow:0 0 8px #ff9500;
+}
+#mode-text{
+  font-size:11px;
+  letter-spacing:2px;
+  color:#00d4ff;
+  text-shadow:0 0 8px #00d4ff;
+}
+#zone-text{
+  font-size:11px;
+  letter-spacing:2px;
+  color:#00ff44;
+  text-shadow:0 0 8px #00ff44;
+  min-width:120px;
+  text-align:right;
+}
+#scene{
+  position:relative;
+  width:100%;
+  max-width:512px;
+  margin-top:4px;
+}
+#robot-img{
+  width:100%;
+  display:block;
+  pointer-events:none;
+}
+
+/* Hotspot zones */
+.zone{
+  position:absolute;
+  cursor:pointer;
+  border-radius:50%;
+  transition:all 0.25s;
+}
+.zone::before{
+  content:"";
+  position:absolute;
+  inset:-3px;
+  border-radius:inherit;
+  border:2px solid transparent;
+}
+.zone:hover::before,
+.zone.active::before{
+  border-color:currentColor;
+  box-shadow:
+    0 0 10px currentColor,
+    inset 0 0 8px rgba(255,255,255,0.1);
+}
+.zone-pulse{
+  animation:zonePulse 2s infinite;
+}
+@keyframes zonePulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(0,200,255,0.5);}
+  50%    {box-shadow:0 0 0 9px rgba(0,200,255,0);}
+}
+
+/* Floating panels */
+.panel{
+  position:absolute;
+  background:rgba(1,6,18,0.96);
+  border:1px solid;
+  border-radius:8px;
+  color:#fff;
+  font-size:10px;
+  backdrop-filter:blur(4px);
+  pointer-events:auto;
+  transition:all 0.32s cubic-bezier(0.34,1.56,0.64,1);
+  transform-origin:center center;
+}
+.panel.hidden{
+  opacity:0;
+  transform:scale(0.05);
+  pointer-events:none;
+}
+.panel.visible{
+  opacity:1;
+  transform:scale(1);
+}
+.panel-header{
+  padding:5px 8px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:9px;
+  letter-spacing:1px;
+}
+.panel-close{
+  cursor:pointer;
+  opacity:0.7;
+  padding:0 4px;
+}
+.panel-close:hover{
+  opacity:1;
+}
+
+/* Overlays */
+#eye-overlay{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+#visor-overlay{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:45%;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .35s;
+  background:linear-gradient(
+    180deg,
+    rgba(0,180,255,0.16),
+    transparent
+  );
+  overflow:hidden;
+}
+#visor-overlay.active{
+  opacity:1;
+}
+.scan-line{
+  position:absolute;
+  width:100%;
+  height:2px;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(0,255,255,0.5),
+    transparent
+  );
+  animation:scanDown 3s linear infinite;
+}
+@keyframes scanDown{
+  0%  {top:-2px;}
+  100%{top:100%;}
+}
+
+/* Buttons */
+.fire-btn{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:14px;
+  border:1px solid;
+  cursor:pointer;
+  font-size:9px;
+  letter-spacing:2px;
+  margin:2px 2px 0 0;
+  font-family:"Courier New",monospace;
+  transition:all .18s;
+}
+.fire-btn:hover{filter:brightness(1.3);}
+.fire-btn:active{transform:scale(0.94);}
+
+/* Toast */
+#toast{
+  position:fixed;
+  bottom:18px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,8,20,0.96);
+  border-radius:6px;
+  border:1px solid #ff9500;
+  padding:7px 18px;
+  font-size:10px;
+  letter-spacing:2px;
+  color:#ff9500;
+  text-shadow:0 0 8px #ff9500;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s;
+  z-index:100;
+}
+#toast.show{opacity:1;}
+
+/* Projectile */
+.projectile{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  pointer-events:none;
+  animation:proj .5s forwards;
+}
+@keyframes proj{
+  0%  {opacity:1;transform:translateY(0) scale(1);}
+  100%{opacity:0;transform:translateY(-120px) scale(0.3);}
+}
+</style>
+</head>
+<body>
+<div id="hud-top">
+  <div id="suit-status">■ N-CORE SENTINEL ONLINE ■</div>
+  <div id="mode-text">MODE: STANDBY</div>
+  <div id="zone-text">TAP SUIT TO INTERACT</div>
+</div>
+
+<div id="scene">
+  <!-- IMPORTANT: this references the real JPG file -->
+  <img id="robot-img" src="1000044972.jpg"
+       alt="N-Core Sentinel" />
+
+  <canvas id="eye-overlay"></canvas>
+
+  <div id="visor-overlay">
+    <div class="scan-line"></div>
+    <div class="scan-line" style="animation-delay:-1.5s"></div>
+  </div>
+
+  <!-- Hotspots (percent-based for this exact image) -->
+  <!-- Eyes -->
+  <div class="zone zone-pulse" id="z-eyes"
+       style="left:41%;top:19%;width:18%;padding-top:6%;
+              color:#ff9500;"
+       onclick="toggleZone('eyes')"></div>
+
+  <!-- Helmet crown -->
+  <div class="zone" id="z-helmet"
+       style="left:36%;top:6%;width:28%;padding-top:10%;
+              color:#00d4ff;border-radius:16px;"
+       onclick="toggleZone('helmet')"></div>
+
+  <!-- Chest core -->
+  <div class="zone" id="z-core"
+       style="left:32%;top:40%;width:36%;padding-top:32%;
+              color:#ff9500;border-radius:50%;"
+       onclick="toggleZone('core')"></div>
+
+  <!-- Left/right torso plates -->
+  <div class="zone" id="z-leftTorso"
+       style="left:16%;top:38%;width:18%;padding-top:18%;
+              color:#00ff44;border-radius:14px;"
+       onclick="toggleZone('leftTorso')"></div>
+
+  <div class="zone" id="z-rightTorso"
+       style="left:66%;top:38%;width:18%;padding-top:18%;
+              color:#00ff44;border-radius:14px;"
+       onclick="toggleZone('rightTorso')"></div>
+
+  <!-- Panels -->
+
+  <!-- Eyes panel -->
+  <div class="panel hidden" id="panel-eyes"
+       style="left:6%;top:8%;width:88%;border-color:#ff9500;">
+    <div class="panel-header">
+      <span>👁 OPTICAL MATRIX</span>
+      <span class="panel-close"
+            onclick="closeZone('eyes')">✕</span>
+    </div>
+    <div style="padding:6px 8px;
+                display:grid;
+                grid-template-columns:1.1fr 1fr;
+                gap:6px;">
+      <div>
+        <div style="font-size:9px;color:#888;margin-bottom:4px;">
+          EYE MODE
+        </div>
+        <div id="eye-modes"
+             style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
+      <div>
+        <div style="font-size:9px;color:#888;margin-bottom:4px;">
+          VISOR STATUS
+        </div>
+        <div id="eye-status"
+             style="font-size:10px;color:#ff9500;">
+          STANDBY — WHITE BALANCE
+        </div>
+        <div style="margin-top:6px;
+                    font-size:9px;color:#888;">
+          FOVEAL GAIN
+        </div>
+        <div style="height:6px;
+                    background:rgba(255,149,0,0.15);
+                    border-radius:3px;
+                    overflow:hidden;">
+          <div id="eye-gain"
+               style="height:100%;width:40%;
+                      background:linear-gradient(90deg,#ff6600,#ffcc00);
+                      transition:width .3s;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Helmet panel -->
+  <div class="panel hidden" id="panel-helmet"
+       style="left:6%;top:2%;width:70%;border-color:#00d4ff;">
+    <div class="panel-header">
+      <span>⬡ TACTICAL VISOR</span>
+      <span class="panel-close"
+            onclick="closeZone('helmet')">✕</span>
+    </div>
+    <div style="padding:6px 8px;
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:6px;">
+      <canvas id="radar" width="110" height="70"></canvas>
+      <div>
+        <div style="font-size:9px;color:#888;margin-bottom:3px;">
+          SUIT STATUS
+        </div>
+        <div style="font-size:9px;margin-bottom:2px;">
+          SHIELDS
+          <span id="shield"
+                style="color:#00ff44;">■■■■■ 100%</span>
+        </div>
+        <div style="font-size:9px;margin-bottom:2px;">
+          POWER
+          <span id="power"
+                style="color:#00d4ff;">■■■■■ 100%</span>
+        </div>
+        <div style="font-size:9px;">
+          TEMP
+          <span style="color:#ff4444;">■□□□□ 24°C</span>
+        </div>
+      </div>
+      <div style="grid-column:1/-1;
+                  font-size:9px;color:#888;margin-top:2px;">
+        TARGET LOCK
+      </div>
+      <div id="lock"
+           style="grid-column:1/-1;
+                  font-size:10px;color:#ff4444;">
+        SCANNING... NO HOSTILES
+      </div>
+    </div>
+  </div>
+
+  <!-- Core reactor panel -->
+  <div class="panel hidden" id="panel-core"
+       style="left:4%;top:36%;width:92%;border-color:#ff9500;">
+    <div class="panel-header">
+      <span>⚡ N-CORE REACTOR</span>
+      <span class="panel-close"
+            onclick="closeZone('core')">✕</span>
+    </div>
+    <div style="padding:7px 8px;
+                display:flex;
+                gap:8px;
+                align-items:center;
+                flex-wrap:wrap;">
+      <canvas id="core-mini" width="150" height="150"></canvas>
+      <div style="flex:1;min-width:130px;">
+        <div style="font-size:9px;color:#888;margin-bottom:4px;">
+          OUTPUT
+        </div>
+        <div style="height:7px;
+                    background:rgba(255,149,0,0.12);
+                    border-radius:4px;
+                    margin-bottom:4px;
+                    overflow:hidden;">
+          <div id="core-out"
+               style="height:100%;width:68%;
+                      background:linear-gradient(90deg,#ff6600,#ffcc00);
+                      transition:width .4s;"></div>
+        </div>
+        <div style="font-size:9px;color:#888;margin-bottom:2px;">
+          FREQUENCY
+          <span id="core-freq"
+                style="color:#ff9500;">685.1 THz</span>
+        </div>
+        <div style="font-size:9px;color:#888;margin-bottom:2px;">
+          UPTIME
+          <span id="core-up"
+                style="color:#00ff44;">00:00:00</span>
+        </div>
+        <div style="margin-top:6px;">
+          <button class="fire-btn"
+                  style="border-color:#00ff44;color:#00ff44;"
+                  onclick="coreBoost()">BOOST</button>
+          <button class="fire-btn"
+                  style="border-color:#ff4444;color:#ff4444;"
+                  onclick="coreOverload()">OVERLOAD</button>
+          <button class="fire-btn"
+                  style="border-color:#00d4ff;color:#00d4ff;"
+                  onclick="coreShield()">SHIELD</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Left torso rack -->
+  <div class="panel hidden" id="panel-leftTorso"
+       style="left:2%;top:44%;width:40%;border-color:#00ff44;">
+    <div class="panel-header">
+      <span>FORE ARMORY — L</span>
+      <span class="panel-close"
+            onclick="closeZone('leftTorso')">✕</span>
+    </div>
+    <div style="padding:6px 6px;">
+      <div id="rack-left"
+           style="display:grid;
+                  grid-template-columns:repeat(3,1fr);
+                  gap:3px;font-size:9px;"></div>
+      <div id="rack-left-info"
+           style="font-size:9px;color:#888;margin-top:4px;">
+        DARTS: 9/9
+      </div>
+    </div>
+  </div>
+
+  <!-- Right torso rack -->
+  <div class="panel hidden" id="panel-rightTorso"
+       style="right:2%;top:44%;width:40%;border-color:#00ff44;">
+    <div class="panel-header">
+      <span>FORE ARMORY — R</span>
+      <span class="panel-close"
+            onclick="closeZone('rightTorso')">✕</span>
+    </div>
+    <div style="padding:6px 6px;">
+      <div id="rack-right"
+           style="display:grid;
+                  grid-template-columns:repeat(3,1fr);
+                  gap:3px;font-size:9px;"></div>
+      <div id="rack-right-info"
+           style="font-size:9px;color:#888;margin-top:4px;">
+        DARTS: 9/9
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* basic state */
+const state = {
+  eyes:false,
+  helmet:false,
+  core:false,
+  leftTorso:false,
+  rightTorso:false
+};
+
+const eyeCanvas = document.getElementById("eye-overlay");
+const eyeCtx    = eyeCanvas.getContext("2d");
+
+const eyeModes = [
+  {name:"COMBAT",  color:"#ff9500", glow:"rgba(255,149,0,"},
+  {name:"RECON",   color:"#00d4ff", glow:"rgba(0,212,255,"},
+  {name:"STEALTH", color:"#00ff44", glow:"rgba(0,255,68,"},
+  {name:"ALERT",   color:"#ff4444", glow:"rgba(255,68,68,"},
+  {name:"TACTIC",  color:"#ff00cc", glow:"rgba(255,0,204,"},
+  {name:"SEARCH",  color:"#ffffff", glow:"rgba(255,255,255,"}
+];
+
+let activeEyeMode = 0;
+let eyeAnimId     = null;
+let coreAnimId    = null;
+let coreUptime    = 0;
+let coreTimer     = null;
+let radarId       = null;
+
+/* helpers */
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(
+    () => t.classList.remove("show"),
+    2300
+  );
+  const zone = document.getElementById("zone-text");
+  if(zone) zone.textContent = msg.length>32 ?
+    msg.slice(0,32)+"…" : msg;
+}
+
+/* eyes */
+
+function setupEyeButtons(){
+  const wrap = document.getElementById("eye-modes");
+  if(!wrap || wrap.childElementCount) return;
+  eyeModes.forEach((m,i)=>{
+    const b = document.createElement("button");
+    b.className = "fire-btn";
+    b.style.borderColor = m.color;
+    b.style.color       = m.color;
+    b.textContent       = m.name;
+    b.onclick           = () => setEyeMode(i);
+    wrap.appendChild(b);
+  });
+}
+
+function setEyeMode(i){
+  activeEyeMode = i;
+  drawEyes();
+  const m = eyeModes[i];
+  const st = document.getElementById("eye-status");
+  if(st) st.textContent = m.name+" MODE ENGAGED";
+  const g = document.getElementById("eye-gain");
+  if(g) g.style.width = (40 + i*10) + "%";
+  toast("👁 EYE MODE: " + m.name);
+}
+
+function drawEyes(t){
+  if(!t) t = 0;
+  cancelAnimationFrame(eyeAnimId);
+
+  const img = document.getElementById("robot-img");
+  const w   = eyeCanvas.width  = img.clientWidth;
+  const h   = eyeCanvas.height = img.clientHeight;
+  const ctx = eyeCtx;
+  ctx.clearRect(0,0,w,h);
+
+  const m     = eyeModes[activeEyeMode];
+  const pulse = 0.6 + 0.4*Math.sin(t*0.05);
+
+  // two eye regions, tuned to this art
+  const regions = [
+    {x:0.43,y:0.23,w:0.06,h:0.025},
+    {x:0.51,y:0.23,w:0.06,h:0.025}
+  ];
+
+  regions.forEach(r=>{
+    const cx = r.x*w + r.w*w/2;
+    const cy = r.y*h + r.h*h/2;
+
+    const grd = ctx.createRadialGradient(
+      cx,cy,0,
+      cx,cy,
+      r.w*w*2.5*pulse
+    );
+    grd.addColorStop(0, m.glow+(0.7*pulse)+")");
+    grd.addColorStop(0.5,m.glow+(0.3*pulse)+")");
+    grd.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle = grd;
+    ctx.fillRect(
+      cx-r.w*w*2,
+      cy-r.h*h*2,
+      r.w*w*4,
+      r.h*h*4
+    );
+
+    ctx.save();
+    ctx.fillStyle   = m.color;
+    ctx.shadowColor = m.color;
+    ctx.shadowBlur  = 20*pulse;
+    ctx.beginPath();
+    ctx.ellipse(
+      cx,cy,
+      r.w*w/2,
+      r.h*h/1.4,
+      0,0,Math.PI*2
+    );
+    ctx.fill();
+    ctx.restore();
+  });
+
+  eyeAnimId = requestAnimationFrame(
+    () => drawEyes(t+1)
+  );
+}
+
+/* radar / helmet */
+
+function openHelmet(){
+  const visor = document.getElementById("visor-overlay");
+  visor.classList.add("active");
+
+  const c   = document.getElementById("radar");
+  const ctx = c.getContext("2d");
+  let f = 0;
+
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+
+    ctx.strokeStyle = "rgba(0,212,255,0.3)";
+    [18,30,42].forEach(r=>{
+      ctx.beginPath();
+      ctx.arc(55,35,r,0,Math.PI*2);
+      ctx.stroke();
+    });
+
+    ctx.strokeStyle = "rgba(0,212,255,0.2)";
+    ctx.beginPath(); ctx.moveTo(55,3); ctx.lineTo(55,67); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(7,35); ctx.lineTo(103,35); ctx.stroke();
+
+    const a = f*0.05;
+    ctx.save();
+    ctx.translate(55,35);
+    ctx.rotate(a);
+    ctx.fillStyle = "rgba(0,255,68,0.18)";
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.arc(0,0,45,-0.5,0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    if(f%80 < 40){
+      const bx = 55 + Math.cos(a+1)*25;
+      const by = 35 + Math.sin(a+1)*20;
+      ctx.fillStyle = "rgba(255,68,68,0.8)";
+      ctx.beginPath();
+      ctx.arc(bx,by,3,0,Math.PI*2);
+      ctx.fill();
+    }
+
+    f++;
+    radarId = requestAnimationFrame(draw);
+  }
+  draw();
+  toast("⬡ VISOR ONLINE");
+}
+
+/* core reactor */
+
+function openCore(){
+  coreUptime = 0;
+  const upEl = document.getElementById("core-up");
+
+  coreTimer = setInterval(()=>{
+    coreUptime++;
+    const h = String(Math.floor(coreUptime/3600)).padStart(2,"0");
+    const m = String(Math.floor(coreUptime/60)%60).padStart(2,"0");
+    const s = String(coreUptime%60).padStart(2,"0");
+    upEl.textContent = `${h}:${m}:${s}`;
+  },1000);
+
+  const c   = document.getElementById("core-mini");
+  const ctx = c.getContext("2d");
+  const CX=75, CY=75, R=65;
+  let t = 0;
+
+  function draw(){
+    ctx.clearRect(0,0,150,150);
+    const p = 0.5 + 0.5*Math.sin(t*0.04);
+
+    ctx.fillStyle="#05070e";
+    ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fill();
+
+    ["#00ff44","#00aaff","#ff9500"].forEach((col,i)=>{
+      const rr = R*(0.55 + i*0.16);
+      ctx.strokeStyle = col+"33";
+      ctx.lineWidth   = 1.4;
+      ctx.beginPath();
+      ctx.arc(CX,CY,rr,0,Math.PI*2);
+      ctx.stroke();
+    });
+
+    const sa = t*0.05;
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,149,0,${0.6+p*0.3})`;
+    ctx.lineWidth   = 3;
+    ctx.shadowColor = "#ff9500";
+    ctx.shadowBlur  = 12;
+    ctx.beginPath();
+    ctx.arc(CX,CY,R*0.88,sa,sa+0.9);
+    ctx.stroke();
+    ctx.restore();
+
+    const g = ctx.createRadialGradient(CX,CY,0,CX,CY,28);
+    g.addColorStop(0,`rgba(255,${120+p*70},0,0.95)`);
+    g.addColorStop(0.7,"rgba(150,60,0,0.65)");
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(CX,CY,30,0,Math.PI*2);ctx.fill();
+
+    ctx.fillStyle = `rgba(255,${90+p*80},0,0.96)`;
+    ctx.font = "bold 22px Arial Black,Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor  = "#ff6600";
+    ctx.shadowBlur   = 16;
+    ctx.fillText("N",CX,CY+1);
+    ctx.shadowBlur = 0;
+
+    t++;
+    coreAnimId = requestAnimationFrame(draw);
+  }
+  draw();
+  toast("⚡ REACTOR CORE ACTIVE");
+}
+
+function coreBoost(){
+  const bar = document.getElementById("core-out");
+  if(bar) bar.style.width = "100%";
+  toast("⚡ OUTPUT BOOSTED +40%");
+}
+function coreOverload(){
+  toast("☢ CAUTION: OVERLOAD VECTOR");
+}
+function coreShield(){
+  toast("🛡 PLANAR SHIELD DEPLOYED");
+}
+
+/* torso dart racks */
+
+function buildRack(side){
+  const root = document.getElementById("rack-"+side);
+  if(!root) return;
+  root.innerHTML = "";
+  for(let i=0;i<9;i++){
+    const c = document.createElement("div");
+    c.style.height="16px";
+    c.style.borderRadius="3px";
+    c.style.background="rgba(0,255,68,0.18)";
+    c.style.border="1px solid rgba(0,255,68,0.6)";
+    c.onclick = ()=>{
+      if(c.dataset.used) return;
+      c.dataset.used="1";
+      c.style.background="rgba(0,0,0,0.5)";
+      c.style.borderColor="rgba(0,255,68,0.2)";
+      toast("DART DEPLOYED FROM "+side.toUpperCase()+" RACK");
+    };
+    root.appendChild(c);
+  }
+  const info = document.getElementById("rack-"+side+"-info");
+  if(info) info.textContent = "DARTS: 9/9 (TAP TO DEPLOY)";
+}
+
+/* spawning projectiles */
+
+function spawnProjectile(xPct,yPct,color){
+  const scene = document.getElementById("scene");
+  const p = document.createElement("div");
+  p.className = "projectile";
+  p.style.left = xPct+"%";
+  p.style.top  = yPct+"%";
+  p.style.background = color;
+  p.style.boxShadow = "0 0 10px "+color;
+  scene.appendChild(p);
+  setTimeout(()=>p.remove(),520);
+}
+
+/* zones */
+
+function toggleZone(id){
+  state[id] = !state[id];
+  const mode = document.getElementById("mode-text");
+  if(mode) mode.textContent = "MODE: " + id.toUpperCase();
+
+  const panel = document.getElementById("panel-"+id);
+  const zone  = document.getElementById("z-"+id);
+  if(panel){
+    panel.classList.toggle("hidden", !state[id]);
+    panel.classList.toggle("visible", state[id]);
+  }
+  if(zone){
+    zone.classList.toggle("active", state[id]);
+  }
+
+  if(state[id]) onZoneOpened(id);
+  else          onZoneClosed(id);
+}
+
+function closeZone(id){
+  if(state[id]) toggleZone(id);
+}
+
+function onZoneOpened(id){
+  if(id==="eyes"){
+    setupEyeButtons();
+    setEyeMode(activeEyeMode);
+  }
+  if(id==="helmet")    openHelmet();
+  if(id==="core")      openCore();
+  if(id==="leftTorso") buildRack("left");
+  if(id==="rightTorso")buildRack("right");
+}
+
+function onZoneClosed(id){
+  if(id==="helmet"){
+    const visor = document.getElementById("visor-overlay");
+    visor.classList.remove("active");
+    cancelAnimationFrame(radarId);
+  }
+  if(id==="core"){
+    cancelAnimationFrame(coreAnimId);
+    clearInterval(coreTimer);
+  }
+}
+
+/* init */
+
+window.addEventListener("load",()=>{
+  const img = document.getElementById("robot-img");
+  const resize = ()=>{
+    eyeCanvas.width  = img.clientWidth;
+    eyeCanvas.height = img.clientHeight;
+    drawEyes();
+  };
+  img.onload = resize;
+  resize();
+  toast("■ N-CORE SENTINEL READY — TAP ZONES");
+});
+
+window.addEventListener("resize",()=>{
+  const img = document.getElementById("robot-img");
+  eyeCanvas.width  = img.clientWidth;
+  eyeCanvas.height = img.clientHeight;
+  drawEyes();
+});
+</script>
+</body>
+</html>
