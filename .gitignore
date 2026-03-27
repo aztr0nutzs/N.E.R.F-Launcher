@@ -1,0 +1,33 @@
+# Built application files
+*.apk
+*.aab
+*.ap_
+*.aab
+*.zip
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Gradle
+.gradle/
+build/
+app/build/
+gradlew
+gradlew.bat
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+*.swp
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Large models/media duplicates
+* (1).*
+app/src/assets/nerf_retaliator (1).glb
+
+# Ignore temporary text files
+git_push_output.txt
