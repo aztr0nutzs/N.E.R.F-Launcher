@@ -65,6 +65,13 @@
     </style>
 
     <!-- Text appearances. -->
+
+    <style name="Widget.NerfLauncher.Drawer.SearchInput">
+        <item name="android:background">@drawable/drawer_search_field_background</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/nerf_hud_panel_text_primary</item>
+    </style>
     <style name="TextAppearance.NerfLauncher.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
         <item name="android:textColor">@color/nerf_on_background</item>
         <item name="android:fontFamily">sans-serif-medium</item>

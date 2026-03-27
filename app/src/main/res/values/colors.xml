@@ -23,6 +23,7 @@
     <color name="nerf_hud_panel_text_primary">#FFFFFF</color>
     <color name="nerf_hud_panel_text_secondary">#66FFFFFF</color>
     <color name="nerf_hud_app_label">#E6FFFFFF</color>
+    <color name="nerf_drawer_border">#6600E9FF</color>
 
     <color name="nerf_reactor_mid_a">#6BFFD6</color>
     <color name="nerf_reactor_mid_b">#3ED5FF</color>

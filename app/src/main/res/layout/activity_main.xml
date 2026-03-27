@@ -157,12 +157,45 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintWidth_percent="0.28">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/drawer_header"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="LAUNCH MATRIX"
-                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                    android:textColor="@color/nerf_hud_magenta" />
+                    android:background="@drawable/drawer_header_panel"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="LAUNCH MATRIX"
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                        android:textColor="@color/nerf_hud_magenta" />
+
+                    <TextView
+                        android:id="@+id/drawer_result_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="0 VISIBLE"
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
+                        android:textColor="@color/nerf_hud_cyan" />
+
+                    <EditText
+                        android:id="@+id/drawerSearchInput"
+                        style="@style/Widget.NerfLauncher.Drawer.SearchInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/nerf_drawer_search_height"
+                        android:layout_marginTop="8dp"
+                        android:hint="@string/drawer_search_hint"
+                        android:imeOptions="actionDone"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:textColor="@color/nerf_hud_panel_text_primary"
+                        android:textColorHint="@color/nerf_hud_panel_text_secondary" />
+                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerView"
@@ -170,7 +203,7 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:clipToPadding="false"
-                    android:paddingTop="6dp"
+                    android:paddingTop="8dp"
                     android:paddingBottom="6dp"
                     app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                     app:spanCount="2" />

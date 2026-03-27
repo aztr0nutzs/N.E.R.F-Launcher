@@ -4,9 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.GridLayoutManager
 import com.nerf.launcher.adapter.AppAdapter
 import com.nerf.launcher.databinding.ActivityMainBinding
+import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.AppUtils
 import com.nerf.launcher.util.ConfigRepository
@@ -16,6 +18,7 @@ import com.nerf.launcher.util.StatusBarManager
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.viewmodel.LauncherViewModel
+import java.util.Locale
 
 /**
  * Main launcher screen – app grid + HUD + taskbar.
@@ -27,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: AppAdapter
     private lateinit var iconProvider: IconProvider
     private lateinit var hudController: HudController
+    private var allApps: List<AppInfo> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         iconProvider = IconProvider(applicationContext, IconCache(50))
 
         setupRecyclerView()
+        setupDrawerSearch()
         observeViewModel()
 
         hudController = HudController(this, binding.hudRoot, this)
@@ -70,13 +75,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupDrawerSearch() {
+        binding.drawerSearchInput.doAfterTextChanged {
+            applyDrawerFilter(it?.toString().orEmpty())
+        }
+    }
+
     private fun observeViewModel() {
         viewModel.apps.observe(this) { apps ->
-            adapter.submitList(apps)
+            allApps = apps
+            applyDrawerFilter(binding.drawerSearchInput.text?.toString().orEmpty())
             binding.moduleAppCount.text = getString(com.nerf.launcher.R.string.hud_apps_count, apps.size)
             binding.appsLoadBar.progress = ((apps.size / 48f) * 100f).toInt().coerceIn(10, 100)
             updateTaskbarIcons()
         }
+    }
+
+    private fun applyDrawerFilter(query: String) {
+        val normalizedQuery = query.trim().lowercase(Locale.getDefault())
+        val filtered = if (normalizedQuery.isBlank()) {
+            allApps
+        } else {
+            allApps.filter { app ->
+                app.appName.lowercase(Locale.getDefault()).contains(normalizedQuery) ||
+                        app.packageName.lowercase(Locale.getDefault()).contains(normalizedQuery)
+            }
+        }
+        adapter.submitList(filtered)
+        binding.drawerResultCount.text = getString(com.nerf.launcher.R.string.drawer_result_count, filtered.size)
     }
 
     private fun setupConfigObservers() {

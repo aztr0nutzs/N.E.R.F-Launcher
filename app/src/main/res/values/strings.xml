@@ -13,4 +13,6 @@
     <string name="hud_apps_count">%1$d APPS</string>
     <string name="hud_grid_value">GRID %1$dx</string>
     <string name="hud_dock_value">DOCK %1$d</string>
+    <string name="drawer_search_hint">Search launch matrix</string>
+    <string name="drawer_result_count">%1$d VISIBLE</string>
 </resources>
