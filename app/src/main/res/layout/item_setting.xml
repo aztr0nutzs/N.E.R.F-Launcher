@@ -82,7 +82,7 @@
             android:id="@+id/animationLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/animation_speed"
+            android:text="@string/settings_animation_speed"
             android:layout_marginEnd="8dp"
             android:layout_gravity="center_vertical"/>
 
