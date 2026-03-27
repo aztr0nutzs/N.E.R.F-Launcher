@@ -43,16 +43,18 @@ class HudController(
         }
     }
 
-    private val timeUpdater = Runnable {
-        val now = java.util.Calendar.getInstance()
-        val hour = now.get(java.util.Calendar.HOUR_OF_DAY)
-        val minute = now.get(java.util.Calendar.MINUTE)
-        val timeFormatted = String.format("%02d:%02d", hour, minute)
-        timeDisplay.text = timeFormatted
-        handler.postDelayed(timeUpdater, 60_000L - (SystemClock.uptimeMillis() % 60_000L))
-    }
-
     private val handler = Handler(Looper.getMainLooper())
+
+    private val timeUpdater = object : Runnable {
+        override fun run() {
+            val now = java.util.Calendar.getInstance()
+            val hour = now.get(java.util.Calendar.HOUR_OF_DAY)
+            val minute = now.get(java.util.Calendar.MINUTE)
+            val timeFormatted = String.format("%02d:%02d", hour, minute)
+            timeDisplay.text = timeFormatted
+            handler.postDelayed(this, 60_000L - (SystemClock.uptimeMillis() % 60_000L))
+        }
+    }
 
     init {
         // Register for battery changes (sticky intent, no permission needed)
@@ -109,7 +111,7 @@ class HudController(
             // Update HUD views with theme colors
             batteryMeter.progressTintList = android.content.res.ColorStateList.valueOf(finalTheme.primary)
             batteryMeter.backgroundTintList = android.content.res.ColorStateList.valueOf(finalTheme.secondary)
-            timeDisplay.textColor = finalTheme.secondary
+            timeDisplay.setTextColor(finalTheme.secondary)
             addWidgetBtn.setTextColor(finalTheme.primary)
 
             // Update glow overlay

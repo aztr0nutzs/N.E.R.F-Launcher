@@ -17,5 +17,6 @@ data class TaskbarSettings(
     val iconSize: Int, // in dp
     val backgroundStyle: Int, // reference to a color resource
     val transparency: Float, // 0.0f to 1.0f (0 = fully transparent, 1 = opaque)
-    val enabled: Boolean
+    val enabled: Boolean,
+    val pinnedApps: List<String> = emptyList()
 )

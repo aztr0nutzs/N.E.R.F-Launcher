@@ -2,7 +2,6 @@ package com.nerf.launcher.util
 
 import android.app.Application
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 
@@ -15,57 +14,56 @@ class ConfigRepository(private val context: Context) {
 
     companion object {
         private var instance: ConfigRepository? = null
+
         fun init(app: Application) {
             if (instance == null) {
-                instance = ConfigRepository(app)
+                instance = ConfigRepository(app.applicationContext)
             }
         }
+
         fun get(): ConfigRepository =
-            instance ?: throw IllegalStateException("ConfigRepository not initialized. Call init() in Application.")
+            instance ?: error("ConfigRepository not initialized. Call init() in Application.")
     }
 
-    private val _config = MutableLiveData<AppConfig>(loadConfig())
+    private val _config = MutableLiveData(loadConfig())
     val config: LiveData<AppConfig> = _config
 
     private fun loadConfig(): AppConfig {
-        val prefs = context.getSharedPreferences(PreferencesManager.PREF_NAME, Context.MODE_PRIVATE)
-        val themeName = PreferencesManager.getSelectedTheme(context) ?: ThemeRepository.CLASSIC_NERF.name
-        val iconPack = PreferencesManager.getIconPack(context) ?: IconPackManager.DEFAULT_PACK
-        val gridSize = PreferencesManager.getGridSize(context)
-        val animationSpeedEnabled = PreferencesManager.isAnimationSpeedEnabled(context)
-        val glowIntensity = PreferencesManager.getGlowIntensity(context)
-        val taskbarSettings = TaskbarSettings(
-            height = prefs.getInt(PreferencesManager.KEY_TASKBAR_HEIGHT, 56),
-            iconSize = PreferencesManager.getTaskbarIconSize(context),
-            backgroundStyle = PreferencesManager.getTaskbarBackgroundStyle(context),
-            transparency = prefs.getFloat(PreferencesManager.KEY_TASKBAR_TRANSPARENCY, 1.0f),
-            enabled = prefs.getBoolean(PreferencesManager.KEY_TASKBAR_ENABLED, true)
+        return AppConfig(
+            themeName = PreferencesManager.getSelectedTheme(context)
+                ?: ThemeRepository.CLASSIC_NERF.name,
+            iconPack = PreferencesManager.getIconPack(context) ?: IconPackManager.DEFAULT_PACK,
+            gridSize = PreferencesManager.getGridSize(context),
+            animationSpeedEnabled = PreferencesManager.isAnimationSpeedEnabled(context),
+            glowIntensity = PreferencesManager.getGlowIntensity(context),
+            taskbarSettings = TaskbarSettings(
+                height = PreferencesManager.getTaskbarHeight(context),
+                iconSize = PreferencesManager.getTaskbarIconSize(context),
+                backgroundStyle = PreferencesManager.getTaskbarBackgroundStyle(context),
+                transparency = PreferencesManager.getTaskbarTransparency(context),
+                enabled = PreferencesManager.isTaskbarEnabled(context),
+                pinnedApps = PreferencesManager.getPinnedApps(context)
+            )
         )
-        return AppConfig(themeName, iconPack, gridSize, animationSpeedEnabled,
-                glowIntensity, taskbarSettings)
     }
 
     fun saveConfig(config: AppConfig) {
-        val prefs = context.getSharedPreferences(PreferencesManager.PREF_NAME, Context.MODE_PRIVATE)
-        prefs.edit()
-            .putString(PreferencesManager.KEY_SELECTED_THEME, config.themeName)
-            .putString(PreferencesManager.KEY_ICON_PACK, config.iconPack)
-            .putInt(PreferencesManager.KEY_GRID_SIZE, config.gridSize)
-            .putBoolean(PreferencesManager.KEY_ANIMATION_SPEED, config.animationSpeedEnabled)
-            .putFloat(PreferencesManager.KEY_GLOW_INTENSITY, config.glowIntensity)
-            .putInt(PreferencesManager.KEY_TASKBAR_HEIGHT, config.taskbarSettings.height)
-            .putInt(PreferencesManager.KEY_TASKBAR_ICON_SIZE, config.taskbarSettings.iconSize)
-            .putInt(PreferencesManager.KEY_TASKBAR_BACKGROUND_STYLE,
-                    config.taskbarSettings.backgroundStyle)
-            .putFloat(PreferencesManager.KEY_TASKBAR_TRANSPARENCY,
-                    config.taskbarSettings.transparency)
-            .putBoolean(PreferencesManager.KEY_TASKBAR_ENABLED,
-                    config.taskbarSettings.enabled)
-            .apply()
+        PreferencesManager.saveSelectedTheme(context, config.themeName)
+        PreferencesManager.saveIconPack(context, config.iconPack)
+        PreferencesManager.saveGridSize(context, config.gridSize)
+        PreferencesManager.saveAnimationSpeed(context, config.animationSpeedEnabled)
+        PreferencesManager.saveGlowIntensity(context, config.glowIntensity)
+
+        PreferencesManager.saveTaskbarHeight(context, config.taskbarSettings.height)
+        PreferencesManager.saveTaskbarIconSize(context, config.taskbarSettings.iconSize)
+        PreferencesManager.saveTaskbarBackgroundStyle(context, config.taskbarSettings.backgroundStyle)
+        PreferencesManager.saveTaskbarTransparency(context, config.taskbarSettings.transparency)
+        PreferencesManager.saveTaskbarEnabled(context, config.taskbarSettings.enabled)
+        PreferencesManager.savePinnedApps(context, config.taskbarSettings.pinnedApps)
+
         _config.value = config
     }
 
-    // Convenience update methods
     fun updateTheme(themeName: String) {
         val current = _config.value ?: return
         saveConfig(current.copy(themeName = themeName))

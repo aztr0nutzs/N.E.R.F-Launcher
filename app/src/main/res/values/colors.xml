@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Nerf Theme Palette -->
-    <color name="nerf_primary">#FF6A00</color>          <!-- Primary: Nerf orange -->
-    <color name="nerf_secondary">#00F0FF</color>        <!-- Secondary: Electric blue -->
-    <color name="nerf_accent">#FFEA00</color>           <!-- Accent: Foam yellow -->
-    <color name="nerf_background">#212121</color>       <!-- Dark background for contrast -->
-    <color name="nerf_surface">#424242</color>          /* Slightly lighter surface */
-    <color name="nerf_on_primary">#FFFFFF</color>       /* Text/icons on primary */
-    <color name="nerf_on_secondary">#000000</color>     /* Text/icons on secondary */
-    <color name="nerf_on_accent">#000000</color>        /* Text/icons on accent */
-    <color name="nerf_on_background">#FFFFFF</color>    /* Text/icons on background */
-    <color name="nerf_on_surface">#FFFFFF</color>       /* Text/icons on surface -->
+    <color name="nerf_primary">#FF6A00</color>
+    <color name="nerf_secondary">#00F0FF</color>
+    <color name="nerf_accent">#FFEA00</color>
+    <color name="nerf_background">#212121</color>
+    <color name="nerf_surface">#424242</color>
+    <color name="nerf_on_primary">#FFFFFF</color>
+    <color name="nerf_on_secondary">#000000</color>
+    <color name="nerf_on_accent">#000000</color>
+    <color name="nerf_on_background">#FFFFFF</color>
+    <color name="nerf_on_surface">#FFFFFF</color>
 
-    <!-- Optional lighter/darker shades for glows -->
     <color name="nerf_primary_light">#FF8B33</color>
     <color name="nerf_primary_dark">#C85400</color>
 
-    <!-- Keep original basics for any fallbacks -->
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
 </resources>
