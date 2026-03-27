@@ -15,7 +15,7 @@ object TaskbarController {
     fun savePinnedApps(context: Context, packages: List<String>) {
         val current = ConfigRepository.get().config.value ?: return
         ConfigRepository.get().updateTaskbarSettings(
-            current.taskbarSettings.copy(pinnedApps = packages.distinct().take(4))
+            current.taskbarSettings.copy(pinnedApps = packages.distinct())
         )
     }
 
@@ -24,9 +24,6 @@ object TaskbarController {
         val mutable = current.taskbarSettings.pinnedApps.toMutableList()
         if (!mutable.contains(packageName)) {
             mutable.add(packageName)
-            if (mutable.size > 4) {
-                mutable.removeAt(0)
-            }
             ConfigRepository.get().updateTaskbarSettings(
                 current.taskbarSettings.copy(pinnedApps = mutable)
             )

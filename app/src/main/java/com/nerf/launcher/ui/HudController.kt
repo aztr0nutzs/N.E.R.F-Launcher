@@ -15,6 +15,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
 import com.nerf.launcher.util.ConfigRepository
+import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 import java.util.Calendar
 import java.util.Locale
@@ -126,16 +127,7 @@ class HudController(
             batteryMeter.setInactiveColor(Color.argb(80, 255, 255, 255))
             timeDisplay.setTextColor(finalTheme.secondary)
             addWidgetBtn.setTextColor(finalTheme.accent)
-
-            val glowAlpha = (finalTheme.glowIntensity * 0.15).coerceIn(0.0f, 0.35f)
-            hudView.setBackgroundColor(
-                Color.argb(
-                    (glowAlpha * 255).toInt(),
-                    Color.red(finalTheme.primary),
-                    Color.green(finalTheme.primary),
-                    Color.blue(finalTheme.primary)
-                )
-            )
+            ThemeManager.applyHudPanelGlow(hudView, finalTheme)
         }
     }
 

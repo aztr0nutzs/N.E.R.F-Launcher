@@ -440,8 +440,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateTaskbarIcons() {
         val pinnedApps = TaskbarController.getPinnedApps(this)
-        val fallback = viewModel.apps.value?.take(4)?.map { it.packageName }.orEmpty()
-        binding.taskbarView.updateIcons(if (pinnedApps.isEmpty()) fallback else pinnedApps)
+        binding.taskbarView.updateIcons(pinnedApps)
     }
 
     private fun applyStatusBarTheme(config: AppConfig) {

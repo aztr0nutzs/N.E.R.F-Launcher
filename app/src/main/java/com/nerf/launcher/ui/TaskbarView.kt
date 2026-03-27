@@ -32,27 +32,14 @@ class TaskbarView @JvmOverloads constructor(
     private var iconProvider: IconProvider? = null
     private val iconViews = mutableListOf<ImageView>()
     private var lifecycleOwner: LifecycleOwner? = null
+    private var currentIconTint: Int? = null
+    private var currentIconSizePx: Int? = null
 
     init {
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         setPadding(8, 6, 8, 6)
         background = ContextCompat.getDrawable(context, R.drawable.hud_frame_panel)
-
-        repeat(4) {
-            val iconView = ImageView(context).apply {
-                setImageResource(android.R.drawable.sym_def_app_icon)
-                scaleType = ImageView.ScaleType.CENTER_INSIDE
-                setPadding(10, 8, 10, 8)
-                background = ContextCompat.getDrawable(context, R.drawable.dock_tile_background)
-                contentDescription = context.getString(R.string.app_icon)
-            }
-            addView(
-                iconView,
-                LayoutParams(0, LayoutParams.MATCH_PARENT, 1f).apply { setMargins(4, 0, 4, 0) }
-            )
-            iconViews.add(iconView)
-        }
     }
 
     override fun setLifecycleOwner(owner: LifecycleOwner) {
@@ -65,64 +52,20 @@ class TaskbarView @JvmOverloads constructor(
     }
 
     fun updateIcons(packageNames: List<String>) {
+        syncIconSlots(packageNames.size)
         iconViews.forEachIndexed { index, view ->
-            val pkg = packageNames.getOrNull(index)
-            if (pkg == null) {
-                view.setImageResource(android.R.drawable.sym_def_app_icon)
-                view.setOnClickListener(null)
-                view.setOnLongClickListener(null)
-            } else {
-                iconProvider?.loadIconInto(pkg, view)
-                    ?: view.setImageResource(android.R.drawable.sym_def_app_icon)
-
-                view.setOnClickListener {
-                    val launchIntent = context.packageManager.getLaunchIntentForPackage(pkg)
-                    if (launchIntent != null) {
-                        context.startActivity(launchIntent)
-                    }
-                }
-
-                view.setOnLongClickListener {
-                    context.startActivity(Intent(context, SettingsActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    })
-                    true
-                }
-            }
-            view.setOnTouchListener { touchedView, event ->
-                when (event.actionMasked) {
-                    MotionEvent.ACTION_DOWN -> {
-                        touchedView.animate()
-                            .scaleX(0.95f)
-                            .scaleY(0.95f)
-                            .setDuration(80L)
-                            .start()
-                    }
-
-                    MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                        touchedView.animate()
-                            .scaleX(1f)
-                            .scaleY(1f)
-                            .setDuration(120L)
-                            .start()
-                    }
-                }
-                false
-            }
+            bindIconView(view, packageNames[index])
         }
     }
 
     fun setIconTint(color: Int) {
+        currentIconTint = color
         iconViews.forEach { it.setColorFilter(color) }
     }
 
     fun setIconSize(sizePx: Int) {
-        iconViews.forEach { view ->
-            val params = view.layoutParams as LayoutParams
-            params.width = sizePx
-            params.height = sizePx
-            view.layoutParams = params
-        }
+        currentIconSizePx = sizePx
+        iconViews.forEach(::applyIconSize)
     }
 
     fun setTaskbarHeight(heightPx: Int) {
@@ -173,5 +116,83 @@ class TaskbarView @JvmOverloads constructor(
                 updateIcons(settings.pinnedApps)
             }
         }
+    }
+
+    private fun syncIconSlots(targetCount: Int) {
+        while (iconViews.size > targetCount) {
+            val removedView = iconViews.removeAt(iconViews.lastIndex)
+            removeView(removedView)
+        }
+
+        while (iconViews.size < targetCount) {
+            val iconView = createIconView()
+            addView(
+                iconView,
+                LayoutParams(0, LayoutParams.MATCH_PARENT, 1f).apply { setMargins(4, 0, 4, 0) }
+            )
+            applyIconSize(iconView)
+            iconViews.add(iconView)
+        }
+    }
+
+    private fun createIconView(): ImageView {
+        return ImageView(context).apply {
+            setImageResource(android.R.drawable.sym_def_app_icon)
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+            setPadding(10, 8, 10, 8)
+            background = ContextCompat.getDrawable(context, R.drawable.dock_tile_background)
+            contentDescription = context.getString(R.string.app_icon)
+            currentIconTint?.let { setColorFilter(it) }
+        }
+    }
+
+    private fun bindIconView(view: ImageView, packageName: String) {
+        iconProvider?.loadIconInto(packageName, view)
+            ?: view.setImageResource(android.R.drawable.sym_def_app_icon)
+
+        currentIconTint?.let { view.setColorFilter(it) }
+
+        view.setOnClickListener {
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
+            if (launchIntent != null) {
+                context.startActivity(launchIntent)
+            }
+        }
+
+        view.setOnLongClickListener {
+            context.startActivity(Intent(context, SettingsActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            })
+            true
+        }
+
+        view.setOnTouchListener { touchedView, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    touchedView.animate()
+                        .scaleX(0.95f)
+                        .scaleY(0.95f)
+                        .setDuration(80L)
+                        .start()
+                }
+
+                MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
+                    touchedView.animate()
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(120L)
+                        .start()
+                }
+            }
+            false
+        }
+    }
+
+    private fun applyIconSize(view: ImageView) {
+        val sizePx = currentIconSizePx ?: return
+        val params = view.layoutParams as? LayoutParams ?: return
+        params.width = sizePx
+        params.height = sizePx
+        view.layoutParams = params
     }
 }
