@@ -17,7 +17,7 @@ import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.viewmodel.LauncherViewModel
 
 /**
- * Main launcher screen – shows a scrollable grid of apps and launches the selected one.
+ * Main launcher screen - shows a scrollable grid of apps and launches the selected one.
  * Includes RecyclerView performance optimizations: fixed size, view caching, and null-safe handling.
  * Also includes a taskbar at the bottom and status bar customization.
  * UI updates instantly via LiveData observers on ConfigRepository.
@@ -48,7 +48,8 @@ class MainActivity : AppCompatActivity() {
         // Initialize HUD controller (passing this activity as lifecycle owner)
         hudController = HudController(this, binding.hudRoot, this)
 
-        // Set lifecycle owner for TaskbarView
+        // Set lifecycle owner and icon provider for TaskbarView
+        binding.taskbarView.setIconProvider(iconProvider)
         binding.taskbarView.setLifecycleOwner(this)
 
         // Load apps
@@ -91,10 +92,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupConfigObservers() {
         ConfigRepository.get().config.observe(this) { config ->
-            // Apply theme (including glow) – ThemeManager reads from ConfigRepository internally
+            // Apply theme (including glow) - ThemeManager reads from ConfigRepository internally
             ThemeManager.applyTheme(this)
 
-            // Update icon pack – clear cache so new icons are loaded
+            // Update icon pack - clear cache so new icons are loaded
             iconProvider.evictCache()
             adapter.notifyItemRangeChanged(0, adapter.itemCount)
 
@@ -104,22 +105,7 @@ class MainActivity : AppCompatActivity() {
 
             // Update status bar
             applyStatusBarTheme(config)
-
-            // Update taskbar icons (may have changed due to pinned apps or theme)
-            updateTaskbarIcons()
         }
-    }
-
-    /** Update the taskbar icons based on the pinned apps list from ConfigRepository. */
-    private fun updateTaskbarIcons() {
-        val pinnedApps = TaskbarController.getPinnedApps(this)
-        // If no pinned apps are set, use the first 4 apps from the list as default
-        val appsToShow = if (pinnedApps.isEmpty()) {
-            viewModel.apps.value?.take(4)?.map { it.packageName } ?: emptyList()
-        } else {
-            pinnedApps
-        }
-        binding.taskbarView.updateIcons(appsToShow)
     }
 
     /** Apply status bar theme based on the current theme from ConfigRepository. */
@@ -141,7 +127,7 @@ class MainActivity : AppCompatActivity() {
 
     @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
-        // Do nothing – stay on launcher.
+        // Do nothing - stay on launcher.
     }
 
     override fun onDestroy() {

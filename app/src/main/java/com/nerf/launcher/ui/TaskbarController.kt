@@ -19,15 +19,12 @@ object TaskbarController {
         ConfigRepository.get().updateTaskbarSettings(updatedSettings)
     }
 
-    /** Adds a package to the pinned apps list (FIFO limited to 4). */
+    /** Adds a package to the pinned apps list. */
     fun addPinnedApp(context: Context, packageName: String) {
         val current = ConfigRepository.get().config.value ?: return
         val mutable = current.taskbarSettings.pinnedApps.toMutableList()
         if (!mutable.contains(packageName)) {
             mutable.add(packageName)
-            if (mutable.size > 4) {
-                mutable.removeAt(0) // Remove oldest
-            }
             ConfigRepository.get().updateTaskbarSettings(
                 current.taskbarSettings.copy(pinnedApps = mutable)
             )

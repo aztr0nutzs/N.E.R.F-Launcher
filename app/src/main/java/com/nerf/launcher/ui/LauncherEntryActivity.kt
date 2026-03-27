@@ -8,8 +8,8 @@ class LauncherEntryActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Immediately forward to HomeActivity so user can trigger default home selection
-        val intent = Intent(this, HomeActivity::class.java).apply {
+        // Immediately forward to MainActivity so user can trigger default home selection
+        val intent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
         startActivity(intent)

@@ -2,6 +2,7 @@ package com.nerf.launcher.ui
 
 import android.app.Activity
 import android.graphics.Color
+import android.view.SoundEffectConstants
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
@@ -87,7 +88,7 @@ class HudController(
             when (event.actionMasked) {
                 android.view.MotionEvent.ACTION_DOWN -> {
                     v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.hud_recoil))
-                    playSoundEffect()
+                    playSoundEffect(v)
                     true
                 }
                 else -> false
@@ -95,15 +96,14 @@ class HudController(
         }
     }
 
-    private fun playSoundEffect() {
-        // Hook for sound feedback – implement with SoundPool/MediaPlayer if desired.
-        // No external assets required for this stub.
+    private fun playSoundEffect(targetView: View?) {
+        (targetView ?: hudView).playSoundEffect(SoundEffectConstants.CLICK)
     }
 
     private fun setupConfigObservers() {
         ConfigRepository.get().config.observe(lifecycleOwner) { config ->
             val themeName = config.themeName
-            val baseTheme = ThemeRepository.byName(themeName) 
+            val baseTheme = ThemeRepository.byName(themeName)
                     ?: ThemeRepository.CLASSIC_NERF
             val finalTheme = baseTheme.copy(glowIntensity = config.glowIntensity)
 
