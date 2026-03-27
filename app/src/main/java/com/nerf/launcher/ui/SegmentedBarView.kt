@@ -2,11 +2,12 @@ package com.nerf.launcher.ui
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.ContextCompat
+import com.nerf.launcher.R
 import kotlin.math.max
 
 /**
@@ -20,12 +21,12 @@ class SegmentedBarView @JvmOverloads constructor(
 
     private val activePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = Color.parseColor("#00E9FF")
+        color = ContextCompat.getColor(context, R.color.nerf_hud_cyan)
     }
 
     private val inactivePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = Color.parseColor("#302A2A2A")
+        color = ContextCompat.getColor(context, R.color.nerf_segmented_bar_inactive)
     }
 
     private val rect = RectF()
