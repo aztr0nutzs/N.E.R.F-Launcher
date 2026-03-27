@@ -1,5 +1,6 @@
 package com.nerf.launcher.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -41,6 +42,13 @@ class MainActivity : AppCompatActivity() {
         binding.taskbarView.setIconProvider(iconProvider)
         binding.taskbarView.setLifecycleOwner(this)
 
+        binding.openSettingsTile.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+        binding.reloadTile.setOnClickListener {
+            viewModel.loadApps()
+        }
+
         setupConfigObservers()
         viewModel.loadApps()
     }
@@ -53,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerView.apply {
             layoutManager = GridLayoutManager(
                 this@MainActivity,
-                ConfigRepository.get().config.value?.gridSize ?: 4
+                ConfigRepository.get().config.value?.gridSize ?: 2
             )
             adapter = this@MainActivity.adapter
             setHasFixedSize(true)
@@ -65,6 +73,8 @@ class MainActivity : AppCompatActivity() {
     private fun observeViewModel() {
         viewModel.apps.observe(this) { apps ->
             adapter.submitList(apps)
+            binding.moduleAppCount.text = getString(com.nerf.launcher.R.string.hud_apps_count, apps.size)
+            binding.appsLoadBar.progress = ((apps.size / 48f) * 100f).toInt().coerceIn(10, 100)
             updateTaskbarIcons()
         }
     }
@@ -76,7 +86,13 @@ class MainActivity : AppCompatActivity() {
             iconProvider.evictCache()
             adapter.notifyItemRangeChanged(0, adapter.itemCount)
 
-            (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount = config.gridSize
+            (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount = config.gridSize.coerceAtLeast(2)
+
+            binding.moduleGridValue.text = getString(com.nerf.launcher.R.string.hud_grid_value, config.gridSize)
+            binding.modulePinnedValue.text = getString(
+                com.nerf.launcher.R.string.hud_dock_value,
+                config.taskbarSettings.pinnedApps.size
+            )
 
             applyStatusBarTheme(config)
             updateTaskbarIcons()

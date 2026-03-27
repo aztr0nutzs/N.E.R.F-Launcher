@@ -35,17 +35,20 @@ class TaskbarView @JvmOverloads constructor(
     init {
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
-        setPadding(8, 4, 8, 4)
+        setPadding(8, 6, 8, 6)
+        background = ContextCompat.getDrawable(context, R.drawable.hud_frame_panel)
 
         repeat(4) {
             val iconView = ImageView(context).apply {
                 setImageResource(android.R.drawable.sym_def_app_icon)
                 scaleType = ImageView.ScaleType.CENTER_INSIDE
-                setPadding(4, 4, 4, 4)
+                setPadding(10, 8, 10, 8)
+                background = ContextCompat.getDrawable(context, R.drawable.dock_tile_background)
+                contentDescription = context.getString(R.string.app_icon)
             }
             addView(
                 iconView,
-                LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply { setMargins(4, 0, 4, 0) }
+                LayoutParams(0, LayoutParams.MATCH_PARENT, 1f).apply { setMargins(4, 0, 4, 0) }
             )
             iconViews.add(iconView)
         }
