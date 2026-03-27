@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.nerf.launcher.adapter.AppListAdapter
 import com.nerf.launcher.databinding.ActivityHomeBinding
 import com.nerf.launcher.util.AppUtils
+import com.nerf.launcher.util.IconCache
+import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.viewmodel.HomeViewModel
 
 class HomeActivity : AppCompatActivity() {
@@ -16,11 +18,14 @@ class HomeActivity : AppCompatActivity() {
     private val viewModel: HomeViewModel by viewModels()
 
     private lateinit var adapter: AppListAdapter
+    private lateinit var iconProvider: IconProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        iconProvider = IconProvider(applicationContext, IconCache(50))
 
         setupRecyclerView()
         setupButtons()
@@ -30,7 +35,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = AppListAdapter(emptyList()) { app ->
+        adapter = AppListAdapter(emptyList(), iconProvider) { app ->
             AppUtils.launchApp(this, app)
         }
         binding.recyclerView.apply {

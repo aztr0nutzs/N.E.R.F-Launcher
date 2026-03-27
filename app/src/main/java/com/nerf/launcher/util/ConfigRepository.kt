@@ -74,31 +74,39 @@ class ConfigRepository(private val context: Context) {
     // Convenience update methods
     fun updateTheme(themeName: String) {
         val current = _config.value ?: return
+        if (current.themeName == themeName) return
         saveConfig(current.copy(themeName = themeName))
     }
 
     fun updateIconPack(pack: String) {
         val current = _config.value ?: return
+        if (current.iconPack == pack) return
         saveConfig(current.copy(iconPack = pack))
     }
 
     fun updateGridSize(size: Int) {
         val current = _config.value ?: return
-        saveConfig(current.copy(gridSize = size.coerceIn(2, 6)))
+        val coercedSize = size.coerceIn(2, 6)
+        if (current.gridSize == coercedSize) return
+        saveConfig(current.copy(gridSize = coercedSize))
     }
 
     fun updateAnimationSpeed(enabled: Boolean) {
         val current = _config.value ?: return
+        if (current.animationSpeedEnabled == enabled) return
         saveConfig(current.copy(animationSpeedEnabled = enabled))
     }
 
     fun updateGlowIntensity(intensity: Float) {
         val current = _config.value ?: return
-        saveConfig(current.copy(glowIntensity = intensity.coerceIn(0f, 1f)))
+        val coercedIntensity = intensity.coerceIn(0f, 1f)
+        if (current.glowIntensity == coercedIntensity) return
+        saveConfig(current.copy(glowIntensity = coercedIntensity))
     }
 
     fun updateTaskbarSettings(settings: TaskbarSettings) {
         val current = _config.value ?: return
+        if (current.taskbarSettings == settings) return
         saveConfig(current.copy(taskbarSettings = settings))
     }
 }

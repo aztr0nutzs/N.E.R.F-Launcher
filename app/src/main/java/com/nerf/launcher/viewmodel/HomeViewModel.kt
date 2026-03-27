@@ -7,9 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.util.AppUtils
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -17,15 +15,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val apps: LiveData<List<AppInfo>> = _apps
 
     fun loadApps() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val context = getApplication<Application>()
-            // Perform the blocking PackageManager query safely off the main thread
             val list = AppUtils.loadInstalledApps(context)
-            
-            // Post results natively on the Main thread as requested
-            withContext(Dispatchers.Main) {
-                _apps.value = list
-            }
+            _apps.value = list
         }
     }
 }

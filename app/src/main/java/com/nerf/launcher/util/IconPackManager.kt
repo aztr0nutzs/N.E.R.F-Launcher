@@ -20,7 +20,7 @@ object IconPackManager {
     /** Saves the selected pack name if it is valid. */
     fun setCurrentPack(context: Context, packName: String) {
         if (getAvailablePacks().contains(packName)) {
-            PreferencesManager.saveIconPack(context, packName)
+            ConfigRepository.get().updateIconPack(packName)
         }
     }
 }

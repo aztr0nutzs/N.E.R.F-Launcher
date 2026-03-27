@@ -8,8 +8,8 @@ import android.widget.ArrayAdapter
 import android.widget.SeekBar
 import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.databinding.ItemSettingBinding
+import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconPackManager
-import com.nerf.launcher.util.PreferencesManager
 import com.nerf.launcher.util.SettingItem
 import com.nerf.launcher.util.SettingsType
 import com.nerf.launcher.util.ThemeRepository
@@ -27,6 +27,7 @@ class SettingsAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         private val ctx get() = itemView.context
+        private fun currentConfig() = ConfigRepository.get().config.value
 
         fun bind(item: SettingItem) {
             binding.title.text = item.title
@@ -46,13 +47,17 @@ class SettingsAdapter(
                         themes
                     )
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinner.onItemSelectedListener = null
                     spinner.adapter = adapter
-                    val current = PreferencesManager.getSelectedTheme(ctx) ?: ThemeRepository.CLASSIC_NERF.name
-                    spinner.setSelection(adapter.getPosition(current))
+                    val current = currentConfig()?.themeName ?: ThemeRepository.CLASSIC_NERF.name
+                    val selection = adapter.getPosition(current).takeIf { it >= 0 } ?: 0
+                    spinner.setSelection(selection, false)
                     spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                             val selected = parent?.getItemAtPosition(pos) as String
-                            onSettingChanged(SettingItem(SettingsType.THEME, item.title, selected))
+                            if (selected != (currentConfig()?.themeName ?: ThemeRepository.CLASSIC_NERF.name)) {
+                                onSettingChanged(SettingItem(SettingsType.THEME, item.title, selected))
+                            }
                         }
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }
@@ -72,13 +77,17 @@ class SettingsAdapter(
                         packs
                     )
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinner.onItemSelectedListener = null
                     spinner.adapter = adapter
-                    val current = IconPackManager.getCurrentPack(ctx)
-                    spinner.setSelection(adapter.getPosition(current))
+                    val current = currentConfig()?.iconPack ?: IconPackManager.DEFAULT_PACK
+                    val selection = adapter.getPosition(current).takeIf { it >= 0 } ?: 0
+                    spinner.setSelection(selection, false)
                     spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                             val selected = parent?.getItemAtPosition(pos) as String
-                            onSettingChanged(SettingItem(SettingsType.ICON_PACK, item.title, selected))
+                            if (selected != (currentConfig()?.iconPack ?: IconPackManager.DEFAULT_PACK)) {
+                                onSettingChanged(SettingItem(SettingsType.ICON_PACK, item.title, selected))
+                            }
                         }
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }
@@ -91,13 +100,16 @@ class SettingsAdapter(
                     binding.spinnerContainer.visibility = View.GONE
 
                     val seekBar = binding.glowSeekBar
-                    val progress = ((item.payload as Float) * 100).toInt()
+                    val progress = ((currentConfig()?.glowIntensity ?: (item.payload as Float)) * 100).toInt()
+                    seekBar.setOnSeekBarChangeListener(null)
                     seekBar.progress = progress
                     seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                             if (fromUser) {
                                 val value = progress / 100f
-                                onSettingChanged(SettingItem(SettingsType.GLOW_INTENSITY, item.title, value))
+                                if (value != (currentConfig()?.glowIntensity ?: 0f)) {
+                                    onSettingChanged(SettingItem(SettingsType.GLOW_INTENSITY, item.title, value))
+                                }
                             }
                         }
                         override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -112,9 +124,12 @@ class SettingsAdapter(
                     binding.spinnerContainer.visibility = View.GONE
 
                     val switchCompat = binding.animationSwitch
-                    switchCompat.isChecked = item.payload as Boolean
+                    switchCompat.setOnCheckedChangeListener(null)
+                    switchCompat.isChecked = currentConfig()?.animationSpeedEnabled ?: (item.payload as Boolean)
                     switchCompat.setOnCheckedChangeListener { _, isChecked ->
-                        onSettingChanged(SettingItem(SettingsType.ANIMATION_SPEED, item.title, isChecked))
+                        if (isChecked != (currentConfig()?.animationSpeedEnabled ?: false)) {
+                            onSettingChanged(SettingItem(SettingsType.ANIMATION_SPEED, item.title, isChecked))
+                        }
                     }
                 }
                 SettingsType.GRID_SIZE -> {
@@ -132,13 +147,17 @@ class SettingsAdapter(
                         options
                     )
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinner.onItemSelectedListener = null
                     spinner.adapter = adapter
-                    val current = PreferencesManager.getGridSize(ctx)
-                    spinner.setSelection(options.indexOf(current))
+                    val current = currentConfig()?.gridSize ?: (item.payload as Int)
+                    val selection = options.indexOf(current).takeIf { it >= 0 } ?: 0
+                    spinner.setSelection(selection, false)
                     spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                             val selected = parent?.getItemAtPosition(pos) as Int
-                            onSettingChanged(SettingItem(SettingsType.GRID_SIZE, item.title, selected))
+                            if (selected != (currentConfig()?.gridSize ?: current)) {
+                                onSettingChanged(SettingItem(SettingsType.GRID_SIZE, item.title, selected))
+                            }
                         }
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }

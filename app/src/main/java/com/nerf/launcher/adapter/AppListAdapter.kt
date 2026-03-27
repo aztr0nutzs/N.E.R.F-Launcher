@@ -7,9 +7,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.databinding.ItemAppBinding
 import com.nerf.launcher.model.AppInfo
+import com.nerf.launcher.util.IconProvider
 
 class AppListAdapter(
     @Suppress("UNUSED_PARAMETER") initialItems: List<AppInfo> = emptyList(),
+    private val iconProvider: IconProvider,
     private val onAppClicked: (AppInfo) -> Unit
 ) : ListAdapter<AppInfo, AppListAdapter.AppViewHolder>(AppDiffCallback) {
 
@@ -27,7 +29,7 @@ class AppListAdapter(
 
     override fun onBindViewHolder(holder: AppViewHolder, position: Int) {
         val app = getItem(position)
-        holder.binding.appIcon.setImageDrawable(app.icon)
+        holder.binding.appIcon.setImageDrawable(iconProvider.getIcon(app.packageName))
         holder.binding.appName.text = app.appName
         holder.binding.root.setOnClickListener {
             onAppClicked(app)
