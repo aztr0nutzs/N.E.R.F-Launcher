@@ -91,13 +91,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupConfigObservers() {
+        var initialThemeName: String? = null
+        var initialIconPack: String? = null
+
         ConfigRepository.get().config.observe(this) { config ->
+            if (initialThemeName == null) {
+                initialThemeName = config.themeName
+                initialIconPack = config.iconPack
+            } else if (initialThemeName != config.themeName || initialIconPack != config.iconPack) {
+                recreate()
+                return@observe
+            }
+
             // Apply theme (including glow) - ThemeManager reads from ConfigRepository internally
             ThemeManager.applyTheme(this)
-
-            // Update icon pack - clear cache so new icons are loaded
-            iconProvider.evictCache()
-            adapter.notifyItemRangeChanged(0, adapter.itemCount)
 
             // Update grid span
             val layoutManager = binding.recyclerView.layoutManager as GridLayoutManager
@@ -112,18 +119,11 @@ class MainActivity : AppCompatActivity() {
     private fun applyStatusBarTheme(config: AppConfig) {
         val primaryColor = ThemeRepository.byName(config.themeName)?.primary
             ?: ThemeRepository.CLASSIC_NERF.primary
-        val isLightTheme = isColorLight(primaryColor)
+        val isLightTheme = com.nerf.launcher.util.ColorUtils.isColorLight(primaryColor)
         StatusBarManager.applyStatusBarTheme(this, primaryColor, isLightTheme)
     }
 
-    /** Calculate whether a color is light (for determining icon tint). */
-    private fun isColorLight(color: Int): Boolean {
-        val r = android.graphics.Color.red(color)
-        val g = android.graphics.Color.green(color)
-        val b = android.graphics.Color.blue(color)
-        val luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-        return luminance > 0.5
-    }
+
 
     @Suppress("OVERRIDE_DEPRECATION")
     override fun onBackPressed() {

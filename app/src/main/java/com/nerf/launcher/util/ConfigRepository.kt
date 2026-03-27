@@ -28,22 +28,20 @@ class ConfigRepository(private val context: Context) {
     val config: LiveData<AppConfig> = _config
 
     private fun loadConfig(): AppConfig {
-        val prefs = context.getSharedPreferences(PreferencesManager.PREF_NAME, Context.MODE_PRIVATE)
-        val themeName = prefs.getString(PreferencesManager.KEY_SELECTED_THEME,
-                ThemeRepository.CLASSIC_NERF.name)
-        val iconPack = prefs.getString(PreferencesManager.KEY_ICON_PACK,
-                IconPackManager.DEFAULT_PACK)
-        val gridSize = prefs.getInt(PreferencesManager.KEY_GRID_SIZE, 4)
-        val animationSpeedEnabled = prefs.getBoolean(PreferencesManager.KEY_ANIMATION_SPEED, false)
-        val glowIntensity = prefs.getFloat(PreferencesManager.KEY_GLOW_INTENSITY, 0.0f)
+        val themeName = PreferencesManager.getSelectedTheme(context) 
+                ?: ThemeRepository.CLASSIC_NERF.name
+        val iconPack = PreferencesManager.getIconPack(context) 
+                ?: IconPackManager.DEFAULT_PACK
+        val gridSize = PreferencesManager.getGridSize(context)
+        val animationSpeedEnabled = PreferencesManager.isAnimationSpeedEnabled(context)
+        val glowIntensity = PreferencesManager.getGlowIntensity(context)
         val taskbarSettings = TaskbarSettings(
-            height = prefs.getInt(PreferencesManager.KEY_TASKBAR_HEIGHT, 56),
-            iconSize = prefs.getInt(PreferencesManager.KEY_TASKBAR_ICON_SIZE, 48),
-            backgroundStyle = prefs.getInt(PreferencesManager.KEY_TASKBAR_BACKGROUND_STYLE,
-                    android.R.color.background_dark),
-            transparency = prefs.getFloat(PreferencesManager.KEY_TASKBAR_TRANSPARENCY, 1.0f),
-            enabled = prefs.getBoolean(PreferencesManager.KEY_TASKBAR_ENABLED, true),
-            pinnedApps = prefs.getStringSet(PreferencesManager.KEY_PINNED_APPS, emptySet())?.toList() ?: emptyList()
+            height = PreferencesManager.getTaskbarHeight(context),
+            iconSize = PreferencesManager.getTaskbarIconSize(context),
+            backgroundStyle = PreferencesManager.getTaskbarBackgroundStyle(context),
+            transparency = PreferencesManager.getTaskbarTransparency(context),
+            enabled = PreferencesManager.isTaskbarEnabled(context),
+            pinnedApps = PreferencesManager.getPinnedApps(context)
         )
         return AppConfig(themeName, iconPack, gridSize, animationSpeedEnabled,
                 glowIntensity, taskbarSettings)

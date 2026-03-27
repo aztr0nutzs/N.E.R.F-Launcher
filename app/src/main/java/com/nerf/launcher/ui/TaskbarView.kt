@@ -41,7 +41,9 @@ class TaskbarView @JvmOverloads constructor(
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         // Initial padding will be updated by observers
-        setPadding(8, 4, 8, 4)
+        val paddingX = (8 * context.resources.displayMetrics.density).toInt()
+        val paddingY = (4 * context.resources.displayMetrics.density).toInt()
+        setPadding(paddingX, paddingY, paddingX, paddingY)
     }
 
     override fun setLifecycleOwner(owner: LifecycleOwner) {
@@ -66,7 +68,7 @@ class TaskbarView @JvmOverloads constructor(
 
             if (packageName.isNotEmpty()) {
                 if (::iconProvider.isInitialized) {
-                    view.setImageDrawable(iconProvider.getIcon(packageName))
+                    iconProvider.loadIconInto(packageName, view)
                 } else {
                     view.setImageResource(R.drawable.ic_launcher_foreground)
                 }
@@ -134,7 +136,8 @@ class TaskbarView @JvmOverloads constructor(
         return ImageView(context).apply {
             setImageResource(R.drawable.ic_launcher_foreground)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
-            setPadding(4, 4, 4, 4)
+            val pad = (4 * context.resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
         }
     }
 
@@ -144,7 +147,8 @@ class TaskbarView @JvmOverloads constructor(
             LayoutParams.WRAP_CONTENT,
             1.0f
         ).apply {
-            setMargins(4, 0, 4, 0)
+            val margin = (4 * context.resources.displayMetrics.density).toInt()
+            setMargins(margin, 0, margin, 0)
         }
     }
 
@@ -201,7 +205,7 @@ class TaskbarView @JvmOverloads constructor(
                 // Update icon tint based on theme
                 val baseTheme = ThemeRepository.byName(config.themeName)
                     ?: ThemeRepository.CLASSIC_NERF
-                val isLightTheme = isColorLight(baseTheme.primary)
+                val isLightTheme = com.nerf.launcher.util.ColorUtils.isColorLight(baseTheme.primary)
                 val iconTint = if (isLightTheme) {
                     ContextCompat.getColor(context, R.color.black)
                 } else {
@@ -225,11 +229,5 @@ class TaskbarView @JvmOverloads constructor(
         }
     }
 
-    private fun isColorLight(color: Int): Boolean {
-        val r = Color.red(color)
-        val g = Color.green(color)
-        val b = Color.blue(color)
-        val luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-        return luminance > 0.5
-    }
+
 }

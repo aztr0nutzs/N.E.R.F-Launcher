@@ -87,7 +87,9 @@ class HudController(
         view.setOnTouchListener { v, event ->
             when (event.actionMasked) {
                 android.view.MotionEvent.ACTION_DOWN -> {
-                    v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.hud_recoil))
+                    if (ConfigRepository.get().config.value?.animationSpeedEnabled == true) {
+                        v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.hud_recoil))
+                    }
                     playSoundEffect(v)
                     true
                 }

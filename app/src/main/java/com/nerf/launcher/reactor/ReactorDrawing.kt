@@ -1,6 +1,8 @@
 // ReactorDrawing.kt
 package com.nerf.launcher.reactor
 
+import com.nerf.launcher.util.NerfTheme
+
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -152,13 +154,14 @@ fun DrawScope.drawAura(
     radius: Float,
     mode: ReactorMode,
     coreGlowAlpha: Float,
-    alertPulseAlpha: Float
+    alertPulseAlpha: Float,
+    theme: NerfTheme
 ) {
     val auraColor = when (mode) {
-        ReactorMode.Idle -> Color(0xFF00D1FF)
-        ReactorMode.Active -> Color(0xFF00FFE3)
-        ReactorMode.Alert -> Color(0xFFFF5A2C)
-        ReactorMode.Overdrive -> Color(0xFF00F7FF)
+        ReactorMode.Idle -> Color(theme.primary)
+        ReactorMode.Active -> Color(theme.secondary)
+        ReactorMode.Alert -> Color(theme.accent)
+        ReactorMode.Overdrive -> Color(theme.primary)
     }
 
     val alpha = when (mode) {
@@ -209,16 +212,17 @@ fun DrawScope.drawCore(
     rotation: Float,
     glowAlpha: Float,
     mode: ReactorMode,
+    theme: NerfTheme,
     textMeasurer: TextMeasurer
 ) {
     // Inner glow discs
     val innerBrush = Brush.radialGradient(
         colors = listOf(
             when (mode) {
-                ReactorMode.Idle -> Color(0xFFFFD93B)
-                ReactorMode.Active -> Color(0xFFFFFF6B)
-                ReactorMode.Alert -> Color(0xFFFF8C42)
-                ReactorMode.Overdrive -> Color(0xFFFFFF9C)
+                ReactorMode.Idle -> Color(theme.primary)
+                ReactorMode.Active -> Color(theme.secondary)
+                ReactorMode.Alert -> Color(theme.accent)
+                ReactorMode.Overdrive -> Color(theme.primary)
             }.copy(alpha = glowAlpha),
             Color.Black
         ),
@@ -291,11 +295,12 @@ fun DrawScope.drawHudLabels(
     center: Offset,
     radius: Float,
     mode: ReactorMode,
+    theme: NerfTheme,
     textMeasurer: TextMeasurer
 ) {
     val labelStyle = TextStyle(
         fontSize = (radius * 0.16f).sp,
-        color = Color(0xFFB6F4FF),
+        color = Color(theme.primary),
         textAlign = TextAlign.Center
     )
 

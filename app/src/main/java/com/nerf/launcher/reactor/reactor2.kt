@@ -10,6 +10,9 @@
 
 package com.nerf.reactor.ui
 
+import com.nerf.launcher.util.NerfTheme
+import com.nerf.launcher.util.ThemeRepository
+
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -62,16 +65,16 @@ enum class ReactorZone(
 
 // ── Main Composable ──────────────────────────────────────────────────────────
 @Composable
-fun ReactorScreen() {
+fun ReactorScreen(theme: NerfTheme = ThemeRepository.CLASSIC_NERF) {
     var statusText  by remember { mutableStateOf("■ REACTOR ONLINE ■ ALL SYSTEMS NOMINAL ■") }
-    var statusColor by remember { mutableStateOf(Color(0xFF00FF88)) }
+    var statusColor by remember { mutableStateOf(Color(theme.primary)) }
     var zoneText    by remember { mutableStateOf("TAP A ZONE TO ACTIVATE") }
-    var zoneColor   by remember { mutableStateOf(Color.White) }
+    var zoneColor   by remember { mutableStateOf(Color(theme.windowBackground)) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color(theme.windowBackground)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -87,6 +90,7 @@ fun ReactorScreen() {
 
         ReactorCanvas(
             modifier = Modifier.size(360.dp),
+            theme = theme,
             onZoneTap = { zone ->
                 statusText  = "■ ${zone.label} ■"
                 statusColor = zone.color
@@ -95,9 +99,9 @@ fun ReactorScreen() {
             },
             onCoreTap = {
                 statusText  = "■ PRIMARY ACTIVATION — MODE SWITCH ENGAGED ■"
-                statusColor = Color(0xFFFF6600)
+                statusColor = Color(theme.accent)
                 zoneText    = "⚡ CORE ACTIVATED"
-                zoneColor   = Color(0xFFFF6600)
+                zoneColor   = Color(theme.accent)
             }
         )
 
@@ -118,6 +122,7 @@ fun ReactorScreen() {
 @Composable
 fun ReactorCanvas(
     modifier: Modifier = Modifier,
+    theme: NerfTheme = ThemeRepository.CLASSIC_NERF,
     onZoneTap: (ReactorZone) -> Unit,
     onCoreTap: () -> Unit
 ) {
@@ -176,7 +181,7 @@ fun ReactorCanvas(
 
                 if (dist < maxR * 0.35f) {
                     coreActive = true
-                    rippleList = rippleList + RippleState(offset, Color(0xFFFF6600))
+                    rippleList = rippleList + RippleState(offset, Color(theme.accent))
                     onCoreTap()
                 } else {
                     val angle = (atan2(dy, dx) * 180 / PI).toFloat()

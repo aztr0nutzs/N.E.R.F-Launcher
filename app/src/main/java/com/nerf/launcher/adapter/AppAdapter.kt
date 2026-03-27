@@ -23,8 +23,7 @@ class AppAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(app: AppInfo) {
             binding.appName.text = app.appName
-            val icon: Drawable = iconProvider.getIcon(app.packageName)
-            binding.appIcon.setImageDrawable(icon)
+            iconProvider.loadIconInto(app.packageName, binding.appIcon)
             binding.root.setOnClickListener {
                 onAppClicked(app)
             }

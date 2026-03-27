@@ -10,6 +10,11 @@ import androidx.core.content.ContextCompat
 import java.io.IOException
 import java.io.InputStream
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 /**
  * Provides the appropriate icon for a given package name based on the selected icon pack.
  * Implements a clean fallback chain:
@@ -24,16 +29,32 @@ class IconProvider(
 ) {
     private val packageManager: PackageManager = context.packageManager
     private val assets: AssetManager = context.assets
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     /**
-     * Returns a Drawable representing the icon for the supplied package name.
-     * The result is cached to avoid repeated asset lookups during scrolling.
+     * Loads an icon asynchronously and sets it onto the target ImageView.
+     * Checks the cache first, falling back to background loading if needed.
      */
-    fun getIcon(packageName: String): Drawable {
+    fun loadIconInto(packageName: String, imageView: android.widget.ImageView) {
         val cacheKey = "${IconPackManager.getCurrentPack(context)}:$packageName"
-        return iconCache.get(cacheKey) ?: loadIconFromPack(packageName).also { icon ->
-            if (icon != null) {
-                iconCache.put(cacheKey, icon)
+        val cached = iconCache.get(cacheKey)
+        if (cached != null) {
+            imageView.setImageDrawable(cached)
+            return
+        }
+
+        // Apply placeholder and tag mapping
+        imageView.setImageDrawable(null)
+        imageView.tag = packageName
+
+        scope.launch {
+            val icon = loadIconFromPack(packageName) ?: return@launch
+            iconCache.put(cacheKey, icon)
+            
+            withContext(Dispatchers.Main) {
+                if (imageView.tag == packageName) {
+                    imageView.setImageDrawable(icon)
+                }
             }
         }
     }
