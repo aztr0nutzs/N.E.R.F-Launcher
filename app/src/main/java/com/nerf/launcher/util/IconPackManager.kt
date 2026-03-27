@@ -1,12 +1,10 @@
 package com.nerf.launcher.util
 
-import android.content.Context
-
 /**
  * Manages available icon packs and the currently selected pack.
  */
 object IconPackManager {
-    const val DEFAULT_PACK = "system"
+    private const val DEFAULT_PACK = "system"
     private const val NERF_PACK = "nerf"
     private const val MINIMAL_PACK = "minimal"
 
@@ -15,12 +13,12 @@ object IconPackManager {
 
     /** Returns the currently selected pack name, defaulting to system icons if none set. */
     fun getCurrentPack(context: Context): String =
-        ConfigRepository.get().config.value?.iconPack ?: DEFAULT_PACK
+        PreferencesManager.getIconPack(context) ?: DEFAULT_PACK
 
     /** Saves the selected pack name if it is valid. */
     fun setCurrentPack(context: Context, packName: String) {
         if (getAvailablePacks().contains(packName)) {
-            ConfigRepository.get().updateIconPack(packName)
+            PreferencesManager.saveIconPack(context, packName)
         }
     }
 }

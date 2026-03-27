@@ -28,20 +28,18 @@ class ConfigRepository(private val context: Context) {
     val config: LiveData<AppConfig> = _config
 
     private fun loadConfig(): AppConfig {
-        val themeName = PreferencesManager.getSelectedTheme(context) 
-                ?: ThemeRepository.CLASSIC_NERF.name
-        val iconPack = PreferencesManager.getIconPack(context) 
-                ?: IconPackManager.DEFAULT_PACK
+        val prefs = context.getSharedPreferences(PreferencesManager.PREF_NAME, Context.MODE_PRIVATE)
+        val themeName = PreferencesManager.getSelectedTheme(context) ?: ThemeRepository.CLASSIC_NERF.name
+        val iconPack = PreferencesManager.getIconPack(context) ?: IconPackManager.DEFAULT_PACK
         val gridSize = PreferencesManager.getGridSize(context)
         val animationSpeedEnabled = PreferencesManager.isAnimationSpeedEnabled(context)
         val glowIntensity = PreferencesManager.getGlowIntensity(context)
         val taskbarSettings = TaskbarSettings(
-            height = PreferencesManager.getTaskbarHeight(context),
+            height = prefs.getInt(PreferencesManager.KEY_TASKBAR_HEIGHT, 56),
             iconSize = PreferencesManager.getTaskbarIconSize(context),
             backgroundStyle = PreferencesManager.getTaskbarBackgroundStyle(context),
-            transparency = PreferencesManager.getTaskbarTransparency(context),
-            enabled = PreferencesManager.isTaskbarEnabled(context),
-            pinnedApps = PreferencesManager.getPinnedApps(context)
+            transparency = prefs.getFloat(PreferencesManager.KEY_TASKBAR_TRANSPARENCY, 1.0f),
+            enabled = prefs.getBoolean(PreferencesManager.KEY_TASKBAR_ENABLED, true)
         )
         return AppConfig(themeName, iconPack, gridSize, animationSpeedEnabled,
                 glowIntensity, taskbarSettings)
@@ -63,8 +61,6 @@ class ConfigRepository(private val context: Context) {
                     config.taskbarSettings.transparency)
             .putBoolean(PreferencesManager.KEY_TASKBAR_ENABLED,
                     config.taskbarSettings.enabled)
-            .putStringSet(PreferencesManager.KEY_PINNED_APPS,
-                    config.taskbarSettings.pinnedApps.toSet())
             .apply()
         _config.value = config
     }
@@ -72,39 +68,31 @@ class ConfigRepository(private val context: Context) {
     // Convenience update methods
     fun updateTheme(themeName: String) {
         val current = _config.value ?: return
-        if (current.themeName == themeName) return
         saveConfig(current.copy(themeName = themeName))
     }
 
     fun updateIconPack(pack: String) {
         val current = _config.value ?: return
-        if (current.iconPack == pack) return
         saveConfig(current.copy(iconPack = pack))
     }
 
     fun updateGridSize(size: Int) {
         val current = _config.value ?: return
-        val coercedSize = size.coerceIn(2, 6)
-        if (current.gridSize == coercedSize) return
-        saveConfig(current.copy(gridSize = coercedSize))
+        saveConfig(current.copy(gridSize = size.coerceIn(2, 6)))
     }
 
     fun updateAnimationSpeed(enabled: Boolean) {
         val current = _config.value ?: return
-        if (current.animationSpeedEnabled == enabled) return
         saveConfig(current.copy(animationSpeedEnabled = enabled))
     }
 
     fun updateGlowIntensity(intensity: Float) {
         val current = _config.value ?: return
-        val coercedIntensity = intensity.coerceIn(0f, 1f)
-        if (current.glowIntensity == coercedIntensity) return
-        saveConfig(current.copy(glowIntensity = coercedIntensity))
+        saveConfig(current.copy(glowIntensity = intensity.coerceIn(0f, 1f)))
     }
 
     fun updateTaskbarSettings(settings: TaskbarSettings) {
         val current = _config.value ?: return
-        if (current.taskbarSettings == settings) return
         saveConfig(current.copy(taskbarSettings = settings))
     }
 }

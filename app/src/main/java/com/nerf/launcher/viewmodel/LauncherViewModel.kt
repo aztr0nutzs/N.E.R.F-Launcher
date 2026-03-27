@@ -21,7 +21,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun loadApps() {
         viewModelScope.launch {
             val appList = AppUtils.loadInstalledApps(getApplication<Application>())
-            _apps.value = appList
+            _apps.postValue(appList)
         }
     }
 }

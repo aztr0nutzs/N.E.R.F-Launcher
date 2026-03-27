@@ -4,22 +4,15 @@ package com.nerf.launcher.reactor
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SweepGradientShader
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import kotlin.math.cos
-import kotlin.math.min
-import kotlin.math.sin
+import kotlin.math.*
 
 fun DrawScope.drawOuterRing(
     center: Offset,
@@ -42,12 +35,16 @@ fun DrawScope.drawOuterRing(
         colors = colors.map { it.copy(alpha = baseAlpha) },
         colorStops = null
     )
+
     val ringBrush = Brush.shader(gradient)
 
-    val rect = rectFromCenter(center, radius - strokeWidth / 2f)
+    val rect = Rect(
+        center = center,
+        radius = radius - strokeWidth / 2f
+    )
 
     rotate(phase, center) {
-        // Base ring
+        // base ring
         drawArc(
             brush = ringBrush,
             startAngle = 0f,
@@ -55,10 +52,10 @@ fun DrawScope.drawOuterRing(
             useCenter = false,
             topLeft = Offset(rect.left, rect.top),
             size = Size(rect.width, rect.height),
-            style = Stroke(width = strokeWidth)
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
 
-        // Mechanical segments (gaps)
+        // mechanical segments (gaps)
         val segCount = 8
         val segSweep = 18f
         val gapSweep = 360f / segCount - segSweep
@@ -77,7 +74,7 @@ fun DrawScope.drawOuterRing(
                     center.y - segmentRadius
                 ),
                 size = Size(segmentRadius * 2, segmentRadius * 2),
-                style = Stroke(width = segmentStroke)
+                style = Stroke(width = segmentStroke, cap = StrokeCap.Round)
             )
         }
     }
@@ -91,20 +88,20 @@ fun DrawScope.drawMidEnergyRing(
     flowPhase: Float
 ) {
     val strokeWidth = radius * 0.16f
-    val rect = rectFromCenter(center, radius - strokeWidth / 2f)
+    val rect = Rect(center, radius - strokeWidth / 2f)
 
-    val channelCount = colors.size.coerceAtLeast(1)
+    val channelCount = colors.size
     val sweepPerChannel = 360f / channelCount
 
     repeat(channelCount) { i ->
-        val c = colors[i % colors.size]
+        val c = colors[i]
         val startAngle = i * sweepPerChannel + phase * 0.4f
-        // Flowing gradient: bright head, faded tail
+        // Create flowing gradient: bright head, faded tail
         val headPos = (flowPhase + i * 0.25f) % 1f
         val brightSweep = sweepPerChannel * 0.55f
         val dimSweep = sweepPerChannel - brightSweep
 
-        // Bright leading arc
+        // bright leading arc
         drawArc(
             color = c.copy(alpha = 0.95f),
             startAngle = startAngle + headPos * sweepPerChannel,
@@ -112,9 +109,9 @@ fun DrawScope.drawMidEnergyRing(
             useCenter = false,
             topLeft = Offset(rect.left, rect.top),
             size = Size(rect.width, rect.height),
-            style = Stroke(width = strokeWidth)
+            style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
         )
-        // Trailing dim arc
+        // trailing dim arc
         drawArc(
             color = c.copy(alpha = 0.35f),
             startAngle = startAngle + headPos * sweepPerChannel + brightSweep,
@@ -122,11 +119,11 @@ fun DrawScope.drawMidEnergyRing(
             useCenter = false,
             topLeft = Offset(rect.left, rect.top),
             size = Size(rect.width, rect.height),
-            style = Stroke(width = strokeWidth * 0.7f)
+            style = Stroke(width = strokeWidth * 0.7f, cap = StrokeCap.Round)
         )
     }
 
-    // Subtle radial grid
+    // subtle radial grid
     repeat(6) { i ->
         val angle = i * 60f + phase * 0.3f
         val rad = Math.toRadians(angle.toDouble()).toFloat()
@@ -198,7 +195,7 @@ fun DrawScope.drawAura(
                 center.y - streakRadius
             ),
             size = Size(streakRadius * 2, streakRadius * 2),
-            style = Stroke(width = stroke)
+            style = Stroke(width = stroke, cap = StrokeCap.Round)
         )
     }
 }
@@ -233,7 +230,7 @@ fun DrawScope.drawCore(
 
     // Inner rotating ring
     val ringRadius = radius * 0.86f
-    val rect = rectFromCenter(center, ringRadius)
+    val rect = Rect(center, ringRadius)
     rotate(rotation, center) {
         drawArc(
             color = Color(0x55FFFFFF),
@@ -243,7 +240,8 @@ fun DrawScope.drawCore(
             topLeft = Offset(rect.left, rect.top),
             size = Size(rect.width, rect.height),
             style = Stroke(
-                width = radius * 0.18f
+                width = radius * 0.18f,
+                cap = StrokeCap.Round
             )
         )
     }
@@ -252,10 +250,10 @@ fun DrawScope.drawCore(
     val logoText = "N"
     val logoMeasure = textMeasurer.measure(
         text = logoText,
-        style = TextStyle(
+        style = androidx.compose.ui.text.TextStyle(
             color = Color(0xFF222222),
             fontSize = (radius * 0.95f).sp,
-            fontWeight = FontWeight.Black
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Black
         )
     )
 
@@ -272,10 +270,10 @@ fun DrawScope.drawCore(
     // "Core" label
     val coreMeasure = textMeasurer.measure(
         text = "Core",
-        style = TextStyle(
+        style = androidx.compose.ui.text.TextStyle(
             color = Color.White.copy(alpha = 0.85f),
             fontSize = (radius * 0.26f).sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
         )
     )
     drawText(
@@ -293,13 +291,13 @@ fun DrawScope.drawHudLabels(
     mode: ReactorMode,
     textMeasurer: TextMeasurer
 ) {
-    val labelStyle = TextStyle(
+    val labelStyle = androidx.compose.ui.text.TextStyle(
         fontSize = (radius * 0.16f).sp,
         color = Color(0xFFB6F4FF),
         textAlign = TextAlign.Center
     )
 
-    // Bottom CPU
+    // bottom CPU
     val cpu = textMeasurer.measure(
         text = "CPU",
         style = labelStyle
@@ -312,7 +310,7 @@ fun DrawScope.drawHudLabels(
         )
     )
 
-    // Ping text along bottom arc
+    // ping text along bottom arc
     val pingText = when (mode) {
         ReactorMode.Idle -> "PING: 12 ms"
         ReactorMode.Active -> "PING: 9 ms"
@@ -331,7 +329,7 @@ fun DrawScope.drawHudLabels(
         )
     )
 
-    // Top bandwidth label
+    // top bandwidth label
     val bwText = "DOWNLOAD • SSU Nitro"
     val bw = textMeasurer.measure(
         text = bwText,
@@ -346,7 +344,7 @@ fun DrawScope.drawHudLabels(
     )
 }
 
-private fun rectFromCenter(center: Offset, radius: Float): Rect =
+private fun Rect(center: Offset, radius: Float): Rect =
     Rect(
         center.x - radius,
         center.y - radius,

@@ -5,10 +5,6 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.media.audiofx.Visualizer
 import androidx.compose.foundation.background
-import androidx.lifecycle.Observer
-import com.nerf.launcher.util.AppConfig
-import com.nerf.launcher.util.ConfigRepository
-import com.nerf.launcher.util.ThemeRepository
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -27,22 +23,10 @@ fun ReactorDemoScreen() {
     val controller = rememberReactorController()
     var log by remember { mutableStateOf("Ready") }
 
-    var config by remember { mutableStateOf(ConfigRepository.get().config.value) }
-    DisposableEffect(Unit) {
-        val observer = Observer<AppConfig> { newConfig ->
-            config = newConfig
-        }
-        ConfigRepository.get().config.observeForever(observer)
-        onDispose {
-            ConfigRepository.get().config.removeObserver(observer)
-        }
-    }
-    val theme = ThemeRepository.byName(config?.themeName) ?: ThemeRepository.CLASSIC_NERF
-
     Surface(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(theme.windowBackground))
+            .background(Color(0xFF04050A))
     ) {
         Column(
             modifier = Modifier
@@ -55,7 +39,6 @@ fun ReactorDemoScreen() {
 
             ReactorCore(
                 controller = controller,
-                theme = theme,
                 onZoneTap = { zone ->
                     log = "Tap: $zone"
                     controller.mode = when (zone) {
@@ -84,4 +67,4 @@ fun ReactorDemoScreen() {
 
             Text(
                 text = log,
-                color = Color(theme.primary)
+                color = Color(0xFFB4C8F

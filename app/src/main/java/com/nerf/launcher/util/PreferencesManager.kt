@@ -87,27 +87,6 @@ object PreferencesManager {
         getPrefs(context).getInt(KEY_TASKBAR_BACKGROUND_STYLE,
                 android.R.color.background_dark)
 
-    // Taskbar height
-    fun saveTaskbarHeight(context: Context, height: Int) {
-        getPrefs(context).edit().putInt(KEY_TASKBAR_HEIGHT, height).apply()
-    }
-    fun getTaskbarHeight(context: Context): Int =
-        getPrefs(context).getInt(KEY_TASKBAR_HEIGHT, 56)
-
-    // Taskbar transparency
-    fun saveTaskbarTransparency(context: Context, transparency: Float) {
-        getPrefs(context).edit().putFloat(KEY_TASKBAR_TRANSPARENCY, transparency).apply()
-    }
-    fun getTaskbarTransparency(context: Context): Float =
-        getPrefs(context).getFloat(KEY_TASKBAR_TRANSPARENCY, 1.0f)
-
-    // Taskbar enabled
-    fun saveTaskbarEnabled(context: Context, enabled: Boolean) {
-        getPrefs(context).edit().putBoolean(KEY_TASKBAR_ENABLED, enabled).apply()
-    }
-    fun isTaskbarEnabled(context: Context): Boolean =
-        getPrefs(context).getBoolean(KEY_TASKBAR_ENABLED, true)
-
     // Convenience: clear all (mainly for testing)
     fun clearAll(context: Context) {
         getPrefs(context).edit().clear().apply()

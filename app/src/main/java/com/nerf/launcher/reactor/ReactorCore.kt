@@ -59,15 +59,11 @@ fun rememberReactorController(
     initialMode: ReactorMode = ReactorMode.Idle
 ): ReactorController = remember { ReactorController(initialMode) }
 
-import com.nerf.launcher.util.NerfTheme
-import com.nerf.launcher.util.ThemeRepository
-
 @Composable
 fun ReactorCore(
     modifier: Modifier = Modifier,
     controller: ReactorController = rememberReactorController(),
     config: ReactorConfig = ReactorConfig(),
-    theme: NerfTheme = ThemeRepository.CLASSIC_NERF,
     // Callbacks per zone
     onZoneTap: (ReactorZone) -> Unit = {},
     onZoneLongPress: (ReactorZone) -> Unit = {},
@@ -113,33 +109,33 @@ fun ReactorCore(
         }
     }
 
-    val colorAlert = Color(theme.accent)
-    val colorOverdrive = Color(theme.secondary)
+    val colorAlert = Color(0xFFFF5A2C)
+    val colorOverdrive = Color(0xFF00F7FF)
 
     val ringColors = when (controller.mode) {
         ReactorMode.Idle -> listOf(
-            Color(theme.primary),
-            Color(theme.secondary),
-            Color(theme.accent),
-            Color(theme.primary).copy(alpha = 0.8f)
+            Color(0xFF29FF9A),
+            Color(0xFF00D4FF),
+            Color(0xFFFFC800),
+            Color(0xFFFF4FD8)
         )
         ReactorMode.Active -> listOf(
-            Color(theme.secondary),
-            Color(theme.primary),
-            Color(theme.accent),
-            Color(theme.secondary).copy(alpha = 0.8f)
+            Color(0xFF3CFFB4),
+            Color(0xFF32E1FF),
+            Color(0xFFFFE45A),
+            Color(0xFFFF7CEC)
         )
         ReactorMode.Alert -> listOf(
             colorAlert,
-            Color(theme.primary),
+            Color(0xFFFF9100),
             colorAlert,
-            Color(theme.primary)
+            Color(0xFFFF9100)
         )
         ReactorMode.Overdrive -> listOf(
             colorOverdrive,
-            Color(theme.secondary),
-            Color(theme.accent),
-            colorOverdrive
+            Color(0xFF00FF8A),
+            Color(0xFFFFFF5A),
+            Color(0xFFFF53FF)
         )
     }
 
@@ -243,7 +239,6 @@ fun ReactorCore(
             drawReactorContent(
                 controller = controller,
                 config = config,
-                theme = theme,
                 ringColors = ringColors,
                 baseRotationOuter = baseRotationOuter,
                 baseRotationMid = baseRotationMid,
@@ -261,7 +256,6 @@ fun ReactorCore(
 private fun DrawScope.drawReactorContent(
     controller: ReactorController,
     config: ReactorConfig,
-    theme: NerfTheme,
     ringColors: List<Color>,
     baseRotationOuter: Float,
     baseRotationMid: Float,
@@ -300,8 +294,7 @@ private fun DrawScope.drawReactorContent(
         radius = radius * 0.82f,
         mode = controller.mode,
         coreGlowAlpha = coreGlowAlpha,
-        alertPulseAlpha = alertPulseAlpha,
-        theme = theme
+        alertPulseAlpha = alertPulseAlpha
     )
 
     // Core node
@@ -311,7 +304,6 @@ private fun DrawScope.drawReactorContent(
         rotation = baseRotationCore * overdriveFactor,
         glowAlpha = coreGlowAlpha,
         mode = controller.mode,
-        theme = theme,
         textMeasurer = textMeasurer
     )
 
@@ -320,7 +312,6 @@ private fun DrawScope.drawReactorContent(
         center = center,
         radius = radius * 0.88f,
         mode = controller.mode,
-        theme = theme,
         textMeasurer = textMeasurer
     )
 }

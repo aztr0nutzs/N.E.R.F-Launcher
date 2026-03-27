@@ -1,99 +1,59 @@
 package com.nerf.launcher.util
 
-import android.content.Context
-import androidx.annotation.ColorRes
-import androidx.core.content.ContextCompat
-import com.nerf.launcher.R
-
 /**
  * Repository of predefined Nerf themes.
  */
 object ThemeRepository {
-    private lateinit var appContext: Context
+    /** Classic Nerf – orange primary, blue accent, dark window background. */
+    val CLASSIC_NERF = NerfTheme(
+        name = "Classic Nerf",
+        primary = 0xFF6A00FF,   // #FF6A00
+        secondary = 0xFF00F0FF, // #00F0FF
+        accent = 0xFFFFEA00,    // #FFEA00
+        windowBackground = 0xFF212121FF // #212121
+    )
 
-    fun init(context: Context) {
-        appContext = context.applicationContext
-    }
+    /** Stealth Ops – dark primary, red accent, dark window background. */
+    val STEALTH_OPS = NerfTheme(
+        name = "Stealth Ops",
+        primary = 0xFF212121FF, // #212121
+        secondary = 0xFFFF0000FF, // #FF0000
+        accent = 0xFFFF4500FF,  // #FF4500 (OrangeRed)
+        windowBackground = 0xFF212121FF // #212121
+    )
 
-    /** Classic Nerf â€“ orange primary, cyan secondary, yellow accent, dark background. */
-    val CLASSIC_NERF: NerfTheme
-        get() = theme(
-            name = "Classic Nerf",
-            primaryResId = R.color.nerf_primary,
-            secondaryResId = R.color.nerf_secondary,
-            accentResId = R.color.nerf_accent,
-            windowBackgroundResId = R.color.nerf_background
-        )
+    /** Elite Blue – blue primary, cyan accent, dark window background. */
+    val ELITE_BLUE = NerfTheme(
+        name = "Elite Blue",
+        primary = 0xFF00B0FFFF, // #00B0FF
+        secondary = 0xFF00F0FFFF, // #00F0FF
+        accent = 0xFFFFFF00FF,  // #FFFF00 (Yellow)
+        windowBackground = 0xFF212121FF // #212121
+    )
 
-    /** Stealth Ops â€“ dark primary, red accent, dark window background. */
-    val STEALTH_OPS: NerfTheme
-        get() = theme(
-            name = "Stealth Ops",
-            primaryResId = R.color.nerf_background,
-            secondaryResId = R.color.theme_stealth_ops_secondary,
-            accentResId = R.color.theme_stealth_ops_accent,
-            windowBackgroundResId = R.color.nerf_background
-        )
+    /** Zombie Strike – green accent on dark. */
+    val ZOMBIE_STRIKE = NerfTheme(
+        name = "Zombie Strike",
+        primary = 0xFF212121FF, // #212121
+        secondary = 0xFF00BF00FF, // #00BF00
+        accent = 0xFF00FF00FF,  // #00FF00
+        windowBackground = 0xFF212121FF // #212121
+    )
 
-    /** Elite Blue â€“ blue primary, cyan accent, dark window background. */
-    val ELITE_BLUE: NerfTheme
-        get() = theme(
-            name = "Elite Blue",
-            primaryResId = R.color.theme_elite_blue_primary,
-            secondaryResId = R.color.nerf_secondary,
-            accentResId = R.color.theme_elite_blue_accent,
-            windowBackgroundResId = R.color.nerf_background
-        )
-
-    /** Zombie Strike â€“ green accent on dark. */
-    val ZOMBIE_STRIKE: NerfTheme
-        get() = theme(
-            name = "Zombie Strike",
-            primaryResId = R.color.nerf_background,
-            secondaryResId = R.color.theme_zombie_strike_secondary,
-            accentResId = R.color.theme_zombie_strike_accent,
-            windowBackgroundResId = R.color.nerf_background
-        )
-
-    /** Hyper Neon â€“ vivid magenta primary, cyan secondary, dark window background. */
-    val HYPER_NEON: NerfTheme
-        get() = theme(
-            name = "Hyper Neon",
-            primaryResId = R.color.theme_hyper_neon_primary,
-            secondaryResId = R.color.theme_hyper_neon_secondary,
-            accentResId = R.color.theme_hyper_neon_accent,
-            windowBackgroundResId = R.color.nerf_background
-        )
+    /** Hyper Neon – vivid magenta primary, cyan secondary, dark window background. */
+    val HYPER_NEON = NerfTheme(
+        name = "Hyper Neon",
+        primary = 0xFFFF00FFFF, // #FF00FF
+        secondary = 0xFF00FFFFFFFF, // #00FFFF
+        accent = 0xFFFFFF00FFFF, // #FFFF00
+        windowBackground = 0xFF212121FF // #212121
+    )
 
     /** Returns all predefined themes as a list. */
     val all: List<NerfTheme>
         get() = listOf(CLASSIC_NERF, STEALTH_OPS, ELITE_BLUE, ZOMBIE_STRIKE, HYPER_NEON)
 
-    /** Find a theme by name (caseâ€‘insensitive). */
+    /** Find a theme by name (case‑insensitive). */
     fun byName(name: String): NerfTheme? =
         all.firstOrNull { it.name.equals(name, ignoreCase = true) }
-
-    private fun theme(
-        name: String,
-        @ColorRes primaryResId: Int,
-        @ColorRes secondaryResId: Int,
-        @ColorRes accentResId: Int,
-        @ColorRes windowBackgroundResId: Int
-    ): NerfTheme {
-        val context = requireContext()
-        return NerfTheme(
-            name = name,
-            primary = ContextCompat.getColor(context, primaryResId),
-            secondary = ContextCompat.getColor(context, secondaryResId),
-            accent = ContextCompat.getColor(context, accentResId),
-            windowBackground = ContextCompat.getColor(context, windowBackgroundResId)
-        )
-    }
-
-    private fun requireContext(): Context {
-        check(::appContext.isInitialized) {
-            "ThemeRepository not initialized. Call ThemeRepository.init() from Application.onCreate()."
-        }
-        return appContext
-    }
 }

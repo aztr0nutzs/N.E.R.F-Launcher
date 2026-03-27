@@ -2,7 +2,10 @@ package com.nerf.launcher.ui
 
 import android.app.Activity
 import android.graphics.Color
-import android.view.SoundEffectConstants
+import android.graphics.drawable.ColorDrawable
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
@@ -10,6 +13,7 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import com.nerf.launcher.R
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.ThemeRepository
@@ -32,25 +36,31 @@ class HudController(
 
     private val batteryReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
-            val level = intent?.getIntExtra(android.content.BatteryManager.EXTRA_LEVEL, -1) ?: -1
-            val scale = intent?.getIntExtra(android.content.BatteryManager.EXTRA_SCALE, -1) ?: -1
+            val level = intent?.getIntExtra(android.content.BatteryManager.EXTRA_LEVEL, -1)
+            val scale = intent?.getIntExtra(android.content.BatteryManager.EXTRA_SCALE, -1)
             val percent = if (level >= 0 && scale > 0) (level * 100 / scale) else 0
             batteryMeter.progress = percent
         }
     }
 
-    private val timeReceiver = object : android.content.BroadcastReceiver() {
-        override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
-            updateTime()
-        }
+    private val timeUpdater = Runnable {
+        val now = java.util.Calendar.getInstance()
+        val hour = now.get(java.util.Calendar.HOUR_OF_DAY)
+        val minute = now.get(java.util.Calendar.MINUTE)
+        val timeFormatted = String.format("%02d:%02d", hour, minute)
+        timeDisplay.text = timeFormatted
+        handler.postDelayed(timeUpdater, 60_000L - (SystemClock.uptimeMillis() % 60_000L))
     }
+
+    private val handler = Handler(Looper.getMainLooper())
 
     init {
         // Register for battery changes (sticky intent, no permission needed)
-        val batFilter = android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED)
-        val batIntent = activity.registerReceiver(batteryReceiver, batFilter)
+        val filter = android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED)
+        activity.registerReceiver(batteryReceiver, filter)
 
         // Initial battery reading
+        val batIntent = activity.registerReceiver(null, android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED))
         batIntent?.let {
             val level = it.getIntExtra(android.content.BatteryManager.EXTRA_LEVEL, -1)
             val scale = it.getIntExtra(android.content.BatteryManager.EXTRA_SCALE, -1)
@@ -59,12 +69,8 @@ class HudController(
             }
         }
 
-        // Register for time broadcast (only triggered natively on minute change, no polling required)
-        val timeFilter = android.content.IntentFilter(android.content.Intent.ACTION_TIME_TICK)
-        activity.registerReceiver(timeReceiver, timeFilter)
-
-        // Initial time update
-        updateTime()
+        // Start time updates
+        handler.post(timeUpdater)
 
         // Tap animations on interactive elements
         setupTapAnimation(batteryMeter)
@@ -75,22 +81,12 @@ class HudController(
         setupConfigObservers()
     }
 
-    private fun updateTime() {
-        val now = java.util.Calendar.getInstance()
-        val hour = now.get(java.util.Calendar.HOUR_OF_DAY)
-        val minute = now.get(java.util.Calendar.MINUTE)
-        val timeFormatted = String.format("%02d:%02d", hour, minute)
-        timeDisplay.text = timeFormatted
-    }
-
     private fun setupTapAnimation(view: View) {
         view.setOnTouchListener { v, event ->
             when (event.actionMasked) {
                 android.view.MotionEvent.ACTION_DOWN -> {
-                    if (ConfigRepository.get().config.value?.animationSpeedEnabled == true) {
-                        v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.hud_recoil))
-                    }
-                    playSoundEffect(v)
+                    v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.hud_recoil))
+                    playSoundEffect()
                     true
                 }
                 else -> false
@@ -98,21 +94,22 @@ class HudController(
         }
     }
 
-    private fun playSoundEffect(targetView: View?) {
-        (targetView ?: hudView).playSoundEffect(SoundEffectConstants.CLICK)
+    private fun playSoundEffect() {
+        // Hook for sound feedback – implement with SoundPool/MediaPlayer if desired.
+        // No external assets required for this stub.
     }
 
     private fun setupConfigObservers() {
         ConfigRepository.get().config.observe(lifecycleOwner) { config ->
             val themeName = config.themeName
-            val baseTheme = ThemeRepository.byName(themeName)
+            val baseTheme = ThemeRepository.byName(themeName) 
                     ?: ThemeRepository.CLASSIC_NERF
             val finalTheme = baseTheme.copy(glowIntensity = config.glowIntensity)
 
             // Update HUD views with theme colors
             batteryMeter.progressTintList = android.content.res.ColorStateList.valueOf(finalTheme.primary)
             batteryMeter.backgroundTintList = android.content.res.ColorStateList.valueOf(finalTheme.secondary)
-            timeDisplay.setTextColor(finalTheme.secondary)
+            timeDisplay.textColor = finalTheme.secondary
             addWidgetBtn.setTextColor(finalTheme.primary)
 
             // Update glow overlay
@@ -127,13 +124,9 @@ class HudController(
     }
 
     fun release() {
+        handler.removeCallbacks(timeUpdater)
         try {
             activity.unregisterReceiver(batteryReceiver)
-        } catch (e: IllegalArgumentException) {
-            // Already unregistered
-        }
-        try {
-            activity.unregisterReceiver(timeReceiver)
         } catch (e: IllegalArgumentException) {
             // Already unregistered
         }

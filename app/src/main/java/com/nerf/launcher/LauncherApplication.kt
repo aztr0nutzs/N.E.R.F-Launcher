@@ -2,16 +2,15 @@ package com.nerf.launcher
 
 import android.app.Application
 import com.nerf.launcher.util.ConfigRepository
-import com.nerf.launcher.util.ThemeRepository
 
 /**
- * Application class to initialize singleton repositories.
+ * Application class to initialize the ConfigRepository singleton.
  */
 class LauncherApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        ThemeRepository.init(this)
+        // Initialize the ConfigRepository singleton with the application context
         ConfigRepository.init(this)
     }
 }

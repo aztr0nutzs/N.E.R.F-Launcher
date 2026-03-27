@@ -1,26 +1,20 @@
 package com.nerf.launcher.ui
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.util.AttributeSet
-import android.util.TypedValue
-import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LifecycleOwner
-import com.google.android.material.R as MaterialR
 import com.nerf.launcher.R
-import com.nerf.launcher.util.AppUtils
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.LifecycleOwnerAware
-import com.nerf.launcher.util.ThemeRepository
-import kotlin.math.roundToInt
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 
 /**
  * Custom view representing the taskbar at the bottom of the screen.
@@ -41,9 +35,21 @@ class TaskbarView @JvmOverloads constructor(
         orientation = LinearLayout.HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         // Initial padding will be updated by observers
-        val paddingX = (8 * context.resources.displayMetrics.density).toInt()
-        val paddingY = (4 * context.resources.displayMetrics.density).toInt()
-        setPadding(paddingX, paddingY, paddingX, paddingY)
+        setPadding(8, 4, 8, 4)
+        // Create 4 icon slots by default (background and tint will be set via observers)
+        for (i in 0 until 4) {
+            val iconView = ImageView(context).apply {
+                setImageResource(R.drawable.ic_launcher_foreground) // placeholder
+                setScaleType(ImageView.ScaleType.CENTER_INSIDE)
+                setPadding(4, 4, 4, 4)
+            }
+            addView(iconView, LinearLayout.LayoutParams(
+                0,
+                LayoutParams.WRAP_CONTENT,
+                1.0f
+            ).apply { setMargins(4, 0, 4, 0) })
+            iconViews.add(iconView)
+        }
     }
 
     override fun setLifecycleOwner(owner: LifecycleOwner) {
@@ -58,32 +64,32 @@ class TaskbarView @JvmOverloads constructor(
 
     /** Update the taskbar icons based on a list of package names. */
     fun updateIcons(packageNames: List<String>) {
-        syncIconViews(packageNames.size)
+        iconViews.forEach { it.setImageResource(R.drawable.ic_launcher_foreground) }
         iconViews.forEachIndexed { index, view ->
-            val packageName = packageNames.getOrNull(index)?.trim().orEmpty()
-            view.setImageResource(R.drawable.ic_launcher_foreground)
-            view.setImageDrawable(null)
-            view.setOnClickListener(null)
-            view.setOnLongClickListener(null)
-
-            if (packageName.isNotEmpty()) {
-                if (::iconProvider.isInitialized) {
-                    iconProvider.loadIconInto(packageName, view)
-                } else {
-                    view.setImageResource(R.drawable.ic_launcher_foreground)
-                }
+            if (index < packageNames.size) {
+                val pkg = packageNames[index]
+                iconProvider.loadIconInto(pkg, view)
+                // Set click listener to launch the app
                 view.setOnClickListener {
-                    AppUtils.launchApp(context, packageName)
+                    val context = context ?: return@setOnClickListener
+                    com.nerf.launcher.util.AppUtils.launchApp(context, pkg)
                 }
-            } else {
-                view.setImageResource(R.drawable.ic_launcher_foreground)
-            }
-
-            view.setOnLongClickListener {
-                openSettings()
-                true
+                view.setOnLongClickListener {
+                    // Show a toast or open a picker? For now, just a toast.
+                    android.widget.Toast.makeText(
+                        context,
+                        "Long press to customize (not implemented)",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                    true
+                }
             }
         }
+    }
+
+    /** Set the background color of the taskbar. */
+    fun setBackgroundColor(color: Int) {
+        setBackgroundColor(color)
     }
 
     /** Set the icon tint color. */
@@ -103,7 +109,7 @@ class TaskbarView @JvmOverloads constructor(
 
     /** Set the height of the taskbar (in pixels). */
     fun setHeight(heightPx: Int) {
-        val params = layoutParams as? ViewGroup.LayoutParams ?: return
+        val params = layoutParams as ViewGroup.LayoutParams
         params.height = heightPx
         layoutParams = params
     }
@@ -111,61 +117,19 @@ class TaskbarView @JvmOverloads constructor(
     /** Set the background transparency (alpha) of the taskbar. */
     fun setTransparency(alpha: Float) {
         val currentColor = solidColorToInt(background)
-        val newColor = Color.argb(
-            (alpha * 255).toInt(),
-            Color.red(currentColor),
-            Color.green(currentColor),
-            Color.blue(currentColor)
-        )
+        val newColor = Color.argb((alpha * 255).toInt(),
+                Color.red(currentColor),
+                Color.green(currentColor),
+                Color.blue(currentColor))
         setBackgroundColor(newColor)
     }
 
-    private fun syncIconViews(targetCount: Int) {
-        while (iconViews.size < targetCount) {
-            val iconView = createIconView()
-            addView(iconView, createIconLayoutParams())
-            iconViews.add(iconView)
+    private fun solidColorToInt(background: android.graphics.drawable.Drawable?): Int {
+        if (background is android.graphics.drawable.ColorDrawable) {
+            return background.color
         }
-        while (iconViews.size > targetCount) {
-            val lastIndex = iconViews.lastIndex
-            removeView(iconViews.removeAt(lastIndex))
-        }
-    }
-
-    private fun createIconView(): ImageView {
-        return ImageView(context).apply {
-            setImageResource(R.drawable.ic_launcher_foreground)
-            scaleType = ImageView.ScaleType.CENTER_INSIDE
-            val pad = (4 * context.resources.displayMetrics.density).toInt()
-            setPadding(pad, pad, pad, pad)
-        }
-    }
-
-    private fun createIconLayoutParams(): LinearLayout.LayoutParams {
-        return LinearLayout.LayoutParams(
-            0,
-            LayoutParams.WRAP_CONTENT,
-            1.0f
-        ).apply {
-            val margin = (4 * context.resources.displayMetrics.density).toInt()
-            setMargins(margin, 0, margin, 0)
-        }
-    }
-
-    private fun openSettings() {
-        val intent = Intent(context, SettingsActivity::class.java).apply {
-            if (context !is Activity) {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-        }
-        context.startActivity(intent)
-    }
-
-    private fun solidColorToInt(drawable: android.graphics.drawable.Drawable?): Int {
-        if (drawable is android.graphics.drawable.ColorDrawable) {
-            return drawable.color
-        }
-        return resolveThemeColor(MaterialR.attr.colorSurface, R.color.black)
+        // Fallback to black if not a ColorDrawable (shouldn't happen with our setup)
+        return Color.BLACK
     }
 
     private fun setupConfigObservers() {
@@ -180,19 +144,21 @@ class TaskbarView @JvmOverloads constructor(
                 val heightPx = (settings.height * context.resources.displayMetrics.density).roundToInt()
                 setHeight(heightPx)
 
-                // Update icons from pinned apps in settings
-                val pinnedApps = settings.pinnedApps.map { it.trim() }
-                if (::iconProvider.isInitialized) {
-                    iconProvider.evictCache()
+                // Update icon pack - refresh icons
+                val pinnedApps = com.nerf.launcher.ui.TaskbarController.getPinnedApps(context)
+                val appsToShow = if (pinnedApps.isEmpty()) {
+                    // Fallback: show first 4 apps from the system (we don't have the list here)
+                    // In a real implementation, we would need to get the app list from somewhere.
+                    // For now, we leave it empty and rely on the initial call from MainActivity.
+                    emptyList()
+                } else {
+                    pinnedApps
                 }
-                updateIcons(pinnedApps)
+                updateIcons(appsToShow)
 
                 // Update taskbar background
-                val backgroundColor = try {
-                    ContextCompat.getColor(context, settings.backgroundStyle)
-                } catch (e: Exception) {
-                    resolveThemeColor(MaterialR.attr.colorSurface, R.color.black)
-                }
+                val backgroundStyleRes = settings.backgroundStyle
+                val backgroundColor = ContextCompat.getColor(context, backgroundStyleRes)
                 setBackgroundColor(backgroundColor)
 
                 // Update icon size (convert dp to px)
@@ -202,30 +168,17 @@ class TaskbarView @JvmOverloads constructor(
                 // Update background transparency
                 setTransparency(settings.transparency)
 
-                // Update icon tint based on theme
-                val baseTheme = ThemeRepository.byName(config.themeName)
-                    ?: ThemeRepository.CLASSIC_NERF
+                // Update icon tint based on theme (light/dark detection)
+                val themeName = config.themeName
+                val baseTheme = com.nerf.launcher.util.ThemeRepository.byName(themeName) 
+                        ?: com.nerf.launcher.util.ThemeRepository.CLASSIC_NERF
                 val isLightTheme = com.nerf.launcher.util.ColorUtils.isColorLight(baseTheme.primary)
-                val iconTint = if (isLightTheme) {
-                    ContextCompat.getColor(context, R.color.black)
-                } else {
+                val iconTint = if (isLightTheme) 
+                    ContextCompat.getColor(context, R.color.nerf_on_background) 
+                else 
                     ContextCompat.getColor(context, R.color.nerf_on_background)
-                }
                 setIconTint(iconTint)
             }
-        }
-    }
-
-    private fun resolveThemeColor(attrResId: Int, fallbackColorResId: Int): Int {
-        val typedValue = TypedValue()
-        return if (context.theme.resolveAttribute(attrResId, typedValue, true)) {
-            if (typedValue.resourceId != 0) {
-                ContextCompat.getColor(context, typedValue.resourceId)
-            } else {
-                typedValue.data
-            }
-        } else {
-            ContextCompat.getColor(context, fallbackColorResId)
         }
     }
 
