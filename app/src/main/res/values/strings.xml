@@ -9,4 +9,8 @@
     <string name="settings_glow_intensity">Glow Intensity</string>
     <string name="settings_animation_speed">Animation Speed</string>
     <string name="settings_grid_size">Grid Size</string>
+    <string name="reactor_core_cd">Central reactor control core</string>
+    <string name="hud_apps_count">%1$d APPS</string>
+    <string name="hud_grid_value">GRID %1$dx</string>
+    <string name="hud_dock_value">DOCK %1$d</string>
 </resources>
