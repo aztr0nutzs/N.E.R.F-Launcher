@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -87,6 +88,26 @@ class TaskbarView @JvmOverloads constructor(
                     })
                     true
                 }
+            }
+            view.setOnTouchListener { touchedView, event ->
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        touchedView.animate()
+                            .scaleX(0.95f)
+                            .scaleY(0.95f)
+                            .setDuration(80L)
+                            .start()
+                    }
+
+                    MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
+                        touchedView.animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .setDuration(120L)
+                            .start()
+                    }
+                }
+                false
             }
         }
     }

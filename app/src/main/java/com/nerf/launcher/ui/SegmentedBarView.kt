@@ -1,11 +1,13 @@
 package com.nerf.launcher.ui
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import androidx.core.content.ContextCompat
 import com.nerf.launcher.R
 import kotlin.math.max
@@ -30,11 +32,15 @@ class SegmentedBarView @JvmOverloads constructor(
     }
 
     private val rect = RectF()
+    private var animatedProgress: Float = 0f
+    private var progressAnimator: ValueAnimator? = null
 
     var progress: Int = 0
         set(value) {
-            field = value.coerceIn(0, 100)
-            invalidate()
+            val clamped = value.coerceIn(0, 100)
+            if (field == clamped && animatedProgress == clamped.toFloat()) return
+            field = clamped
+            animateProgressTo(clamped.toFloat())
         }
 
     var segments: Int = 14
@@ -59,14 +65,44 @@ class SegmentedBarView @JvmOverloads constructor(
 
         val gap = width * 0.012f
         val segWidth = (width - gap * (segments - 1)) / segments
-        val activeSegments = ((progress / 100f) * segments).toInt()
+        val scaledProgress = (animatedProgress / 100f) * segments
+        val activeSegments = scaledProgress.toInt()
+        val partialFill = (scaledProgress - activeSegments).coerceIn(0f, 1f)
         val radius = height * 0.18f
 
         for (i in 0 until segments) {
             val left = i * (segWidth + gap)
             val right = left + segWidth
             rect.set(left, 0f, right, height.toFloat())
-            canvas.drawRoundRect(rect, radius, radius, if (i < activeSegments) activePaint else inactivePaint)
+            val paint = when {
+                i < activeSegments -> activePaint
+                i == activeSegments && partialFill > 0f -> {
+                    activePaint.alpha = (70 + (partialFill * 185f)).toInt()
+                    activePaint
+                }
+                else -> inactivePaint
+            }
+            canvas.drawRoundRect(rect, radius, radius, paint)
+            activePaint.alpha = 255
         }
+    }
+
+    private fun animateProgressTo(target: Float) {
+        progressAnimator?.cancel()
+        progressAnimator = ValueAnimator.ofFloat(animatedProgress, target).apply {
+            duration = 280L
+            interpolator = DecelerateInterpolator()
+            addUpdateListener { animator ->
+                animatedProgress = animator.animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        progressAnimator?.cancel()
+        progressAnimator = null
+        super.onDetachedFromWindow()
     }
 }

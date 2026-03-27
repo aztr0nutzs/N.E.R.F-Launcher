@@ -1,6 +1,7 @@
 package com.nerf.launcher.ui
 
 import android.app.Activity
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.graphics.Color
 import android.os.Handler
@@ -8,6 +9,7 @@ import android.os.Looper
 import android.os.SystemClock
 import android.view.View
 import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
 import android.widget.TextView
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.button.MaterialButton
@@ -49,6 +51,7 @@ class HudController(
     }
 
     private val handler = Handler(Looper.getMainLooper())
+    private var hudBreathingAnimator: ValueAnimator? = null
 
     private val timeUpdater = object : Runnable {
         override fun run() {
@@ -88,6 +91,7 @@ class HudController(
         }
 
         handler.post(timeUpdater)
+        startHudBreathing()
 
         setupTapAnimation(timeDisplay)
         setupTapAnimation(addWidgetBtn)
@@ -135,8 +139,25 @@ class HudController(
         }
     }
 
+    private fun startHudBreathing() {
+        hudBreathingAnimator?.cancel()
+        hudBreathingAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 4_800L
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.REVERSE
+            interpolator = LinearInterpolator()
+            addUpdateListener { animator ->
+                val phase = animator.animatedValue as Float
+                hudView.alpha = 0.97f + (phase * 0.03f)
+            }
+            start()
+        }
+    }
+
     fun release() {
         handler.removeCallbacks(timeUpdater)
+        hudBreathingAnimator?.cancel()
+        hudBreathingAnimator = null
         try {
             activity.unregisterReceiver(batteryReceiver)
         } catch (_: IllegalArgumentException) {
