@@ -1,7 +1,7 @@
 package com.nerf.launcher.ui
 
+import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
@@ -160,9 +160,11 @@ class TaskbarView @JvmOverloads constructor(
         }
 
         view.setOnLongClickListener {
-            context.startActivity(Intent(context, SettingsActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            })
+            val intent = TaskbarSettingsActivity.createIntent(context)
+            if (context !is Activity) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
             true
         }
 

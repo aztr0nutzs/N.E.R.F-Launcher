@@ -54,4 +54,15 @@
     <string name="modules_state_eco">ECO</string>
     <string name="modules_state_nominal">NOMINAL</string>
     <string name="modules_reactor_sync">SYNC %1$d%%</string>
+    <string name="taskbar_settings_title">Taskbar Customization</string>
+    <string name="taskbar_settings_enabled">Taskbar Enabled</string>
+    <string name="taskbar_settings_height">Taskbar Height</string>
+    <string name="taskbar_settings_height_value">%1$ddp</string>
+    <string name="taskbar_settings_icon_size">Icon Size</string>
+    <string name="taskbar_settings_icon_size_value">%1$ddp</string>
+    <string name="taskbar_settings_transparency">Transparency</string>
+    <string name="taskbar_settings_transparency_value">%1$d%%</string>
+    <string name="taskbar_settings_pinned_apps">Pinned Apps</string>
+    <string name="taskbar_settings_pinned_summary">%1$d pinned</string>
+    <string name="taskbar_settings_clear_pins">Clear pinned apps</string>
 </resources>
