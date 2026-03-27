@@ -15,6 +15,22 @@
     <color name="nerf_primary_light">#FF8B33</color>
     <color name="nerf_primary_dark">#C85400</color>
 
+    <!-- NERF home-shell visual language tokens -->
+    <color name="nerf_hud_cyan">#00E9FF</color>
+    <color name="nerf_hud_orange">#FF8A00</color>
+    <color name="nerf_hud_magenta">#FF39B5</color>
+    <color name="nerf_hud_lime">#9CFF00</color>
+    <color name="nerf_hud_panel_text_primary">#FFFFFF</color>
+    <color name="nerf_hud_panel_text_secondary">#66FFFFFF</color>
+    <color name="nerf_hud_app_label">#E6FFFFFF</color>
+
+    <color name="nerf_reactor_mid_a">#6BFFD6</color>
+    <color name="nerf_reactor_mid_b">#3ED5FF</color>
+    <color name="nerf_reactor_accent_ring">#FFE66A</color>
+    <color name="nerf_reactor_core_glow">#FFB300</color>
+
+    <color name="nerf_segmented_bar_inactive">#302A2A2A</color>
+
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
 </resources>

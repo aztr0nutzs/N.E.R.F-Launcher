@@ -9,6 +9,8 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
+import androidx.core.content.ContextCompat
+import com.nerf.launcher.R
 import kotlin.math.min
 
 /**
@@ -19,6 +21,20 @@ class ReactorCoreView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
+
+    private val neonCyan = ContextCompat.getColor(context, R.color.nerf_hud_cyan)
+    private val midRingA = ContextCompat.getColor(context, R.color.nerf_reactor_mid_a)
+    private val midRingB = ContextCompat.getColor(context, R.color.nerf_reactor_mid_b)
+    private val accentRing = ContextCompat.getColor(context, R.color.nerf_reactor_accent_ring)
+    private val coreGlow = ContextCompat.getColor(context, R.color.nerf_reactor_core_glow)
+    private val coreText = ContextCompat.getColor(context, R.color.nerf_accent)
+
+    private val ringPalette = intArrayOf(
+        neonCyan,
+        ContextCompat.getColor(context, R.color.nerf_hud_orange),
+        ContextCompat.getColor(context, R.color.nerf_hud_magenta),
+        ContextCompat.getColor(context, R.color.nerf_hud_lime)
+    )
 
     private val outerRect = RectF()
     private val midRect = RectF()
@@ -110,41 +126,40 @@ class ReactorCoreView @JvmOverloads constructor(
         )
 
         // Ambient glow
-        innerFill.color = Color.argb(90, 0, 233, 255)
+        innerFill.color = Color.argb(
+            90,
+            Color.red(neonCyan),
+            Color.green(neonCyan),
+            Color.blue(neonCyan)
+        )
         canvas.drawCircle(cx, cy, radius * 0.98f * pulse, innerFill)
 
         // Outer segmented ring
-        val segmentColors = intArrayOf(
-            Color.parseColor("#00E9FF"),
-            Color.parseColor("#FF8A00"),
-            Color.parseColor("#FF39B5"),
-            Color.parseColor("#9CFF00")
-        )
         repeat(16) { idx ->
-            outerStroke.color = segmentColors[idx % segmentColors.size]
+            outerStroke.color = ringPalette[idx % ringPalette.size]
             val start = rotationPhase + idx * 22.5f
             canvas.drawArc(outerRect, start, 14f, false, outerStroke)
         }
 
         // Middle ring
         repeat(10) { idx ->
-            midStroke.color = if (idx % 2 == 0) Color.parseColor("#6BFFD6") else Color.parseColor("#3ED5FF")
+            midStroke.color = if (idx % 2 == 0) midRingA else midRingB
             canvas.drawArc(midRect, -rotationPhase * 1.5f + idx * 36f, 20f, false, midStroke)
         }
 
         // Core ring accents
-        accentStroke.color = Color.parseColor("#FFE66A")
+        accentStroke.color = accentRing
         repeat(4) { idx ->
             canvas.drawArc(innerRect, idx * 90f + rotationPhase * 2f, 42f, false, accentStroke)
         }
 
         // Core center and label
-        innerFill.color = Color.parseColor("#FFB300")
+        innerFill.color = coreGlow
         canvas.drawCircle(cx, cy, radius * 0.22f * pulse, innerFill)
         innerFill.color = Color.parseColor("#1A1A1A")
         canvas.drawCircle(cx, cy, radius * 0.13f, innerFill)
 
-        textPaint.color = Color.parseColor("#FFEA00")
+        textPaint.color = coreText
         textPaint.textSize = radius * 0.26f
         canvas.drawText("N", cx, cy + radius * 0.1f, textPaint)
     }

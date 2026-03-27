@@ -2,4 +2,16 @@
 <resources>
     <dimen name="widget_button_height">40dp</dimen>
     <dimen name="widget_expanded_height">120dp</dimen>
+
+    <!-- NERF home-shell layout tokens -->
+    <dimen name="nerf_shell_padding_horizontal">10dp</dimen>
+    <dimen name="nerf_shell_padding_top">10dp</dimen>
+    <dimen name="nerf_shell_padding_bottom">8dp</dimen>
+    <dimen name="nerf_panel_padding">8dp</dimen>
+    <dimen name="nerf_core_panel_padding">10dp</dimen>
+    <dimen name="nerf_section_gap">8dp</dimen>
+    <dimen name="nerf_tile_radius_small">2dp</dimen>
+    <dimen name="nerf_tile_radius_medium">3dp</dimen>
+    <dimen name="nerf_hud_button_height">40dp</dimen>
+    <dimen name="nerf_hud_button_small_height">36dp</dimen>
 </resources>
