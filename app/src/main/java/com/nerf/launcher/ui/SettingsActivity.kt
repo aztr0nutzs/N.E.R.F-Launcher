@@ -3,11 +3,14 @@ package com.nerf.launcher.ui
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivitySettingsBinding
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.PreferencesManager
+import com.nerf.launcher.util.SettingItem
 import com.nerf.launcher.util.SettingType
+import com.nerf.launcher.util.ThemeRepository
 
 class SettingsActivity : AppCompatActivity() {
 
