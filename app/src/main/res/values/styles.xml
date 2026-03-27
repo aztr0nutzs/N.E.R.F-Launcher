@@ -64,6 +64,11 @@
         <item name="android:paddingBottom">0dp</item>
     </style>
 
+    <style name="Widget.NerfLauncher.Hud.StatCard">
+        <item name="android:background">@drawable/module_stat_card</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
     <!-- Text appearances. -->
 
     <style name="Widget.NerfLauncher.Drawer.SearchInput">
