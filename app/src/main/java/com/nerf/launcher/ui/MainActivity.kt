@@ -3,7 +3,6 @@ package com.nerf.launcher.ui
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.GridLayoutManager
 import com.nerf.launcher.adapter.AppAdapter
 import com.nerf.launcher.databinding.ActivityMainBinding
@@ -19,11 +18,11 @@ import com.nerf.launcher.viewmodel.LauncherViewModel
 
 /**
  * Main launcher screen – shows a scrollable grid of apps and launches the selected one.
- * Includes RecyclerView performance optimizations: fixed size, view caching, and null‑safe handling.
+ * Includes RecyclerView performance optimizations: fixed size, view caching, and null-safe handling.
  * Also includes a taskbar at the bottom and status bar customization.
  * UI updates instantly via LiveData observers on ConfigRepository.
  */
-class MainActivity : AppCompatActivity(), LifecycleOwner {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: LauncherViewModel by viewModels()
@@ -70,8 +69,7 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
     private fun setupRecyclerView() {
         adapter = AppAdapter(
             iconProvider = iconProvider,
-            onAppClicked = { app -> AppUtils.launchApp(this, app) },
-            lifecycleOwner = this
+            onAppClicked = { app -> AppUtils.launchApp(this, app) }
         )
         binding.recyclerView.apply {
             layoutManager = GridLayoutManager(
