@@ -3,6 +3,7 @@ package com.nerf.launcher.ui
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.material.R as MaterialR
 import com.nerf.launcher.R
 import com.nerf.launcher.util.AppUtils
 import com.nerf.launcher.util.ConfigRepository
@@ -128,7 +130,7 @@ class TaskbarView @JvmOverloads constructor(
         if (drawable is android.graphics.drawable.ColorDrawable) {
             return drawable.color
         }
-        return Color.BLACK
+        return resolveThemeColor(MaterialR.attr.colorSurface, R.color.black)
     }
 
     private fun setupConfigObservers() {
@@ -152,7 +154,7 @@ class TaskbarView @JvmOverloads constructor(
                 val backgroundColor = try {
                     ContextCompat.getColor(context, settings.backgroundStyle)
                 } catch (e: Exception) {
-                    Color.BLACK
+                    resolveThemeColor(MaterialR.attr.colorSurface, R.color.black)
                 }
                 setBackgroundColor(backgroundColor)
 
@@ -174,6 +176,19 @@ class TaskbarView @JvmOverloads constructor(
                 }
                 setIconTint(iconTint)
             }
+        }
+    }
+
+    private fun resolveThemeColor(attrResId: Int, fallbackColorResId: Int): Int {
+        val typedValue = TypedValue()
+        return if (context.theme.resolveAttribute(attrResId, typedValue, true)) {
+            if (typedValue.resourceId != 0) {
+                ContextCompat.getColor(context, typedValue.resourceId)
+            } else {
+                typedValue.data
+            }
+        } else {
+            ContextCompat.getColor(context, fallbackColorResId)
         }
     }
 
