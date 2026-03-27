@@ -14,4 +14,5 @@
     <dimen name="nerf_tile_radius_medium">3dp</dimen>
     <dimen name="nerf_hud_button_height">40dp</dimen>
     <dimen name="nerf_hud_button_small_height">36dp</dimen>
+    <dimen name="nerf_drawer_search_height">36dp</dimen>
 </resources>
