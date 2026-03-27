@@ -34,6 +34,8 @@
         <item name="android:windowBackground">@color/nerf_background</item>
     </style>
 
+    <style name="Theme.NerfLauncher.PopupOverlay" parent="ThemeOverlay.MaterialComponents" />
+
     <!-- Custom Button style with press bounce & glow. -->
     <style name="Widget.NerfLauncher.Button" parent="Widget.MaterialComponents.Button">
         <item name="android:background">@drawable/button_background</item>
