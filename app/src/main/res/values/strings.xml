@@ -15,4 +15,25 @@
     <string name="hud_dock_value">DOCK %1$d</string>
     <string name="drawer_search_hint">Search launch matrix</string>
     <string name="drawer_result_count">%1$d VISIBLE</string>
+    <string name="quick_panel_title">QUICK PANEL</string>
+    <string name="quick_theme_label">THEME</string>
+    <string name="quick_icon_pack_label">ICONS</string>
+    <string name="quick_animation_label">ANIM</string>
+    <string name="quick_taskbar_label">TASKBAR</string>
+    <string name="quick_theme_cd">Cycle launcher theme</string>
+    <string name="quick_icon_pack_cd">Cycle icon pack</string>
+    <string name="quick_animation_cd">Toggle launcher animation speed mode</string>
+    <string name="quick_taskbar_cd">Toggle launcher taskbar visibility</string>
+    <string name="quick_glow_value">GLOW 0%</string>
+    <string name="quick_grid_value">GRID 2x</string>
+    <string name="quick_theme_state">THEME: %1$s</string>
+    <string name="quick_icon_state">ICONS: %1$s</string>
+    <string name="quick_animation_state">ANIM: %1$s</string>
+    <string name="quick_animation_on">FAST</string>
+    <string name="quick_animation_off">NORMAL</string>
+    <string name="quick_taskbar_state">BAR: %1$s</string>
+    <string name="quick_taskbar_on">ON</string>
+    <string name="quick_taskbar_off">OFF</string>
+    <string name="quick_glow_percent">GLOW %1$d%%</string>
+    <string name="quick_grid_state">GRID %1$dx</string>
 </resources>

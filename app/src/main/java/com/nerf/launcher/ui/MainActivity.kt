@@ -13,8 +13,11 @@ import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.AppUtils
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconCache
+import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.IconProvider
+import com.nerf.launcher.util.PreferencesManager
 import com.nerf.launcher.util.StatusBarManager
+import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.viewmodel.LauncherViewModel
@@ -31,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var iconProvider: IconProvider
     private lateinit var hudController: HudController
     private var allApps: List<AppInfo> = emptyList()
+    private val themeNames by lazy { ThemeRepository.all.map { it.name } }
+    private val iconPackNames by lazy { IconPackManager.getAvailablePacks() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +59,7 @@ class MainActivity : AppCompatActivity() {
             viewModel.loadApps()
         }
 
+        setupQuickControls()
         setupConfigObservers()
         viewModel.loadApps()
     }
@@ -122,7 +128,120 @@ class MainActivity : AppCompatActivity() {
 
             applyStatusBarTheme(config)
             updateTaskbarIcons()
+            bindQuickControls(config)
         }
+    }
+
+    private fun setupQuickControls() {
+        binding.quickThemeBtn.setOnClickListener {
+            val current = ConfigRepository.get().config.value ?: return@setOnClickListener
+            val currentIndex = themeNames.indexOf(current.themeName).takeIf { it >= 0 } ?: 0
+            val nextTheme = themeNames[(currentIndex + 1) % themeNames.size]
+            PreferencesManager.saveSelectedTheme(this, nextTheme)
+            ConfigRepository.get().updateTheme(nextTheme)
+        }
+
+        binding.quickIconPackBtn.setOnClickListener {
+            if (iconPackNames.isEmpty()) return@setOnClickListener
+            val current = ConfigRepository.get().config.value ?: return@setOnClickListener
+            val currentIndex = iconPackNames.indexOf(current.iconPack).takeIf { it >= 0 } ?: 0
+            val nextPack = iconPackNames[(currentIndex + 1) % iconPackNames.size]
+            PreferencesManager.saveIconPack(this, nextPack)
+            ConfigRepository.get().updateIconPack(nextPack)
+        }
+
+        binding.quickAnimationBtn.setOnClickListener {
+            val current = ConfigRepository.get().config.value ?: return@setOnClickListener
+            val toggled = !current.animationSpeedEnabled
+            PreferencesManager.saveAnimationSpeed(this, toggled)
+            ConfigRepository.get().updateAnimationSpeed(toggled)
+        }
+
+        binding.quickTaskbarBtn.setOnClickListener {
+            val current = ConfigRepository.get().config.value ?: return@setOnClickListener
+            val toggled = !current.taskbarSettings.enabled
+            val settings = current.taskbarSettings.copy(enabled = toggled)
+            saveTaskbarSettings(settings)
+            ConfigRepository.get().updateTaskbarSettings(settings)
+        }
+
+        binding.quickGlowSeekbar.setOnSeekBarChangeListener(object :
+            android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(
+                seekBar: android.widget.SeekBar?,
+                progress: Int,
+                fromUser: Boolean
+            ) {
+                if (!fromUser) return
+                val value = progress / 100f
+                PreferencesManager.saveGlowIntensity(this@MainActivity, value)
+                ConfigRepository.get().updateGlowIntensity(value)
+            }
+
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
+        })
+
+        binding.quickGridSeekbar.setOnSeekBarChangeListener(object :
+            android.widget.SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(
+                seekBar: android.widget.SeekBar?,
+                progress: Int,
+                fromUser: Boolean
+            ) {
+                if (!fromUser) return
+                val gridSize = progress + 2
+                PreferencesManager.saveGridSize(this@MainActivity, gridSize)
+                ConfigRepository.get().updateGridSize(gridSize)
+            }
+
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
+        })
+    }
+
+    private fun bindQuickControls(config: AppConfig) {
+        binding.quickThemeBtn.text = getString(com.nerf.launcher.R.string.quick_theme_state, config.themeName)
+        binding.quickIconPackBtn.text = getString(com.nerf.launcher.R.string.quick_icon_state, config.iconPack)
+        val animStateRes = if (config.animationSpeedEnabled) {
+            com.nerf.launcher.R.string.quick_animation_on
+        } else {
+            com.nerf.launcher.R.string.quick_animation_off
+        }
+        binding.quickAnimationBtn.text = getString(
+            com.nerf.launcher.R.string.quick_animation_state,
+            getString(animStateRes)
+        )
+        val taskbarStateRes = if (config.taskbarSettings.enabled) {
+            com.nerf.launcher.R.string.quick_taskbar_on
+        } else {
+            com.nerf.launcher.R.string.quick_taskbar_off
+        }
+        binding.quickTaskbarBtn.text = getString(
+            com.nerf.launcher.R.string.quick_taskbar_state,
+            getString(taskbarStateRes)
+        )
+
+        val glowPercent = (config.glowIntensity * 100).toInt()
+        binding.quickGlowValue.text = getString(com.nerf.launcher.R.string.quick_glow_percent, glowPercent)
+        if (binding.quickGlowSeekbar.progress != glowPercent) {
+            binding.quickGlowSeekbar.progress = glowPercent
+        }
+
+        binding.quickGridValue.text = getString(com.nerf.launcher.R.string.quick_grid_state, config.gridSize)
+        val sliderProgress = (config.gridSize - 2).coerceIn(0, 4)
+        if (binding.quickGridSeekbar.progress != sliderProgress) {
+            binding.quickGridSeekbar.progress = sliderProgress
+        }
+    }
+
+    private fun saveTaskbarSettings(settings: TaskbarSettings) {
+        PreferencesManager.saveTaskbarHeight(this, settings.height)
+        PreferencesManager.saveTaskbarIconSize(this, settings.iconSize)
+        PreferencesManager.saveTaskbarBackgroundStyle(this, settings.backgroundStyle)
+        PreferencesManager.saveTaskbarTransparency(this, settings.transparency)
+        PreferencesManager.saveTaskbarEnabled(this, settings.enabled)
+        PreferencesManager.savePinnedApps(this, settings.pinnedApps)
     }
 
     private fun updateTaskbarIcons() {
