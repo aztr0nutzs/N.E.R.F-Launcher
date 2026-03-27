@@ -10,6 +10,8 @@ import android.os.Looper
 import android.os.PowerManager
 import android.os.StatFs
 import android.os.SystemClock
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -29,6 +31,8 @@ import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.viewmodel.LauncherViewModel
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.LinearInterpolator
 import java.util.Locale
 
 /**
@@ -49,6 +53,7 @@ class MainActivity : AppCompatActivity() {
     private val iconPackNames by lazy { IconPackManager.getAvailablePacks() }
     private val moduleRefreshHandler = Handler(Looper.getMainLooper())
     private val powerManager by lazy { getSystemService(PowerManager::class.java) }
+    private var scanlineSweepAnimator: ObjectAnimator? = null
 
     private val batteryReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
@@ -98,6 +103,8 @@ class MainActivity : AppCompatActivity() {
         setupQuickControls()
         setupConfigObservers()
         setupSystemModules()
+        setupSurfaceTransitions()
+        setupScanlineSweep()
         viewModel.loadApps()
     }
 
@@ -188,11 +195,60 @@ class MainActivity : AppCompatActivity() {
             updateSystemModules(current.copy(taskbarSettings = settings))
         }
         binding.reactorCore.setOnClickListener {
+            binding.reactorCore.animate()
+                .scaleX(0.97f)
+                .scaleY(0.97f)
+                .setDuration(80L)
+                .withEndAction {
+                    binding.reactorCore.animate()
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(140L)
+                        .start()
+                }
+                .start()
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val currentIndex = themeNames.indexOf(current.themeName).takeIf { it >= 0 } ?: 0
             val nextTheme = themeNames[(currentIndex + 1) % themeNames.size]
             PreferencesManager.saveSelectedTheme(this, nextTheme)
             ConfigRepository.get().updateTheme(nextTheme)
+        }
+    }
+
+    private fun setupSurfaceTransitions() {
+        listOf(binding.leftPanel, binding.corePanel, binding.rightPanel).forEachIndexed { index, view ->
+            view.alpha = 0f
+            view.translationY = 20f
+            view.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setStartDelay((index * 70L) + 40L)
+                .setDuration(280L)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+        }
+    }
+
+    private fun setupScanlineSweep() {
+        binding.scanlineOverlay.alpha = 0.22f
+        binding.scanlineOverlay.post {
+            scanlineSweepAnimator?.cancel()
+            scanlineSweepAnimator = ObjectAnimator.ofFloat(
+                binding.scanlineOverlay,
+                "translationY",
+                -binding.scanlineOverlay.height.toFloat(),
+                binding.scanlineOverlay.height.toFloat()
+            ).apply {
+                duration = 6_200L
+                repeatCount = ValueAnimator.INFINITE
+                repeatMode = ValueAnimator.RESTART
+                interpolator = LinearInterpolator()
+                if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) &&
+                    powerManager?.isPowerSaveMode != true
+                ) {
+                    start()
+                }
+            }
         }
     }
 
@@ -399,8 +455,21 @@ class MainActivity : AppCompatActivity() {
         // Do nothing – stay on launcher.
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (powerManager?.isPowerSaveMode == true) return
+        scanlineSweepAnimator?.start()
+    }
+
+    override fun onPause() {
+        scanlineSweepAnimator?.pause()
+        super.onPause()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        scanlineSweepAnimator?.cancel()
+        scanlineSweepAnimator = null
         moduleRefreshHandler.removeCallbacks(moduleRefreshTick)
         unregisterReceiver(batteryReceiver)
         hudController.release()
