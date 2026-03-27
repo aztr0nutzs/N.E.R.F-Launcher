@@ -1,7 +1,15 @@
 package com.nerf.launcher.ui
 
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
 import android.os.Bundle
+import android.os.Environment
+import android.os.Handler
+import android.os.Looper
+import android.os.PowerManager
+import android.os.StatFs
+import android.os.SystemClock
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -34,8 +42,36 @@ class MainActivity : AppCompatActivity() {
     private lateinit var iconProvider: IconProvider
     private lateinit var hudController: HudController
     private var allApps: List<AppInfo> = emptyList()
+    private var filteredAppCount: Int = 0
+    private var batteryPercent: Int? = null
+    private var isCharging: Boolean = false
     private val themeNames by lazy { ThemeRepository.all.map { it.name } }
     private val iconPackNames by lazy { IconPackManager.getAvailablePacks() }
+    private val moduleRefreshHandler = Handler(Looper.getMainLooper())
+    private val powerManager by lazy { getSystemService(PowerManager::class.java) }
+
+    private val batteryReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+            val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+            batteryPercent = if (level >= 0 && scale > 0) {
+                (level * 100 / scale).coerceIn(0, 100)
+            } else {
+                null
+            }
+            val status = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
+            isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                    status == BatteryManager.BATTERY_STATUS_FULL
+            updateSystemModules()
+        }
+    }
+
+    private val moduleRefreshTick = object : Runnable {
+        override fun run() {
+            updateSystemModules()
+            moduleRefreshHandler.postDelayed(this, 60_000L)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +97,7 @@ class MainActivity : AppCompatActivity() {
 
         setupQuickControls()
         setupConfigObservers()
+        setupSystemModules()
         viewModel.loadApps()
     }
 
@@ -108,7 +145,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
         adapter.submitList(filtered)
+        filteredAppCount = filtered.size
         binding.drawerResultCount.text = getString(com.nerf.launcher.R.string.drawer_result_count, filtered.size)
+        updateSystemModules()
     }
 
     private fun setupConfigObservers() {
@@ -129,7 +168,106 @@ class MainActivity : AppCompatActivity() {
             applyStatusBarTheme(config)
             updateTaskbarIcons()
             bindQuickControls(config)
+            updateSystemModules(config)
         }
+    }
+
+    private fun setupSystemModules() {
+        registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        moduleRefreshHandler.post(moduleRefreshTick)
+
+        binding.moduleEnergyCard.setOnClickListener { updateSystemModules() }
+        binding.moduleStorageCard.setOnClickListener { updateSystemModules() }
+        binding.moduleRuntimeCard.setOnClickListener { updateSystemModules() }
+        binding.moduleStateCard.setOnClickListener {
+            val current = ConfigRepository.get().config.value ?: return@setOnClickListener
+            val toggled = !current.taskbarSettings.enabled
+            val settings = current.taskbarSettings.copy(enabled = toggled)
+            saveTaskbarSettings(settings)
+            ConfigRepository.get().updateTaskbarSettings(settings)
+            updateSystemModules(current.copy(taskbarSettings = settings))
+        }
+        binding.reactorCore.setOnClickListener {
+            val current = ConfigRepository.get().config.value ?: return@setOnClickListener
+            val currentIndex = themeNames.indexOf(current.themeName).takeIf { it >= 0 } ?: 0
+            val nextTheme = themeNames[(currentIndex + 1) % themeNames.size]
+            PreferencesManager.saveSelectedTheme(this, nextTheme)
+            ConfigRepository.get().updateTheme(nextTheme)
+        }
+    }
+
+    private fun updateSystemModules(config: AppConfig? = ConfigRepository.get().config.value) {
+        val energy = batteryPercent
+        if (energy != null) {
+            val batteryStateTextRes = if (isCharging) {
+                com.nerf.launcher.R.string.modules_battery_charging
+            } else {
+                com.nerf.launcher.R.string.modules_battery_idle
+            }
+            binding.moduleEnergyValue.text = getString(
+                com.nerf.launcher.R.string.modules_energy_percent,
+                energy,
+                getString(batteryStateTextRes)
+            )
+            binding.moduleEnergyBar.progress = energy
+            binding.moduleEnergyBar.setActiveColor(
+                if (energy < 20) getColor(com.nerf.launcher.R.color.nerf_hud_magenta)
+                else getColor(com.nerf.launcher.R.color.nerf_hud_orange)
+            )
+        } else {
+            binding.moduleEnergyValue.text = "--"
+            binding.moduleEnergyBar.progress = 0
+        }
+
+        val storageStats = readStorageUsagePercent()
+        if (storageStats != null) {
+            binding.moduleStorageValue.text = getString(com.nerf.launcher.R.string.modules_storage_percent, storageStats)
+            binding.moduleStorageBar.progress = storageStats
+        } else {
+            binding.moduleStorageValue.text = getString(com.nerf.launcher.R.string.modules_storage_unavailable)
+            binding.moduleStorageBar.progress = 0
+        }
+
+        val uptimeDays = (SystemClock.elapsedRealtime() / (24 * 60 * 60 * 1000L)).toInt()
+        val uptimeHours = ((SystemClock.elapsedRealtime() / (60 * 60 * 1000L)) % 24).toInt()
+        binding.moduleRuntimeValue.text = getString(
+            com.nerf.launcher.R.string.modules_runtime_value,
+            uptimeDays,
+            uptimeHours
+        )
+
+        val interactiveState = if (powerManager?.isInteractive == true) {
+            getString(com.nerf.launcher.R.string.modules_state_active)
+        } else {
+            getString(com.nerf.launcher.R.string.modules_state_idle)
+        }
+        val powerMode = if (powerManager?.isPowerSaveMode == true) {
+            getString(com.nerf.launcher.R.string.modules_state_eco)
+        } else {
+            getString(com.nerf.launcher.R.string.modules_state_nominal)
+        }
+        binding.moduleStateValue.text = getString(
+            com.nerf.launcher.R.string.modules_state_value,
+            interactiveState,
+            powerMode
+        )
+
+        val appPopulation = if (allApps.isEmpty()) 0 else (filteredAppCount * 100 / allApps.size)
+        val batteryScore = energy ?: 0
+        val storageScore = storageStats?.let { 100 - it } ?: 0
+        val taskbarScore = if (config?.taskbarSettings?.enabled == true) 100 else 70
+        val reactorSync = ((appPopulation + batteryScore + storageScore + taskbarScore) / 4).coerceIn(0, 100)
+        binding.moduleReactorValue.text = getString(com.nerf.launcher.R.string.modules_reactor_sync, reactorSync)
+    }
+
+    private fun readStorageUsagePercent(): Int? {
+        val dataPath = Environment.getDataDirectory().absolutePath
+        val stats = StatFs(dataPath)
+        val totalBytes = stats.totalBytes
+        val availableBytes = stats.availableBytes
+        if (totalBytes <= 0L) return null
+        val usedBytes = (totalBytes - availableBytes).coerceAtLeast(0L)
+        return ((usedBytes * 100L) / totalBytes).toInt().coerceIn(0, 100)
     }
 
     private fun setupQuickControls() {
@@ -263,6 +401,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        moduleRefreshHandler.removeCallbacks(moduleRefreshTick)
+        unregisterReceiver(batteryReceiver)
         hudController.release()
         StatusBarManager.resetStatusBar(this)
     }
