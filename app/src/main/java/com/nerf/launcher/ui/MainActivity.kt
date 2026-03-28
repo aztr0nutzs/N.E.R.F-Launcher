@@ -12,6 +12,7 @@ import android.os.StatFs
 import android.os.SystemClock
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -110,6 +111,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         adapter = AppAdapter(iconProvider, onAppClicked = { app ->
+            binding.drawerSearchInput.clearFocus()
+            hideDrawerKeyboard()
             AppUtils.launchApp(this, app)
         }, lifecycleOwner = this)
 
@@ -227,6 +230,18 @@ class MainActivity : AppCompatActivity() {
                 .setInterpolator(AccelerateDecelerateInterpolator())
                 .start()
         }
+
+        binding.drawerShell.alpha = 0f
+        binding.drawerShell.translationY = 26f
+        binding.drawerShell.translationX = 16f
+        binding.drawerShell.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .translationX(0f)
+            .setStartDelay(210L)
+            .setDuration(320L)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .start()
     }
 
     private fun setupScanlineSweep() {
@@ -448,6 +463,12 @@ class MainActivity : AppCompatActivity() {
             ?: ThemeRepository.CLASSIC_NERF).primary
         val isLightTheme = com.nerf.launcher.util.ColorUtils.isColorLight(primaryColor)
         StatusBarManager.applyStatusBarTheme(this, primaryColor, isLightTheme)
+    }
+
+
+    private fun hideDrawerKeyboard() {
+        val imm = getSystemService(InputMethodManager::class.java) ?: return
+        imm.hideSoftInputFromWindow(binding.drawerSearchInput.windowToken, 0)
     }
 
     override fun onBackPressed() {

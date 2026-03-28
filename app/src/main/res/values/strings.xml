@@ -15,6 +15,9 @@
     <string name="hud_dock_value">DOCK %1$d</string>
     <string name="drawer_search_hint">Search launch matrix</string>
     <string name="drawer_result_count">%1$d VISIBLE</string>
+    <string name="drawer_shell_title">APP DRAWER</string>
+    <string name="drawer_shell_subtitle">N.E.R.F. SHELL</string>
+    <string name="drawer_header_label">LAUNCH MATRIX</string>
     <string name="quick_panel_title">QUICK PANEL</string>
     <string name="quick_theme_label">THEME</string>
     <string name="quick_icon_pack_label">ICONS</string>
