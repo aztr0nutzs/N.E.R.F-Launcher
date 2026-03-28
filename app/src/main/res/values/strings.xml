@@ -44,6 +44,11 @@
     <string name="quick_taskbar_state">TASKBAR %1$s</string>
     <string name="quick_taskbar_on">ON</string>
     <string name="quick_taskbar_off">OFF</string>
+    <string name="lock_surface_action">LOCK SURFACE</string>
+    <string name="lock_surface_action_cd">Open launcher-owned lock surface</string>
+    <string name="lock_surface_title">N.E.R.F. LOCK SURFACE</string>
+    <string name="lock_surface_scope_note">Launcher-owned surface only. It does not replace Android system lockscreen security.</string>
+    <string name="lock_surface_unlock">UNLOCK TO HOME SHELL</string>
     <string name="quick_glow_percent">GLOW FIELD %1$d%%</string>
     <string name="quick_grid_state">GRID DENSITY %1$dx</string>
     <string name="modules_system_title">SYSTEM MODULES</string>
