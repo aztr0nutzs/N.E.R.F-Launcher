@@ -9,8 +9,8 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
-import android.view.animation.DecelerateInterpolator
 import androidx.core.content.ContextCompat
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.nerf.launcher.R
 import kotlin.math.max
 
@@ -116,9 +116,10 @@ class SegmentedBarView @JvmOverloads constructor(
 
     private fun animateProgressTo(target: Float) {
         progressAnimator?.cancel()
+        val delta = kotlin.math.abs(target - animatedProgress)
         progressAnimator = ValueAnimator.ofFloat(animatedProgress, target).apply {
-            duration = 280L
-            interpolator = DecelerateInterpolator()
+            duration = (160L + (delta * 2.2f).toLong()).coerceIn(160L, 420L)
+            interpolator = FastOutSlowInInterpolator()
             addUpdateListener { animator ->
                 animatedProgress = animator.animatedValue as Float
                 invalidate()

@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
 import com.nerf.launcher.R
@@ -78,27 +79,59 @@ class ReactorCoreView @JvmOverloads constructor(
     }
 
     private val animator = ValueAnimator.ofFloat(0f, 360f).apply {
-        duration = 18_000L
+        duration = 22_000L
         repeatCount = ValueAnimator.INFINITE
         interpolator = LinearInterpolator()
         addUpdateListener {
             rotationPhase = it.animatedValue as Float
-            pulse = 0.9f + 0.1f * abs(sin(Math.toRadians(rotationPhase.toDouble()))).toFloat()
+            val basePhase = Math.toRadians(rotationPhase.toDouble())
+            val secondaryPhase = Math.toRadians((rotationPhase * 0.47f).toDouble())
+            val primaryPulse = abs(sin(basePhase)).toFloat()
+            val layeredPulse = abs(cos(secondaryPhase)).toFloat()
+            pulse = 0.965f + (primaryPulse * 0.023f) + (layeredPulse * 0.012f)
+            invalidate()
+        }
+    }
+
+    private val tapAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+        duration = 260L
+        interpolator = AccelerateDecelerateInterpolator()
+        addUpdateListener {
+            val phase = it.animatedValue as Float
+            val t = if (phase <= 0.5f) phase * 2f else (1f - phase) * 2f
+            tapPulseBoost = t * 0.018f
             invalidate()
         }
     }
 
     private var rotationPhase: Float = 0f
     private var pulse: Float = 1f
+    private var tapPulseBoost: Float = 0f
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (!animator.isStarted) animator.start()
+        if (!animator.isStarted && visibility == VISIBLE) animator.start()
     }
 
     override fun onDetachedFromWindow() {
+        if (tapAnimator.isRunning) tapAnimator.cancel()
         if (animator.isRunning) animator.cancel()
         super.onDetachedFromWindow()
+    }
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+        if (visibility == VISIBLE) {
+            if (!animator.isStarted) animator.start()
+        } else {
+            if (animator.isRunning) animator.cancel()
+        }
+    }
+
+    override fun performClick(): Boolean {
+        if (tapAnimator.isRunning) tapAnimator.cancel()
+        tapAnimator.start()
+        return super.performClick()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -142,7 +175,7 @@ class ReactorCoreView @JvmOverloads constructor(
         )
         // Base ambient layers and inset depth.
         fillPaint.color = Color.argb(70, Color.red(neonCyan), Color.green(neonCyan), Color.blue(neonCyan))
-        canvas.drawCircle(cx, cy, radius * pulse, fillPaint)
+        canvas.drawCircle(cx, cy, radius * (pulse + tapPulseBoost), fillPaint)
         fillPaint.color = Color.argb(135, 12, 16, 20)
         canvas.drawCircle(cx, cy, radius * 0.91f, fillPaint)
         fillPaint.color = Color.argb(190, 5, 8, 10)
@@ -210,7 +243,7 @@ class ReactorCoreView @JvmOverloads constructor(
 
         // Core inset stack.
         fillPaint.color = Color.argb(220, Color.red(coreGlow), Color.green(coreGlow), Color.blue(coreGlow))
-        canvas.drawCircle(cx, cy, radius * 0.21f * pulse, fillPaint)
+        canvas.drawCircle(cx, cy, radius * 0.21f * (pulse + (tapPulseBoost * 0.85f)), fillPaint)
         fillPaint.color = Color.argb(230, 20, 26, 31)
         canvas.drawCircle(cx, cy, radius * 0.17f, fillPaint)
         fillPaint.color = Color.argb(255, 8, 10, 14)

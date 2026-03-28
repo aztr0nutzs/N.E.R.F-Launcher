@@ -12,10 +12,15 @@ import android.os.StatFs
 import android.os.SystemClock
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
+import androidx.interpolator.view.animation.FastOutLinearInInterpolator
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.recyclerview.widget.GridLayoutManager
 import com.nerf.launcher.adapter.AppAdapter
 import com.nerf.launcher.databinding.ActivityMainBinding
@@ -32,7 +37,6 @@ import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.viewmodel.LauncherViewModel
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import java.util.Locale
 
@@ -55,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     private val moduleRefreshHandler = Handler(Looper.getMainLooper())
     private val powerManager by lazy { getSystemService(PowerManager::class.java) }
     private var scanlineSweepAnimator: ObjectAnimator? = null
+    private var scanlineOpacityAnimator: ValueAnimator? = null
 
     private val batteryReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
@@ -100,6 +105,7 @@ class MainActivity : AppCompatActivity() {
         binding.reloadTile.setOnClickListener {
             viewModel.loadApps()
         }
+        setupPressFeedbacks()
 
         setupQuickControls()
         setupConfigObservers()
@@ -200,18 +206,6 @@ class MainActivity : AppCompatActivity() {
             updateSystemModules(current.copy(taskbarSettings = settings))
         }
         binding.reactorCore.setOnClickListener {
-            binding.reactorCore.animate()
-                .scaleX(0.97f)
-                .scaleY(0.97f)
-                .setDuration(80L)
-                .withEndAction {
-                    binding.reactorCore.animate()
-                        .scaleX(1f)
-                        .scaleY(1f)
-                        .setDuration(140L)
-                        .start()
-                }
-                .start()
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val currentIndex = themeNames.indexOf(current.themeName).takeIf { it >= 0 } ?: 0
             val nextTheme = themeNames[(currentIndex + 1) % themeNames.size]
@@ -223,40 +217,41 @@ class MainActivity : AppCompatActivity() {
     private fun setupSurfaceTransitions() {
         listOf(binding.leftPanel, binding.corePanel, binding.rightPanel).forEachIndexed { index, view ->
             view.alpha = 0f
-            view.translationY = 20f
+            view.translationY = 16f
             view.animate()
                 .alpha(1f)
                 .translationY(0f)
-                .setStartDelay((index * 70L) + 40L)
-                .setDuration(280L)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setStartDelay((index * 56L) + 48L)
+                .setDuration(310L)
+                .setInterpolator(FastOutSlowInInterpolator())
                 .start()
         }
 
         binding.drawerShell.alpha = 0f
-        binding.drawerShell.translationY = 26f
-        binding.drawerShell.translationX = 16f
+        binding.drawerShell.translationY = 20f
+        binding.drawerShell.translationX = 10f
         binding.drawerShell.animate()
             .alpha(1f)
             .translationY(0f)
             .translationX(0f)
-            .setStartDelay(210L)
-            .setDuration(320L)
-            .setInterpolator(AccelerateDecelerateInterpolator())
+            .setStartDelay(185L)
+            .setDuration(330L)
+            .setInterpolator(LinearOutSlowInInterpolator())
             .start()
     }
 
     private fun setupScanlineSweep() {
-        binding.scanlineOverlay.alpha = 0.22f
+        binding.scanlineOverlay.alpha = 0.14f
         binding.scanlineOverlay.post {
             scanlineSweepAnimator?.cancel()
+            scanlineOpacityAnimator?.cancel()
             scanlineSweepAnimator = ObjectAnimator.ofFloat(
                 binding.scanlineOverlay,
                 "translationY",
                 -binding.scanlineOverlay.height.toFloat(),
                 binding.scanlineOverlay.height.toFloat()
             ).apply {
-                duration = 6_200L
+                duration = 8_400L
                 repeatCount = ValueAnimator.INFINITE
                 repeatMode = ValueAnimator.RESTART
                 interpolator = LinearInterpolator()
@@ -266,6 +261,72 @@ class MainActivity : AppCompatActivity() {
                     start()
                 }
             }
+            scanlineOpacityAnimator = ValueAnimator.ofFloat(0.11f, 0.17f).apply {
+                duration = 4_800L
+                repeatCount = ValueAnimator.INFINITE
+                repeatMode = ValueAnimator.REVERSE
+                interpolator = FastOutLinearInInterpolator()
+                addUpdateListener { animator ->
+                    binding.scanlineOverlay.alpha = animator.animatedValue as Float
+                }
+                if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) &&
+                    powerManager?.isPowerSaveMode != true
+                ) {
+                    start()
+                }
+            }
+        }
+    }
+
+    private fun setupPressFeedbacks() {
+        val pressableViews = listOf(
+            binding.openSettingsTile,
+            binding.reloadTile,
+            binding.quickThemeBtn,
+            binding.quickIconPackBtn,
+            binding.quickAnimationBtn,
+            binding.quickTaskbarBtn,
+            binding.moduleEnergyCard,
+            binding.moduleStorageCard,
+            binding.moduleRuntimeCard,
+            binding.moduleStateCard,
+            binding.reactorCore
+        )
+        pressableViews.forEach { view ->
+            view.applyPressFeedback()
+        }
+    }
+
+    private fun View.applyPressFeedback(
+        downScale: Float = 0.975f,
+        downDuration: Long = 72L,
+        upDuration: Long = 150L
+    ) {
+        setOnTouchListener { touchedView, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    touchedView.animate().cancel()
+                    touchedView.animate()
+                        .scaleX(downScale)
+                        .scaleY(downScale)
+                        .alpha(0.94f)
+                        .setDuration(downDuration)
+                        .setInterpolator(FastOutSlowInInterpolator())
+                        .start()
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    touchedView.animate().cancel()
+                    touchedView.animate()
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .alpha(1f)
+                        .setDuration(upDuration)
+                        .setInterpolator(LinearOutSlowInInterpolator())
+                        .start()
+                }
+            }
+            false
         }
     }
 
@@ -481,17 +542,21 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         if (powerManager?.isPowerSaveMode == true) return
         scanlineSweepAnimator?.start()
+        scanlineOpacityAnimator?.start()
     }
 
     override fun onPause() {
         scanlineSweepAnimator?.pause()
+        scanlineOpacityAnimator?.pause()
         super.onPause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         scanlineSweepAnimator?.cancel()
+        scanlineOpacityAnimator?.cancel()
         scanlineSweepAnimator = null
+        scanlineOpacityAnimator = null
         moduleRefreshHandler.removeCallbacks(moduleRefreshTick)
         unregisterReceiver(batteryReceiver)
         hudController.release()

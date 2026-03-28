@@ -7,10 +7,11 @@ import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.view.MotionEvent
 import android.view.View
-import android.view.animation.AnimationUtils
-import android.view.animation.LinearInterpolator
 import android.widget.TextView
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
@@ -107,8 +108,27 @@ class HudController(
     private fun setupTapAnimation(view: View) {
         view.setOnTouchListener { v, event ->
             when (event.actionMasked) {
-                android.view.MotionEvent.ACTION_DOWN -> {
-                    v.startAnimation(AnimationUtils.loadAnimation(activity, R.anim.hud_recoil))
+                MotionEvent.ACTION_DOWN -> {
+                    v.animate().cancel()
+                    v.animate()
+                        .scaleX(0.972f)
+                        .scaleY(0.972f)
+                        .alpha(0.93f)
+                        .setDuration(70L)
+                        .setInterpolator(FastOutSlowInInterpolator())
+                        .start()
+                    false
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    v.animate().cancel()
+                    v.animate()
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .alpha(1f)
+                        .setDuration(140L)
+                        .setInterpolator(LinearOutSlowInInterpolator())
+                        .start()
                     false
                 }
 
@@ -134,13 +154,13 @@ class HudController(
     private fun startHudBreathing() {
         hudBreathingAnimator?.cancel()
         hudBreathingAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 4_800L
+            duration = 6_400L
             repeatCount = ValueAnimator.INFINITE
             repeatMode = ValueAnimator.REVERSE
-            interpolator = LinearInterpolator()
+            interpolator = FastOutSlowInInterpolator()
             addUpdateListener { animator ->
                 val phase = animator.animatedValue as Float
-                hudView.alpha = 0.97f + (phase * 0.03f)
+                hudView.alpha = 0.982f + (phase * 0.018f)
             }
             start()
         }
