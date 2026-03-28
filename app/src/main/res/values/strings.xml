@@ -18,6 +18,9 @@
     <string name="drawer_shell_title">APP DRAWER</string>
     <string name="drawer_shell_subtitle">N.E.R.F. SHELL</string>
     <string name="drawer_header_label">LAUNCH MATRIX</string>
+    <string name="hud_brand_signature">N.E.R.F. OPS</string>
+    <string name="nerf_brand_mark_cd">N.E.R.F. brand mark</string>
+    <string name="drawer_brand_mark_cd">Launch matrix brand mark</string>
     <string name="quick_panel_title">CONTROL BAY</string>
     <string name="quick_panel_subtitle">LAUNCHER-OWNED SYSTEMS</string>
     <string name="quick_row_palette">PALETTE RAIL</string>
