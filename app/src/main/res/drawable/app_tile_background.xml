@@ -1,23 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
-        <shape android:shape="rectangle">
-            <gradient
-                android:angle="90"
-                android:endColor="#2400E9FF"
-                android:startColor="#30000000" />
-            <stroke android:width="1dp" android:color="#FF00E9FF" />
-            <corners android:radius="@dimen/nerf_tile_radius_small" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="@dimen/nerf_tile_radius_small" />
+                    <solid android:color="#E607080B" />
+                    <stroke
+                        android:width="1dp"
+                        android:color="#FF00E9FF" />
+                </shape>
+            </item>
+            <item
+                android:left="1dp"
+                android:top="1dp"
+                android:right="1dp"
+                android:bottom="1dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="@dimen/nerf_tile_radius_small" />
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#E22A303B"
+                        android:endColor="#E012141A" />
+                    <stroke
+                        android:width="1dp"
+                        android:color="#AA86DFFF" />
+                </shape>
+            </item>
+            <item
+                android:left="3dp"
+                android:top="3dp"
+                android:right="3dp"
+                android:bottom="3dp"
+                android:gravity="top|start">
+                <shape android:shape="rectangle">
+                    <size android:height="2dp" />
+                    <solid android:color="#9918E8FF" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
+
     <item>
-        <shape android:shape="rectangle">
-            <gradient
-                android:angle="90"
-                android:endColor="#12000000"
-                android:startColor="#1800E9FF" />
-            <stroke android:width="1dp" android:color="@color/nerf_drawer_border" />
-            <corners android:radius="@dimen/nerf_tile_radius_small" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="@dimen/nerf_tile_radius_small" />
+                    <solid android:color="#D8060709" />
+                    <stroke
+                        android:width="1dp"
+                        android:color="@color/nerf_drawer_border" />
+                </shape>
+            </item>
+            <item
+                android:left="1dp"
+                android:top="1dp"
+                android:right="1dp"
+                android:bottom="1dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="@dimen/nerf_tile_radius_small" />
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#CF16191F"
+                        android:endColor="#D00E1015" />
+                    <stroke
+                        android:width="1dp"
+                        android:color="#668D94A3" />
+                </shape>
+            </item>
+            <item
+                android:left="3dp"
+                android:top="3dp"
+                android:right="3dp"
+                android:bottom="3dp"
+                android:gravity="top|start">
+                <shape android:shape="rectangle">
+                    <size android:height="2dp" />
+                    <gradient
+                        android:angle="0"
+                        android:startColor="#5A00E9FF"
+                        android:endColor="#1400E9FF" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
 </selector>
