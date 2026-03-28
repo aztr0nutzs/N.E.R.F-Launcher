@@ -2,6 +2,7 @@ package com.nerf.launcher.ui
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
@@ -52,9 +53,16 @@ class TaskbarView @JvmOverloads constructor(
     }
 
     fun updateIcons(packageNames: List<String>) {
-        syncIconSlots(packageNames.size)
+        val renderablePackages = packageNames
+            .asSequence()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+            .toList()
+
+        syncIconSlots(renderablePackages.size)
         iconViews.forEachIndexed { index, view ->
-            bindIconView(view, packageNames[index])
+            bindIconView(view, renderablePackages[index])
         }
     }
 
