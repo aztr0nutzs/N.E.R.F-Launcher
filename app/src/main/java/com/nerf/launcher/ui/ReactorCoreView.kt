@@ -11,7 +11,10 @@ import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
 import com.nerf.launcher.R
+import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.min
+import kotlin.math.sin
 
 /**
  * Draws the central NERF reactor/core motif with rotating segmented rings.
@@ -28,35 +31,44 @@ class ReactorCoreView @JvmOverloads constructor(
     private val accentRing = ContextCompat.getColor(context, R.color.nerf_reactor_accent_ring)
     private val coreGlow = ContextCompat.getColor(context, R.color.nerf_reactor_core_glow)
     private val coreText = ContextCompat.getColor(context, R.color.nerf_accent)
+    private val hudOrange = ContextCompat.getColor(context, R.color.nerf_hud_orange)
+    private val hudMagenta = ContextCompat.getColor(context, R.color.nerf_hud_magenta)
+    private val hudLime = ContextCompat.getColor(context, R.color.nerf_hud_lime)
 
-    private val ringPalette = intArrayOf(
-        neonCyan,
-        ContextCompat.getColor(context, R.color.nerf_hud_orange),
-        ContextCompat.getColor(context, R.color.nerf_hud_magenta),
-        ContextCompat.getColor(context, R.color.nerf_hud_lime)
-    )
+    private val ringPalette = intArrayOf(neonCyan, hudOrange, hudMagenta, hudLime)
 
-    private val outerRect = RectF()
-    private val midRect = RectF()
-    private val innerRect = RectF()
+    private val armorOuterRect = RectF()
+    private val armorInnerRect = RectF()
+    private val segmentedBandOuterRect = RectF()
+    private val segmentedBandInnerRect = RectF()
+    private val coreRingRect = RectF()
 
-    private val outerStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val armorStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeCap = Paint.Cap.ROUND
+        strokeCap = Paint.Cap.BUTT
     }
 
-    private val midStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val segmentedStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeCap = Paint.Cap.ROUND
+        strokeCap = Paint.Cap.BUTT
     }
 
-    private val innerFill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
     }
 
     private val accentStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        strokeCap = Paint.Cap.ROUND
+        strokeCap = Paint.Cap.BUTT
+    }
+
+    private val detailStroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.BUTT
+    }
+
+    private val detailFill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
     }
 
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -71,7 +83,7 @@ class ReactorCoreView @JvmOverloads constructor(
         interpolator = LinearInterpolator()
         addUpdateListener {
             rotationPhase = it.animatedValue as Float
-            pulse = 0.93f + 0.07f * kotlin.math.abs(kotlin.math.sin(Math.toRadians(rotationPhase.toDouble()))).toFloat()
+            pulse = 0.9f + 0.1f * abs(sin(Math.toRadians(rotationPhase.toDouble()))).toFloat()
             invalidate()
         }
     }
@@ -103,64 +115,120 @@ class ReactorCoreView @JvmOverloads constructor(
         val cy = height / 2f
         val radius = min(width, height) * 0.47f
 
-        val outerWidth = radius * 0.13f
-        outerStroke.strokeWidth = outerWidth
-
-        val midWidth = radius * 0.1f
-        midStroke.strokeWidth = midWidth
-
-        accentStroke.strokeWidth = radius * 0.05f
-
-        outerRect.set(cx - radius, cy - radius, cx + radius, cy + radius)
-        midRect.set(
-            cx - radius * 0.73f,
-            cy - radius * 0.73f,
-            cx + radius * 0.73f,
-            cy + radius * 0.73f
+        armorOuterRect.set(cx - radius, cy - radius, cx + radius, cy + radius)
+        armorInnerRect.set(
+            cx - radius * 0.83f,
+            cy - radius * 0.83f,
+            cx + radius * 0.83f,
+            cy + radius * 0.83f
         )
-        innerRect.set(
-            cx - radius * 0.5f,
-            cy - radius * 0.5f,
-            cx + radius * 0.5f,
-            cy + radius * 0.5f
+        segmentedBandOuterRect.set(
+            cx - radius * 0.72f,
+            cy - radius * 0.72f,
+            cx + radius * 0.72f,
+            cy + radius * 0.72f
         )
-
-        // Ambient glow
-        innerFill.color = Color.argb(
-            90,
-            Color.red(neonCyan),
-            Color.green(neonCyan),
-            Color.blue(neonCyan)
+        segmentedBandInnerRect.set(
+            cx - radius * 0.6f,
+            cy - radius * 0.6f,
+            cx + radius * 0.6f,
+            cy + radius * 0.6f
         )
-        canvas.drawCircle(cx, cy, radius * 0.98f * pulse, innerFill)
+        coreRingRect.set(
+            cx - radius * 0.47f,
+            cy - radius * 0.47f,
+            cx + radius * 0.47f,
+            cy + radius * 0.47f
+        )
+        // Base ambient layers and inset depth.
+        fillPaint.color = Color.argb(70, Color.red(neonCyan), Color.green(neonCyan), Color.blue(neonCyan))
+        canvas.drawCircle(cx, cy, radius * pulse, fillPaint)
+        fillPaint.color = Color.argb(135, 12, 16, 20)
+        canvas.drawCircle(cx, cy, radius * 0.91f, fillPaint)
+        fillPaint.color = Color.argb(190, 5, 8, 10)
+        canvas.drawCircle(cx, cy, radius * 0.78f, fillPaint)
 
-        // Outer segmented ring
-        repeat(16) { idx ->
-            outerStroke.color = ringPalette[idx % ringPalette.size]
-            val start = rotationPhase + idx * 22.5f
-            canvas.drawArc(outerRect, start, 14f, false, outerStroke)
+        // Thick armor ring.
+        armorStroke.strokeWidth = radius * 0.15f
+        repeat(18) { index ->
+            armorStroke.color = if (index % 2 == 0) Color.argb(220, 60, 72, 78) else Color.argb(150, 35, 45, 50)
+            canvas.drawArc(
+                armorOuterRect,
+                rotationPhase * 0.18f + index * 20f,
+                if (index % 3 == 0) 14f else 10f,
+                false,
+                armorStroke
+            )
         }
 
-        // Middle ring
-        repeat(10) { idx ->
-            midStroke.color = if (idx % 2 == 0) midRingA else midRingB
-            canvas.drawArc(midRect, -rotationPhase * 1.5f + idx * 36f, 20f, false, midStroke)
+        // Mechanical second armor pass to add edge definition.
+        armorStroke.strokeWidth = radius * 0.038f
+        armorStroke.color = Color.argb(185, 128, 143, 153)
+        repeat(12) { index ->
+            canvas.drawArc(armorInnerRect, -rotationPhase * 0.36f + index * 30f, 11f, false, armorStroke)
         }
 
-        // Core ring accents
+        // Segmented active band (primary motion layer).
+        segmentedStroke.strokeWidth = radius * 0.108f
+        repeat(24) { index ->
+            segmentedStroke.color = ringPalette[index % ringPalette.size]
+            val sweep = if (index % 4 == 0) 8f else 5.5f
+            canvas.drawArc(segmentedBandOuterRect, rotationPhase + index * 15f, sweep, false, segmentedStroke)
+        }
+
+        // Secondary opposite-moving segmented band for layered depth.
+        segmentedStroke.strokeWidth = radius * 0.05f
+        repeat(30) { index ->
+            segmentedStroke.color = if (index % 2 == 0) midRingA else midRingB
+            canvas.drawArc(segmentedBandInnerRect, -rotationPhase * 1.35f + index * 12f, 4.5f, false, segmentedStroke)
+        }
+
+        // Branded accent ring and neon gates.
+        accentStroke.strokeWidth = radius * 0.072f
         accentStroke.color = accentRing
-        repeat(4) { idx ->
-            canvas.drawArc(innerRect, idx * 90f + rotationPhase * 2f, 42f, false, accentStroke)
+        repeat(6) { index ->
+            canvas.drawArc(coreRingRect, index * 60f + rotationPhase * 0.7f, 20f, false, accentStroke)
         }
 
-        // Core center and label
-        innerFill.color = coreGlow
-        canvas.drawCircle(cx, cy, radius * 0.22f * pulse, innerFill)
-        innerFill.color = Color.parseColor("#1A1A1A")
-        canvas.drawCircle(cx, cy, radius * 0.13f, innerFill)
+        detailStroke.strokeWidth = radius * 0.02f
+        repeat(4) { index ->
+            detailStroke.color = if (index % 2 == 0) hudOrange else hudMagenta
+            canvas.drawArc(coreRingRect, index * 90f - rotationPhase * 1.8f + 12f, 17f, false, detailStroke)
+        }
 
-        textPaint.color = coreText
-        textPaint.textSize = radius * 0.26f
-        canvas.drawText("N", cx, cy + radius * 0.1f, textPaint)
+        // Mechanical asymmetry pods.
+        val podOrbit = radius * 0.63f
+        repeat(3) { index ->
+            val angle = Math.toRadians((rotationPhase * 0.25f + index * 125f + 20f).toDouble())
+            val px = cx + cos(angle).toFloat() * podOrbit
+            val py = cy + sin(angle).toFloat() * podOrbit
+            detailFill.color = if (index == 0) hudLime else Color.argb(210, 48, 60, 64)
+            canvas.drawCircle(px, py, radius * if (index == 1) 0.026f else 0.02f, detailFill)
+            detailStroke.color = Color.argb(180, 180, 200, 208)
+            canvas.drawCircle(px, py, radius * 0.034f, detailStroke)
+        }
+
+        // Core inset stack.
+        fillPaint.color = Color.argb(220, Color.red(coreGlow), Color.green(coreGlow), Color.blue(coreGlow))
+        canvas.drawCircle(cx, cy, radius * 0.21f * pulse, fillPaint)
+        fillPaint.color = Color.argb(230, 20, 26, 31)
+        canvas.drawCircle(cx, cy, radius * 0.17f, fillPaint)
+        fillPaint.color = Color.argb(255, 8, 10, 14)
+        canvas.drawCircle(cx, cy, radius * 0.125f, fillPaint)
+
+        // Center branding treatment.
+        detailFill.color = coreText
+        val barHeight = radius * 0.034f
+        val barWidth = radius * 0.23f
+        canvas.drawRect(cx - barWidth, cy - barHeight * 0.58f, cx + barWidth, cy + barHeight * 0.58f, detailFill)
+        detailFill.color = Color.argb(230, 8, 10, 14)
+        canvas.drawRect(cx - barWidth * 0.32f, cy - barHeight * 0.44f, cx - barWidth * 0.12f, cy + barHeight * 0.44f, detailFill)
+        canvas.drawRect(cx + barWidth * 0.08f, cy - barHeight * 0.44f, cx + barWidth * 0.28f, cy + barHeight * 0.44f, detailFill)
+        detailFill.color = coreText
+        canvas.drawRect(cx - radius * 0.043f, cy - radius * 0.086f, cx + radius * 0.043f, cy + radius * 0.086f, detailFill)
+
+        textPaint.color = neonCyan
+        textPaint.textSize = radius * 0.075f
+        canvas.drawText("NERF", cx, cy + radius * 0.29f, textPaint)
     }
 }
