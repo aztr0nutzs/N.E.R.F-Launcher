@@ -38,12 +38,16 @@ import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.viewmodel.LauncherViewModel
 import android.view.animation.LinearInterpolator
+import java.util.Calendar
 import java.util.Locale
 
 /**
  * Main launcher screen – app grid + HUD + taskbar.
  */
 class MainActivity : AppCompatActivity() {
+    companion object {
+        private const val STATE_LOCK_SURFACE_VISIBLE = "state_lock_surface_visible"
+    }
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: LauncherViewModel by viewModels()
@@ -57,9 +61,11 @@ class MainActivity : AppCompatActivity() {
     private val themeNames by lazy { ThemeRepository.all.map { it.name } }
     private val iconPackNames by lazy { IconPackManager.getAvailablePacks() }
     private val moduleRefreshHandler = Handler(Looper.getMainLooper())
+    private val lockSurfaceClockHandler = Handler(Looper.getMainLooper())
     private val powerManager by lazy { getSystemService(PowerManager::class.java) }
     private var scanlineSweepAnimator: ObjectAnimator? = null
     private var scanlineOpacityAnimator: ValueAnimator? = null
+    private var isLockSurfaceVisible: Boolean = false
 
     private val batteryReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
@@ -84,6 +90,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val lockSurfaceClockTick = object : Runnable {
+        override fun run() {
+            updateLockSurfaceTimestamp()
+            lockSurfaceClockHandler.postDelayed(this, 60_000L - (SystemClock.uptimeMillis() % 60_000L))
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -105,13 +118,20 @@ class MainActivity : AppCompatActivity() {
         binding.reloadTile.setOnClickListener {
             viewModel.loadApps()
         }
+        binding.lockSurfaceTile.setOnClickListener {
+            showLockSurface()
+        }
         setupPressFeedbacks()
+        setupLockSurface()
 
         setupQuickControls()
         setupConfigObservers()
         setupSystemModules()
         setupSurfaceTransitions()
         setupScanlineSweep()
+        if (savedInstanceState?.getBoolean(STATE_LOCK_SURFACE_VISIBLE) == true) {
+            showLockSurface()
+        }
         viewModel.loadApps()
     }
 
@@ -290,11 +310,79 @@ class MainActivity : AppCompatActivity() {
             binding.moduleStorageCard,
             binding.moduleRuntimeCard,
             binding.moduleStateCard,
-            binding.reactorCore
+            binding.reactorCore,
+            binding.lockSurfaceTile,
+            binding.lockSurfaceUnlockButton
         )
         pressableViews.forEach { view ->
             view.applyPressFeedback()
         }
+    }
+
+    private fun setupLockSurface() {
+        binding.lockSurfaceUnlockButton.setOnClickListener {
+            hideLockSurface()
+        }
+        binding.lockSurfaceRoot.setOnClickListener {
+            // Keep touches inside lock surface until user explicitly unlocks.
+        }
+    }
+
+    private fun showLockSurface() {
+        if (isLockSurfaceVisible) return
+        isLockSurfaceVisible = true
+        binding.lockSurfaceRoot.visibility = View.VISIBLE
+        binding.lockSurfaceRoot.alpha = 0f
+        binding.lockSurfaceRoot.animate()
+            .alpha(1f)
+            .setDuration(180L)
+            .setInterpolator(FastOutSlowInInterpolator())
+            .start()
+        hideDrawerKeyboard()
+        binding.drawerSearchInput.clearFocus()
+        lockSurfaceClockHandler.removeCallbacks(lockSurfaceClockTick)
+        lockSurfaceClockHandler.post(lockSurfaceClockTick)
+    }
+
+    private fun hideLockSurface() {
+        if (!isLockSurfaceVisible) return
+        isLockSurfaceVisible = false
+        lockSurfaceClockHandler.removeCallbacks(lockSurfaceClockTick)
+        binding.lockSurfaceRoot.animate()
+            .alpha(0f)
+            .setDuration(150L)
+            .setInterpolator(LinearOutSlowInInterpolator())
+            .withEndAction {
+                binding.lockSurfaceRoot.visibility = View.GONE
+            }
+            .start()
+    }
+
+    private fun updateLockSurfaceTimestamp() {
+        val now = Calendar.getInstance()
+        binding.lockSurfaceTime.text = String.format(
+            Locale.getDefault(),
+            "%02d:%02d",
+            now.get(Calendar.HOUR_OF_DAY),
+            now.get(Calendar.MINUTE)
+        )
+        val locale = Locale.getDefault()
+        val day = now.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, locale)
+            ?.uppercase(locale) ?: "DAY"
+        val month = now.getDisplayName(Calendar.MONTH, Calendar.SHORT, locale)
+            ?.uppercase(locale) ?: "MON"
+        binding.lockSurfaceDate.text = String.format(
+            locale,
+            "%s %02d %s",
+            day,
+            now.get(Calendar.DAY_OF_MONTH),
+            month
+        )
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(STATE_LOCK_SURFACE_VISIBLE, isLockSurfaceVisible)
     }
 
     private fun View.applyPressFeedback(
@@ -535,17 +623,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        if (isLockSurfaceVisible) {
+            hideLockSurface()
+            return
+        }
         // Do nothing – stay on launcher.
     }
 
     override fun onResume() {
         super.onResume()
+        if (isLockSurfaceVisible) {
+            lockSurfaceClockHandler.post(lockSurfaceClockTick)
+        }
         if (powerManager?.isPowerSaveMode == true) return
         scanlineSweepAnimator?.start()
         scanlineOpacityAnimator?.start()
     }
 
     override fun onPause() {
+        lockSurfaceClockHandler.removeCallbacks(lockSurfaceClockTick)
         scanlineSweepAnimator?.pause()
         scanlineOpacityAnimator?.pause()
         super.onPause()
@@ -558,6 +654,7 @@ class MainActivity : AppCompatActivity() {
         scanlineSweepAnimator = null
         scanlineOpacityAnimator = null
         moduleRefreshHandler.removeCallbacks(moduleRefreshTick)
+        lockSurfaceClockHandler.removeCallbacks(lockSurfaceClockTick)
         unregisterReceiver(batteryReceiver)
         hudController.release()
         StatusBarManager.resetStatusBar(this)

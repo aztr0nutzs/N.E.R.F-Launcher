@@ -302,6 +302,17 @@
                     android:text="SCAN APPS"
                     android:textColor="@color/nerf_hud_orange"
                     android:textSize="12sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/lock_surface_tile"
+                    style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/nerf_hud_button_height"
+                    android:layout_marginTop="6dp"
+                    android:contentDescription="@string/lock_surface_action_cd"
+                    android:text="@string/lock_surface_action"
+                    android:textColor="@color/nerf_hud_magenta"
+                    android:textSize="12sp" />
             </LinearLayout>
 
             <FrameLayout
@@ -636,6 +647,73 @@
             android:layout_marginTop="6dp"
             android:gravity="center_vertical"
             android:orientation="horizontal" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/lock_surface_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F0000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:background="@drawable/hud_frame_panel"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/lock_surface_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lock_surface_title"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                android:textColor="@color/nerf_hud_magenta" />
+
+            <TextView
+                android:id="@+id/lock_surface_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
+                android:textColor="@color/nerf_hud_cyan"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/lock_surface_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
+                android:textColor="@color/nerf_hud_panel_text_primary" />
+
+            <TextView
+                android:id="@+id/lock_surface_scope_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/lock_surface_scope_note"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                android:textColor="@color/nerf_hud_panel_text_secondary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/lock_surface_unlock_button"
+                style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/nerf_hud_button_height"
+                android:layout_marginTop="12dp"
+                android:contentDescription="@string/lock_surface_unlock"
+                android:text="@string/lock_surface_unlock"
+                android:textColor="@color/nerf_hud_lime"
+                android:textSize="12sp" />
+        </LinearLayout>
     </LinearLayout>
 
 </FrameLayout>
