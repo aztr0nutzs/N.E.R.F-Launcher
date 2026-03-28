@@ -6,8 +6,11 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.databinding.ItemSettingBinding
-import com.nerf.launcher.util.SettingType
+import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.SettingItem
+import com.nerf.launcher.util.SettingsType
+import com.nerf.launcher.util.PreferencesManager
+import com.nerf.launcher.util.ThemeRepository
 
 /**
  * Adapter for the Settings RecyclerView.
@@ -23,7 +26,7 @@ class SettingsAdapter(
         fun bind(item: SettingItem) {
             binding.title.text = item.title
             when (item.type) {
-                SettingType.THEME -> {
+                SettingsType.THEME -> {
                     binding.themeContainer.visibility = View.VISIBLE
                     binding.iconPackContainer.visibility = View.GONE
                     binding.sliderContainer.visibility = View.GONE
@@ -41,17 +44,20 @@ class SettingsAdapter(
                     spinner.adapter = adapter
                     // Set current selection
                     val current = PreferencesManager.getSelectedTheme(binderContext) ?: ThemeRepository.CLASSIC_NERF.name
-                    spinner.setSelection(adapter.getPosition(current))
+                    val currentIndex = adapter.getPosition(current)
+                    if (currentIndex >= 0) {
+                        spinner.setSelection(currentIndex)
+                    }
                     spinner.onItemSelectedListener = object :
                         AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                             val selected = parent?.getItemAtPosition(pos) as String
-                            onSettingChanged(SettingItem(SettingType.THEME, item.title, selected))
+                            onSettingChanged(SettingItem(SettingsType.THEME, item.title, selected))
                         }
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }
                 }
-                SettingType.ICON_PACK -> {
+                SettingsType.ICON_PACK -> {
                     binding.themeContainer.visibility = View.GONE
                     binding.iconPackContainer.visibility = View.VISIBLE
                     binding.sliderContainer.visibility = View.GONE
@@ -69,17 +75,20 @@ class SettingsAdapter(
                     spinner.adapter = adapter
                     // Set current selection
                     val current = IconPackManager.getCurrentPack(binderContext)
-                    spinner.setSelection(adapter.getPosition(current))
+                    val currentIndex = adapter.getPosition(current)
+                    if (currentIndex >= 0) {
+                        spinner.setSelection(currentIndex)
+                    }
                     spinner.onItemSelectedListener = object :
                         AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                             val selected = parent?.getItemAtPosition(pos) as String
-                            onSettingChanged(SettingItem(SettingType.ICON_PACK, item.title, selected))
+                            onSettingChanged(SettingItem(SettingsType.ICON_PACK, item.title, selected))
                         }
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }
                 }
-                SettingType.GLOW_INTENSITY -> {
+                SettingsType.GLOW_INTENSITY -> {
                     binding.themeContainer.visibility = View.GONE
                     binding.iconPackContainer.visibility = View.GONE
                     binding.sliderContainer.visibility = View.VISIBLE
@@ -94,14 +103,14 @@ class SettingsAdapter(
                         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                             if (fromUser) {
                                 val value = progress / 100f
-                                onSettingChanged(SettingItem(SettingType.GLOW_INTENSITY, item.title, value))
+                                onSettingChanged(SettingItem(SettingsType.GLOW_INTENSITY, item.title, value))
                             }
                         }
                         override fun onStartTrackingTouch(seekBar: SeekBar?) {}
                         override fun onStopTrackingTouch(seekBar: SeekBar?) {}
                     })
                 }
-                SettingType.ANIMATION_SPEED -> {
+                SettingsType.ANIMATION_SPEED -> {
                     binding.themeContainer.visibility = View.GONE
                     binding.iconPackContainer.visibility = View.GONE
                     binding.sliderContainer.visibility = View.GONE
@@ -111,10 +120,10 @@ class SettingsAdapter(
                     val switchCompat = binding.animationSwitch
                     switchCompat.isChecked = item.payload as Boolean
                     switchCompat.setOnCheckedChangeListener { _, isChecked ->
-                        onSettingChanged(SettingItem(SettingType.ANIMATION_SPEED, item.title, isChecked))
+                        onSettingChanged(SettingItem(SettingsType.ANIMATION_SPEED, item.title, isChecked))
                     }
                 }
-                SettingType.GRID_SIZE -> {
+                SettingsType.GRID_SIZE -> {
                     binding.themeContainer.visibility = View.GONE
                     binding.iconPackContainer.visibility = View.GONE
                     binding.sliderContainer.visibility = View.GONE
@@ -123,7 +132,7 @@ class SettingsAdapter(
 
                     val spinner = binding.gridSizeSpinner
                     val options = listOf(2, 3, 4, 5, 6)
-                    val adapter = ArrayAdapter<Integer>(
+                    val adapter = ArrayAdapter<Int>(
                         binderContext,
                         android.R.layout.simple_spinner_item,
                         options
@@ -137,7 +146,7 @@ class SettingsAdapter(
                         AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                             val selected = parent?.getItemAtPosition(pos) as Int
-                            onSettingChanged(SettingItem(SettingType.GRID_SIZE, item.title, selected))
+                            onSettingChanged(SettingItem(SettingsType.GRID_SIZE, item.title, selected))
                         }
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }

@@ -1,10 +1,12 @@
 package com.nerf.launcher.util
 
+import android.content.Context
+
 /**
  * Manages available icon packs and the currently selected pack.
  */
 object IconPackManager {
-    private const val DEFAULT_PACK = "system"
+    const val DEFAULT_PACK = "system"
     private const val NERF_PACK = "nerf"
     private const val MINIMAL_PACK = "minimal"
 

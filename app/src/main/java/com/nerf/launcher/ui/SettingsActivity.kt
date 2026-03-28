@@ -9,7 +9,7 @@ import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.PreferencesManager
 import com.nerf.launcher.util.SettingItem
-import com.nerf.launcher.util.SettingType
+import com.nerf.launcher.util.SettingsType
 import com.nerf.launcher.util.ThemeRepository
 
 class SettingsActivity : AppCompatActivity() {
@@ -45,31 +45,31 @@ class SettingsActivity : AppCompatActivity() {
         val list = mutableListOf<SettingItem>()
         // Theme selector
         list.add(SettingItem(
-            SettingType.THEME,
+            SettingsType.THEME,
             getString(R.string.settings_theme),
             ThemeRepository.all.joinToString { it.name }
         ))
         // Icon pack selector
         list.add(SettingItem(
-            SettingType.ICON_PACK,
+            SettingsType.ICON_PACK,
             getString(R.string.settings_icon_pack),
             IconPackManager.getAvailablePacks().joinToString { it }
         ))
         // Glow intensity slider
         list.add(SettingItem(
-            SettingType.GLOW_INTENSITY,
+            SettingsType.GLOW_INTENSITY,
             getString(R.string.settings_glow_intensity),
             PreferencesManager.getGlowIntensity(this)
         ))
         // Animation speed toggle
         list.add(SettingItem(
-            SettingType.ANIMATION_SPEED,
+            SettingsType.ANIMATION_SPEED,
             getString(R.string.settings_animation_speed),
             PreferencesManager.isAnimationSpeedEnabled(this)
         ))
         // Grid size selector
         list.add(SettingItem(
-            SettingType.GRID_SIZE,
+            SettingsType.GRID_SIZE,
             getString(R.string.settings_grid_size),
             PreferencesManager.getGridSize(this)
         ))
@@ -80,27 +80,27 @@ class SettingsActivity : AppCompatActivity() {
     private fun handleSettingChange(setting: SettingItem) {
         val repo = ConfigRepository.get()
         when (setting.type) {
-            SettingType.THEME -> {
+            SettingsType.THEME -> {
                 val themeName = setting.payload as String
                 PreferencesManager.saveSelectedTheme(this, themeName)
                 repo.updateTheme(themeName)
             }
-            SettingType.ICON_PACK -> {
+            SettingsType.ICON_PACK -> {
                 val packName = setting.payload as String
                 PreferencesManager.saveIconPack(this, packName)
                 repo.updateIconPack(packName)
             }
-            SettingType.GLOW_INTENSITY -> {
+            SettingsType.GLOW_INTENSITY -> {
                 val intensity = setting.payload as Float
                 PreferencesManager.saveGlowIntensity(this, intensity)
                 repo.updateGlowIntensity(intensity)
             }
-            SettingType.ANIMATION_SPEED -> {
+            SettingsType.ANIMATION_SPEED -> {
                 val enabled = setting.payload as Boolean
                 PreferencesManager.saveAnimationSpeed(this, enabled)
                 repo.updateAnimationSpeed(enabled)
             }
-            SettingType.GRID_SIZE -> {
+            SettingsType.GRID_SIZE -> {
                 val size = setting.payload as Int
                 PreferencesManager.saveGridSize(this, size)
                 repo.updateGridSize(size)
