@@ -185,6 +185,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupSystemModules() {
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         moduleRefreshHandler.post(moduleRefreshTick)
+        binding.moduleEnergyBar.segments = 18
+        binding.moduleStorageBar.segments = 12
 
         binding.moduleEnergyCard.setOnClickListener { updateSystemModules() }
         binding.moduleStorageCard.setOnClickListener { updateSystemModules() }

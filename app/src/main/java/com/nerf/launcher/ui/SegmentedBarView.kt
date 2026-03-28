@@ -3,8 +3,10 @@ package com.nerf.launcher.ui
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RectF
+import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.DecelerateInterpolator
@@ -32,6 +34,9 @@ class SegmentedBarView @JvmOverloads constructor(
     }
 
     private val rect = RectF()
+    private var activeGradient: LinearGradient? = null
+    private var cachedWidth = -1
+    private var cachedHeight = -1
     private var animatedProgress: Float = 0f
     private var progressAnimator: ValueAnimator? = null
 
@@ -51,6 +56,8 @@ class SegmentedBarView @JvmOverloads constructor(
 
     fun setActiveColor(color: Int) {
         activePaint.color = color
+        activePaint.shader = null
+        activeGradient = null
         invalidate()
     }
 
@@ -62,22 +69,26 @@ class SegmentedBarView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (width <= 0 || height <= 0) return
+        ensureGradient()
 
-        val gap = width * 0.012f
+        val gap = width * 0.01f
         val segWidth = (width - gap * (segments - 1)) / segments
         val scaledProgress = (animatedProgress / 100f) * segments
         val activeSegments = scaledProgress.toInt()
         val partialFill = (scaledProgress - activeSegments).coerceIn(0f, 1f)
-        val radius = height * 0.18f
+        val radius = height * 0.24f
 
         for (i in 0 until segments) {
             val left = i * (segWidth + gap)
             val right = left + segWidth
-            rect.set(left, 0f, right, height.toFloat())
+            val altitude = if (i % 2 == 0) 1f else 0.84f
+            val top = (height * (1f - altitude)) * 0.5f
+            val bottom = top + (height * altitude)
+            rect.set(left, top, right, bottom)
             val paint = when {
                 i < activeSegments -> activePaint
                 i == activeSegments && partialFill > 0f -> {
-                    activePaint.alpha = (70 + (partialFill * 185f)).toInt()
+                    activePaint.alpha = (90 + (partialFill * 165f)).toInt()
                     activePaint
                 }
                 else -> inactivePaint
@@ -85,6 +96,22 @@ class SegmentedBarView @JvmOverloads constructor(
             canvas.drawRoundRect(rect, radius, radius, paint)
             activePaint.alpha = 255
         }
+    }
+
+    private fun ensureGradient() {
+        if (cachedWidth == width && cachedHeight == height && activeGradient != null) return
+        cachedWidth = width
+        cachedHeight = height
+        activeGradient = LinearGradient(
+            0f,
+            0f,
+            0f,
+            height.toFloat(),
+            activePaint.color,
+            ContextCompat.getColor(context, R.color.nerf_hud_panel_text_primary),
+            Shader.TileMode.CLAMP
+        )
+        activePaint.shader = activeGradient
     }
 
     private fun animateProgressTo(target: Float) {
@@ -103,6 +130,8 @@ class SegmentedBarView @JvmOverloads constructor(
     override fun onDetachedFromWindow() {
         progressAnimator?.cancel()
         progressAnimator = null
+        activePaint.shader = null
+        activeGradient = null
         super.onDetachedFromWindow()
     }
 }
