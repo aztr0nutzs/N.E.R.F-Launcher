@@ -41,6 +41,10 @@ class TaskbarView @JvmOverloads constructor(
         gravity = Gravity.CENTER_VERTICAL
         setPadding(8, 6, 8, 6)
         background = ContextCompat.getDrawable(context, R.drawable.hud_frame_panel)
+        setOnLongClickListener {
+            openTaskbarCustomization()
+            true
+        }
     }
 
     override fun setLifecycleOwner(owner: LifecycleOwner) {
@@ -168,11 +172,7 @@ class TaskbarView @JvmOverloads constructor(
         }
 
         view.setOnLongClickListener {
-            val intent = TaskbarSettingsActivity.createIntent(context)
-            if (context !is Activity) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(intent)
+            openTaskbarCustomization()
             true
         }
 
@@ -204,5 +204,13 @@ class TaskbarView @JvmOverloads constructor(
         params.width = sizePx
         params.height = sizePx
         view.layoutParams = params
+    }
+
+    private fun openTaskbarCustomization() {
+        val intent = TaskbarSettingsActivity.createIntent(context)
+        if (context !is Activity) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
     }
 }
