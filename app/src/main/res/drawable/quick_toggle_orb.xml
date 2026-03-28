@@ -1,17 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
-        <shape android:shape="oval">
-            <size android:width="44dp" android:height="44dp" />
-            <solid android:color="#33FFFFFF" />
-            <stroke android:width="1dp" android:color="#AA00E9FF" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="oval">
+                    <size android:width="44dp" android:height="44dp" />
+                    <solid android:color="#402B3745" />
+                    <stroke android:width="1dp" android:color="#BF00E9FF" />
+                </shape>
+            </item>
+            <item android:left="8dp" android:top="8dp" android:right="8dp" android:bottom="8dp">
+                <shape android:shape="oval">
+                    <solid android:color="#55FFFFFF" />
+                    <stroke android:width="1dp" android:color="#99FFFFFF" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
+
     <item>
-        <shape android:shape="oval">
-            <size android:width="44dp" android:height="44dp" />
-            <solid android:color="#1200E9FF" />
-            <stroke android:width="1dp" android:color="#7700E9FF" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="oval">
+                    <size android:width="44dp" android:height="44dp" />
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#2B1D2630"
+                        android:endColor="#16202632" />
+                    <stroke android:width="1dp" android:color="#7A00E9FF" />
+                </shape>
+            </item>
+            <item android:left="3dp" android:top="3dp" android:right="3dp" android:bottom="3dp">
+                <shape android:shape="oval">
+                    <solid android:color="#1F061015" />
+                    <stroke android:width="1dp" android:color="#6D6D8296" />
+                </shape>
+            </item>
+            <item android:left="11dp" android:top="11dp" android:right="11dp" android:bottom="11dp">
+                <shape android:shape="oval">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#6622F0FF"
+                        android:endColor="#1511C4D2" />
+                    <stroke android:width="1dp" android:color="#CC00E9FF" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
 </selector>

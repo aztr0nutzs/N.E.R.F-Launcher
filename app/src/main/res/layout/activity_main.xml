@@ -112,7 +112,10 @@
                     android:layout_marginTop="10dp"
                     android:background="@drawable/quick_panel_background"
                     android:orientation="vertical"
-                    android:padding="10dp">
+                    android:paddingStart="8dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="10dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -121,10 +124,29 @@
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                         android:textColor="@color/nerf_hud_magenta" />
 
-                    <LinearLayout
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/quick_panel_subtitle"
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                        android:textColor="@color/nerf_hud_cyan" />
+
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
+                        android:background="@drawable/quick_control_rail"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="3dp"
+                        android:text="@string/quick_row_palette"
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                        android:textColor="@color/nerf_hud_cyan" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
@@ -133,32 +155,51 @@
                             style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
                             android:layout_width="0dp"
                             android:layout_height="44dp"
-                            android:layout_marginEnd="6dp"
+                            android:layout_marginEnd="4dp"
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_theme_cd"
+                            app:icon="@drawable/ic_quick_theme"
+                            app:iconGravity="textStart"
+                            app:iconPadding="4dp"
+                            app:iconTint="@color/nerf_hud_cyan"
                             android:text="@string/quick_theme_label"
                             android:textColor="@color/nerf_hud_cyan"
-                            android:textSize="11sp" />
+                            android:textSize="10sp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/quick_icon_pack_btn"
                             style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
                             android:layout_width="0dp"
                             android:layout_height="44dp"
-                            android:layout_marginStart="6dp"
+                            android:layout_marginStart="4dp"
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_icon_pack_cd"
+                            app:icon="@drawable/ic_quick_icons"
+                            app:iconGravity="textStart"
+                            app:iconPadding="4dp"
+                            app:iconTint="@color/nerf_hud_lime"
                             android:text="@string/quick_icon_pack_label"
                             android:textColor="@color/nerf_hud_lime"
-                            android:textSize="11sp" />
+                            android:textSize="10sp" />
                     </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/quick_control_rail"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="3dp"
+                        android:text="@string/quick_row_runtime"
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                        android:textColor="@color/nerf_hud_orange" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="5dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
@@ -167,33 +208,52 @@
                             style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
                             android:layout_width="0dp"
                             android:layout_height="44dp"
-                            android:layout_marginEnd="6dp"
+                            android:layout_marginEnd="4dp"
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_animation_cd"
+                            app:icon="@drawable/ic_quick_motion"
+                            app:iconGravity="textStart"
+                            app:iconPadding="4dp"
+                            app:iconTint="@color/nerf_hud_orange"
                             android:text="@string/quick_animation_label"
                             android:textColor="@color/nerf_hud_orange"
-                            android:textSize="11sp" />
+                            android:textSize="10sp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/quick_taskbar_btn"
                             style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
                             android:layout_width="0dp"
                             android:layout_height="44dp"
-                            android:layout_marginStart="6dp"
+                            android:layout_marginStart="4dp"
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_taskbar_cd"
+                            app:icon="@drawable/ic_quick_taskbar"
+                            app:iconGravity="textStart"
+                            app:iconPadding="4dp"
+                            app:iconTint="@color/nerf_hud_magenta"
                             android:text="@string/quick_taskbar_label"
                             android:textColor="@color/nerf_hud_magenta"
-                            android:textSize="11sp" />
+                            android:textSize="10sp" />
                     </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/quick_control_rail"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="3dp"
+                        android:text="@string/quick_row_calibration"
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                        android:textColor="@color/nerf_hud_lime" />
 
                     <TextView
                         android:id="@+id/quick_glow_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="6dp"
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                         android:textColor="@color/nerf_hud_cyan" />
 
@@ -201,7 +261,7 @@
                         android:id="@+id/quick_glow_seekbar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginTop="1dp"
                         android:max="100"
                         android:progressDrawable="@drawable/quick_slider_progress"
                         android:thumbTint="@color/nerf_hud_cyan" />
@@ -210,7 +270,7 @@
                         android:id="@+id/quick_grid_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="6dp"
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                         android:textColor="@color/nerf_hud_orange" />
 
