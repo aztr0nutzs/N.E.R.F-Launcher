@@ -25,7 +25,11 @@ class SettingsActivity : AppCompatActivity() {
         // Set up toolbar
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setTitle(R.string.settings)
+        supportActionBar?.setTitle(R.string.settings_surface_title)
+
+        binding.openTaskbarSettingsButton.setOnClickListener {
+            startActivity(TaskbarSettingsActivity.createIntent(this))
+        }
 
         // Build settings list
         val settings = buildSettingsList()
@@ -35,6 +39,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.settingsRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@SettingsActivity)
             adapter = this@SettingsAdapter
+            setHasFixedSize(true)
         }
     }
 
