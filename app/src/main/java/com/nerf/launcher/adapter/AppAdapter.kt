@@ -1,10 +1,12 @@
 package com.nerf.launcher.adapter
 
-import android.graphics.drawable.Drawable
+import android.view.MotionEvent
+import android.view.View
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -27,10 +29,41 @@ class AppAdapter(
     inner class AppViewHolder(val binding: ItemAppBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(app: AppInfo) {
+            binding.root.scaleX = 1f
+            binding.root.scaleY = 1f
+            binding.root.alpha = 1f
             binding.appName.text = app.appName
             iconProvider.loadIconInto(app.packageName, binding.appIcon)
             binding.root.setOnClickListener {
                 onAppClicked(app)
+            }
+            binding.root.setOnTouchListener { touchedView, event ->
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> animatePress(touchedView, pressed = true)
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> animatePress(touchedView, pressed = false)
+                }
+                false
+            }
+        }
+
+        private fun animatePress(view: View, pressed: Boolean) {
+            view.animate().cancel()
+            if (pressed) {
+                view.animate()
+                    .scaleX(0.972f)
+                    .scaleY(0.972f)
+                    .alpha(0.95f)
+                    .setDuration(70L)
+                    .setInterpolator(FastOutSlowInInterpolator())
+                    .start()
+            } else {
+                view.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .alpha(1f)
+                    .setDuration(150L)
+                    .setInterpolator(LinearOutSlowInInterpolator())
+                    .start()
             }
         }
     }
@@ -49,9 +82,17 @@ class AppAdapter(
         holder.bind(app)
     }
 
+    override fun onViewRecycled(holder: AppViewHolder) {
+        holder.binding.root.animate().cancel()
+        holder.binding.root.scaleX = 1f
+        holder.binding.root.scaleY = 1f
+        holder.binding.root.alpha = 1f
+        super.onViewRecycled(holder)
+    }
+
     init {
         // Observe icon pack changes to refresh icons across all items.
-        ConfigRepository.get().config.observe(lifecycleOwner) { config ->
+        ConfigRepository.get().config.observe(lifecycleOwner) {
             // Clear icon pack cache so new icons are loaded on next bind.
             iconProvider.evictCache()
             // Notify adapter to rebind all visible items (icon pack change affects all items).

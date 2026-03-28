@@ -13,6 +13,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.LifecycleOwner
 import com.nerf.launcher.R
 import com.nerf.launcher.util.ConfigRepository
@@ -179,18 +181,24 @@ class TaskbarView @JvmOverloads constructor(
         view.setOnTouchListener { touchedView, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
+                    touchedView.animate().cancel()
                     touchedView.animate()
-                        .scaleX(0.95f)
-                        .scaleY(0.95f)
-                        .setDuration(80L)
+                        .scaleX(0.965f)
+                        .scaleY(0.965f)
+                        .alpha(0.92f)
+                        .setDuration(70L)
+                        .setInterpolator(FastOutSlowInInterpolator())
                         .start()
                 }
 
                 MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
+                    touchedView.animate().cancel()
                     touchedView.animate()
                         .scaleX(1f)
                         .scaleY(1f)
-                        .setDuration(120L)
+                        .alpha(1f)
+                        .setDuration(150L)
+                        .setInterpolator(LinearOutSlowInInterpolator())
                         .start()
                 }
             }
