@@ -70,9 +70,9 @@ class IconProvider(
         val assetPath = "icon_packs/$packName/$packageName.png"
         return try {
             val inputStream: InputStream = assets.open(assetPath)
-            val drawable: Drawable = Drawable.createFromStream(inputStream, null)
+            val drawable = Drawable.createFromStream(inputStream, null)
             inputStream.close()
-            drawable
+            drawable ?: loadSystemIcon(packageName)
         } catch (e: IOException) {
             // Not found in custom pack – fall back to system icon.
             return loadSystemIcon(packageName)

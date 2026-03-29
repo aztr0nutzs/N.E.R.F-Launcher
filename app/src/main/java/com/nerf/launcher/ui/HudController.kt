@@ -4,6 +4,7 @@ import android.app.Activity
 import android.animation.ValueAnimator
 import android.content.Intent
 import android.graphics.Color
+import android.os.BatteryManager
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
@@ -40,8 +41,8 @@ class HudController(
 
     private val batteryReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: android.content.Intent?) {
-            val level = intent?.getIntExtra(android.content.BatteryManager.EXTRA_LEVEL, -1)
-            val scale = intent?.getIntExtra(android.content.BatteryManager.EXTRA_SCALE, -1)
+            val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
             val percent = if (level != null && scale != null && level >= 0 && scale > 0) {
                 (level * 100 / scale)
             } else {
@@ -83,8 +84,8 @@ class HudController(
             android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED)
         )
         batIntent?.let {
-            val level = it.getIntExtra(android.content.BatteryManager.EXTRA_LEVEL, -1)
-            val scale = it.getIntExtra(android.content.BatteryManager.EXTRA_SCALE, -1)
+            val level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale = it.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
             if (level >= 0 && scale > 0) {
                 val percent = level * 100 / scale
                 batteryMeter.progress = percent

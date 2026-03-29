@@ -2,6 +2,7 @@ package com.nerf.launcher.util
 
 import android.app.Activity
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.InsetDrawable
@@ -33,7 +34,7 @@ object ThemeManager {
 
     private fun updateWindowBackground(window: Window?, theme: NerfTheme) {
         // Use the theme‑defined window background color.
-        window?.setBackgroundColor(theme.windowBackground)
+        window?.setBackgroundDrawable(ColorDrawable(theme.windowBackground))
     }
 
     private fun updateHudViews(activity: Activity, theme: NerfTheme) {

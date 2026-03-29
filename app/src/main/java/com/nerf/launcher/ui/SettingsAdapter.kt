@@ -141,7 +141,7 @@ class SettingsAdapter(
                     spinner.adapter = adapter
                     // Set current selection
                     val current = PreferencesManager.getGridSize(binderContext)
-                    spinner.setSelection(adapter.indexOf(current))
+                    spinner.setSelection(adapter.getPosition(current))
                     spinner.onItemSelectedListener = object :
                         AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {

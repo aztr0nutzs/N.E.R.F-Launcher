@@ -38,7 +38,7 @@ class SettingsActivity : AppCompatActivity() {
         }
         binding.settingsRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@SettingsActivity)
-            adapter = this@SettingsAdapter
+            adapter = this@SettingsActivity.adapter
             setHasFixedSize(true)
         }
     }

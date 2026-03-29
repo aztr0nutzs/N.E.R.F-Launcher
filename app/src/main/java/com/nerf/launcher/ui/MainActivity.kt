@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         setupDrawerSearch()
         observeViewModel()
 
-        hudController = HudController(this, binding.hudRoot, this)
+        hudController = HudController(this, binding.hudRoot.root, this)
         binding.taskbarView.setIconProvider(iconProvider)
         binding.taskbarView.setLifecycleOwner(this)
 

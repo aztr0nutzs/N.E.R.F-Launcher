@@ -26,9 +26,9 @@
         <item name="materialButtonStyle">@style/Widget.NerfLauncher.Button</item>
 
         <!-- Text appearances. -->
-        <item name="android:textAppearanceHeadline5">@style/TextAppearance.NerfLauncher.Headline5</item>
-        <item name="android:textAppearanceBody1">@style/TextAppearance.NerfLauncher.Body1</item>
-        <item name="android:textAppearanceCaption">@style/TextAppearance.NerfLauncher.Caption</item>
+        <item name="textAppearanceHeadline5">@style/TextAppearance.NerfLauncher.Headline5</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.NerfLauncher.Body1</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.NerfLauncher.Caption</item>
 
         <!-- Window background. -->
         <item name="android:windowBackground">@color/nerf_background</item>
@@ -49,7 +49,11 @@
     </style>
 
     <!-- Home-shell reusable container and tile styles. -->
-    <style name="Widget.NerfLauncher.Hud.FramedPanel">
+    <style name="WidgetNerfLauncherBase" />
+
+    <style name="Widget.NerfLauncher.Hud" parent="WidgetNerfLauncherBase" />
+
+    <style name="Widget.NerfLauncher.Hud.FramedPanel" parent="Widget.NerfLauncher.Hud">
         <item name="android:background">@drawable/hud_frame_panel</item>
         <item name="android:padding">@dimen/nerf_panel_padding</item>
     </style>
@@ -57,8 +61,8 @@
     <style name="Widget.NerfLauncher.Hud.ActionTileButton" parent="Widget.MaterialComponents.Button">
         <item name="android:background">@drawable/hud_action_tile</item>
         <item name="android:textAllCaps">false</item>
-        <item name="insetTop">0dp</item>
-        <item name="insetBottom">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
         <item name="android:minHeight">0dp</item>
         <item name="android:paddingStart">0dp</item>
         <item name="android:paddingEnd">0dp</item>
@@ -66,14 +70,16 @@
         <item name="android:paddingBottom">0dp</item>
     </style>
 
-    <style name="Widget.NerfLauncher.Hud.StatCard">
+    <style name="Widget.NerfLauncher.Hud.StatCard" parent="Widget.NerfLauncher.Hud">
         <item name="android:background">@drawable/module_stat_card</item>
         <item name="android:padding">10dp</item>
     </style>
 
     <!-- Text appearances. -->
 
-    <style name="Widget.NerfLauncher.Drawer.SearchInput">
+    <style name="Widget.NerfLauncher.Drawer" parent="WidgetNerfLauncherBase" />
+
+    <style name="Widget.NerfLauncher.Drawer.SearchInput" parent="Widget.NerfLauncher.Drawer">
         <item name="android:background">@drawable/drawer_search_field_background</item>
         <item name="android:textSize">12sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>

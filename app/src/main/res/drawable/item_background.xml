@@ -10,7 +10,7 @@
     <!-- Focused/hovered state (for TV or accessibility) -->
     <item android:state_focused="true">
         <shape android:shape="rectangle">
-            <solid android:color="#33 nerf_accent" /> <!-- 20% opacity -->
+            <solid android:color="#33FFEA00" /> <!-- 20% opacity -->
             <corners android:radius="6dp" />
         </shape>
     </item>
