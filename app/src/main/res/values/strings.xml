@@ -83,4 +83,10 @@
     <string name="taskbar_settings_pinned_apps">Pinned Apps</string>
     <string name="taskbar_settings_pinned_summary">%1$d pinned</string>
     <string name="taskbar_settings_clear_pins">Clear pinned apps</string>
+    <string name="reactor_diagnostics_title">Reactor Diagnostics</string>
+    <string name="reactor_subnet_sweep_start">N-Core: Initializing subnet sweep...</string>
+    <string name="reactor_assistant_online">Reactor assistant online</string>
+    <string name="node_hunter_title">Node Hunter</string>
+    <string name="node_hunter_scan_status">N.E.R.F. SYSTEM: SCANNING SUBNET...</string>
+    <string name="node_hunter_scan_details">RESOLVING HARDWARE ADDRESSES</string>
 </resources>

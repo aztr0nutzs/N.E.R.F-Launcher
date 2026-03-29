@@ -1,4 +1,4 @@
-package com.example.nerflauncher.network
+package com.nerf.launcher.util.network
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -22,7 +22,7 @@ data class NetworkNode(
     val pingMs: Long
 )
 
-class NetworkScanner(private val context: Context) {
+class LocalNetworkScanner(private val context: Context) {
 
     /**
      * Scans the local /24 subnet for active devices using parallel coroutines

@@ -4,9 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0a0a0c">
+    android:background="@color/black">
 
-    <com.example.nerflauncher.games.NodeHunterGameView
+    <com.nerf.launcher.ui.nodehunter.NodeHunterGameView
         android:id="@+id/nodeHunterView"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -34,18 +34,18 @@
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:indeterminateTint="#FF9900" />
+            android:indeterminateTint="@color/nerf_hud_orange" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="N.E.R.F. SYSTEM: SCANNING SUBNET..."
-            android:textColor="#00FFFF"
+            android:text="@string/node_hunter_scan_status"
+            android:textColor="@color/nerf_hud_cyan"
             android:textSize="18sp"
             android:textStyle="bold"
             android:letterSpacing="0.1"
-            android:shadowColor="#00FFFF"
+            android:shadowColor="@color/nerf_hud_cyan"
             android:shadowRadius="10"
             android:shadowDx="0"
             android:shadowDy="0" />
@@ -55,8 +55,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="RESOLVING HARDWARE ADDRESSES"
-            android:textColor="#A0A0A0"
+            android:text="@string/node_hunter_scan_details"
+            android:textColor="@color/nerf_hud_panel_text_secondary"
             android:textSize="12sp"
             android:letterSpacing="0.05" />
 

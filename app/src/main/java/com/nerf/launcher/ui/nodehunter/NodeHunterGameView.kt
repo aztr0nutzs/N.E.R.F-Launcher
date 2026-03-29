@@ -1,4 +1,4 @@
-package com.example.nerflauncher.games
+package com.nerf.launcher.ui.nodehunter
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -13,7 +13,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
-import com.example.nerflauncher.network.NetworkNode
+import com.nerf.launcher.util.network.NetworkNode
 import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.sin

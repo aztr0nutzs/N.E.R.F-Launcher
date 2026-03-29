@@ -1,15 +1,15 @@
-package com.example.nerflauncher.ai
+package com.nerf.launcher.util.assistant
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.util.Log
-import com.example.nerflauncher.R
+import com.nerf.launcher.R
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.Locale
 
-class SarcasticAiAssistant(private val context: Context) : TextToSpeech.OnInitListener {
+class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListener {
 
     private var tts: TextToSpeech? = null
     private var isReady = false
@@ -31,7 +31,7 @@ class SarcasticAiAssistant(private val context: Context) : TextToSpeech.OnInitLi
      */
     private fun loadResponsesFromJson() {
         try {
-            val inputStream = context.resources.openRawResource(R.raw.ai_responses)
+            val inputStream = context.resources.openRawResource(R.raw.reactor_ai_responses)
             val reader = BufferedReader(InputStreamReader(inputStream))
             val jsonString = reader.use { it.readText() }
             
@@ -50,9 +50,9 @@ class SarcasticAiAssistant(private val context: Context) : TextToSpeech.OnInitLi
                     responseLibrary[category] = listOf("Data for $key is missing. Someone forgot to update the JSON.")
                 }
             }
-            Log.d("AiAssistant", "Successfully loaded JSON response library.")
+            Log.d("ReactorAssistant", "Successfully loaded JSON response library.")
         } catch (e: Exception) {
-            Log.e("AiAssistant", "Failed to parse JSON responses: ${e.message}")
+            Log.e("ReactorAssistant", "Failed to parse JSON responses: ${e.message}")
             // Production-safe fallback so the app doesn't crash if the file is missing
             for (category in Category.values()) {
                 responseLibrary[category] = listOf("Audio subsystem error. JSON dictionary not found.")
@@ -64,14 +64,14 @@ class SarcasticAiAssistant(private val context: Context) : TextToSpeech.OnInitLi
         if (status == TextToSpeech.SUCCESS) {
             val result = tts?.setLanguage(Locale.US)
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Log.e("AiAssistant", "The Language specified is not supported!")
+                Log.e("ReactorAssistant", "The language specified is not supported.")
             } else {
                 isReady = true
                 tts?.setPitch(0.85f) // Slightly lower pitch for a more serious/sarcastic tone
                 tts?.setSpeechRate(0.95f) // Slightly slower delivery for comedic timing
             }
         } else {
-            Log.e("AiAssistant", "TTS Initialization Failed!")
+            Log.e("ReactorAssistant", "TTS initialization failed.")
         }
     }
 

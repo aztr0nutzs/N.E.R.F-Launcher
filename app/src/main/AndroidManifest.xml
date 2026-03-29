@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:name=".LauncherApplication"
@@ -38,6 +40,16 @@
         <activity
             android:name=".ui.TaskbarSettingsActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".ui.reactor.ReactorDiagnosticsActivity"
+            android:exported="false"
+            android:label="@string/reactor_diagnostics_title" />
+
+        <activity
+            android:name=".ui.nodehunter.NodeHunterActivity"
+            android:exported="false"
+            android:label="@string/node_hunter_title" />
     </application>
 
 </manifest>

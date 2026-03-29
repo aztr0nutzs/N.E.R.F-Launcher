@@ -7,16 +7,13 @@
 `app/src/main/java/com/nerf/launcher/ui/reactor/`
 
 ### Assistant
-`app/src/main/java/com/nerf/launcher/ui/assistant/`
-
-### Assistant data
-`app/src/main/java/com/nerf/launcher/data/assistant/`
+`app/src/main/java/com/nerf/launcher/util/assistant/`
 
 ### Node Hunter
-`app/src/main/java/com/nerf/launcher/feature/nodehunter/`
+`app/src/main/java/com/nerf/launcher/ui/nodehunter/`
 
-### Optional network data
-`app/src/main/java/com/nerf/launcher/data/network/`
+### Network utilities
+`app/src/main/java/com/nerf/launcher/util/network/`
 
 ## Source-to-target mapping
 
@@ -33,48 +30,46 @@ Extract useful logic into:
 - `MainActivity.kt`
 - optional future `ReactorHub` screen
 
-### Reactor demo layout
-Source: `activity_reactors.xml`
-Action: do not use directly as launcher home
-Use only as a reference source for spacing and grouping ideas
+### Reactor staging layout
+Source: `activity_reactor_diagnostics.xml`
+Action: keep staged off-home as a non-exported diagnostics screen
 
 ### Assistant personality layer
-Source: `SarcasticAiAssistant.kt`
-Target: `app/src/main/java/com/nerf/launcher/ui/assistant/SarcasticAiAssistant.kt`
+Source: `ReactorAssistant.kt`
+Target: `app/src/main/java/com/nerf/launcher/util/assistant/ReactorAssistant.kt`
 Role: voice line + TTS orchestration layer, not real intelligence backend
 
 ### Assistant response bank
-Source: `ai_responses.json`
-Target: `app/src/main/res/raw/ai_responses.json`
+Source: `reactor_ai_responses.json`
+Target: `app/src/main/res/raw/reactor_ai_responses.json`
 
 ### Node Hunter scanner
-Source: `NetworkScanner.kt`
-Target: `app/src/main/java/com/nerf/launcher/feature/nodehunter/NetworkScanner.kt`
+Source: `LocalNetworkScanner.kt`
+Target: `app/src/main/java/com/nerf/launcher/util/network/LocalNetworkScanner.kt`
 Role: temporary prototype scanner unless replaced by stronger launcher backend
 
 ### Node Hunter view
 Source: `NodeHunterGameView.kt`
-Target: `app/src/main/java/com/nerf/launcher/feature/nodehunter/NodeHunterGameView.kt`
+Target: `app/src/main/java/com/nerf/launcher/ui/nodehunter/NodeHunterGameView.kt`
 
 ### Node Hunter activity
-Source: `NodeActivity.kt`
-Target: `app/src/main/java/com/nerf/launcher/feature/nodehunter/NodeHunterActivity.kt`
-Rename class: `NodeHunterActivity`
+Source: `NodeHunterActivity.kt`
+Target: `app/src/main/java/com/nerf/launcher/ui/nodehunter/NodeHunterActivity.kt`
 
 ### Node Hunter layout
-Source: `activity_node.xml`
+Source: `activity_node_hunter.xml`
 Target: `app/src/main/res/layout/activity_node_hunter.xml`
 
 ### Compose reactor staging
 Targets:
-- `app/src/main/java/com/nerf/launcher/ui/reactor/compose/ReactorCore.kt`
+- `app/src/composeStaging/java/com/nerf/launcher/reactor/compose/ReactorCore.kt`
 - `.../ReactorDraw.kt`
 - `.../ReactorDrawing.kt`
 - `.../ReactorInteractions.kt`
 - `.../ReactorState.kt`
 - `.../AudioReactive.kt`
-- `.../ExampleScreen.kt`
-- `.../Reactor2.kt`
+- `.../ReactorDemoScreen.kt`
+- `.../prototype/LegacyReactorScreen.kt`
 Role: future premium upgrade path, not first production merge
 
 ## New classes to create
@@ -91,14 +86,14 @@ Responsibilities:
 - keep MainActivity from becoming a garbage heap
 
 ### Assistant
-- `app/src/main/java/com/nerf/launcher/ui/assistant/AssistantController.kt`
-- `app/src/main/java/com/nerf/launcher/ui/assistant/AssistantOverlayController.kt`
-- `app/src/main/java/com/nerf/launcher/ui/assistant/AssistantState.kt`
-- `app/src/main/java/com/nerf/launcher/ui/assistant/AssistantBackendBridge.kt`
-- `app/src/main/java/com/nerf/launcher/data/assistant/AiResponseRepository.kt`
+- `app/src/main/java/com/nerf/launcher/util/assistant/AssistantController.kt`
+- `app/src/main/java/com/nerf/launcher/util/assistant/AssistantOverlayController.kt`
+- `app/src/main/java/com/nerf/launcher/util/assistant/AssistantState.kt`
+- `app/src/main/java/com/nerf/launcher/util/assistant/AssistantBackendBridge.kt`
+- optional future `AiResponseRepository.kt`
 
 ### Node Hunter coordination
-- `app/src/main/java/com/nerf/launcher/feature/nodehunter/NodeHunterCoordinator.kt`
+- `app/src/main/java/com/nerf/launcher/ui/nodehunter/NodeHunterCoordinator.kt`
 - optional `NodeModel.kt`
 
 ## Layouts to create
@@ -154,7 +149,7 @@ Must contain:
 ## Resource additions
 
 ### Raw
-- `res/raw/ai_responses.json`
+- `res/raw/reactor_ai_responses.json`
 
 ### Drawable-nodpi
 - `reactor_home_reference.png`
@@ -202,6 +197,6 @@ Add:
 ## Production rules
 
 1. Do not keep the side-by-side dual-reactor demo layout as the actual launcher home.
-2. Do not wire `SarcasticAiAssistant` as if it were the real backend.
-3. Do not trust `NetworkScanner.kt` as a final production scanning engine without review or replacement.
+2. Do not wire `ReactorAssistant` as if it were the real backend.
+3. Do not trust `LocalNetworkScanner.kt` as a final production scanning engine without review or replacement.
 4. Do not promote both View and Compose reactors to co-equal production systems simultaneously.

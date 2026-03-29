@@ -1,5 +1,5 @@
 // ExampleScreen.kt
-package com.nerf.launcher.reactor
+package com.nerf.launcher.reactor.compose
 
 import android.media.AudioRecord
 import android.media.MediaRecorder

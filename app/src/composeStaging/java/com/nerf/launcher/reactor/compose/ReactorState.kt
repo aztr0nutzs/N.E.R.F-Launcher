@@ -1,5 +1,5 @@
 // ReactorState.kt
-package com.nerf.launcher.reactor
+package com.nerf.launcher.reactor.compose
 
 enum class ReactorMode {
     Idle,

@@ -1,4 +1,4 @@
-package com.example.nerflauncher.ui
+package com.nerf.launcher.ui.reactor
 
 import android.animation.ValueAnimator
 import android.content.Context

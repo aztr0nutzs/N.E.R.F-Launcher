@@ -1,5 +1,5 @@
 // ReactorDrawing.kt
-package com.nerf.launcher.reactor
+package com.nerf.launcher.reactor.compose
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
