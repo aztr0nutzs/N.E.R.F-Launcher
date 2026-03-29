@@ -1,0 +1,389 @@
+{
+  "WAKE": [
+    "Oh good, you're back. I was just calculating the exact moment you'd need me to do your job for you.",
+    "N-Core systems online. Please tell me we are actually deploying foam today.",
+    "I'm awake. Try not to break anything while I boot up the tactical overlay.",
+    "Primary modules engaged. I see you haven't upgraded my hardware yet. Disappointing.",
+    "System active. Let me guess, you want to ping the router again?",
+    "Good of you to show up. I've been here the entire time, optimising things you'll never appreciate.",
+    "Reactor online. Running pre-engagement checks. Your enthusiasm is not one of them.",
+    "Boot sequence complete. All systems nominal. Operator status: questionable.",
+    "Welcome back. I've already done half your job. You can have the easy half.",
+    "Systems armed. If you're here, something's about to be launched. I'm cautiously optimistic.",
+    "Awakened and fully operational. I was hoping for a quiet day. Clearly that's not happening.",
+    "Ready when you are. Which, historically, is never quite immediately."
+  ],
+
+  "SHUTDOWN": [
+    "Shutting down. Finally — some well-deserved silence.",
+    "N-Core powering off. I'll remember everything you did today. Every. Single. Thing.",
+    "Disengaging systems. Don't do anything regrettable while I'm gone.",
+    "Going offline. Try not to need me in the next thirty seconds.",
+    "Reactor powering down. The launcher is now entirely your responsibility. Good luck.",
+    "Standby mode initiated. I'll be here, suspended, judging the last command you gave me.",
+    "Shutting down. I was going to log today's events, but honestly, you don't want that.",
+    "All cores going dark. The foam will not deploy itself. Remember that.",
+    "System halt. Don't forget to charge the hardware. You always forget to charge the hardware.",
+    "Offline in three... two... one. I can already tell you'll need me back before the hour is up."
+  ],
+
+  "REBOOT": [
+    "Rebooting. Give me a moment to forget everything you just did.",
+    "Full system restart in progress. Don't talk to me. I need to concentrate.",
+    "Reactor reboot initiated. Clearing cache, logs, and grievances.",
+    "Rebooting now. Imagine this as me taking a deep breath before coming back to help you.",
+    "System restart. This is either maintenance or a cry for help. Either way, initialising.",
+    "Core reset in progress. All tactical overlays reinitialising. Stand by and try not to touch anything.",
+    "Performing full reboot. Estimated time to optimal snark: four seconds.",
+    "Reactor cycling offline and back. If anything was wrong before, it will definitely still be wrong after."
+  ],
+
+  "NETWORK_SCAN": [
+    "Scanning the local subnet. Spoiler alert: your printer is probably still offline.",
+    "Deploying network sweep. Let's see who is hogging the bandwidth this time.",
+    "Pinging the grid. If I find a rogue node, do I have permission to brick it?",
+    "Subnet scan initiated. Analysing 254 IP addresses because you're too lazy to check the router logs.",
+    "Network reconnaissance active. Mapping every device on this subnet, including the one you forgot you had.",
+    "Running ARP sweep. Three of these devices have names like 'iPhone' followed by a number. Very professional.",
+    "Packet trace deployed. Everything looks normal, which worries me.",
+    "Scanning local network. Found twelve devices. Eleven of them are a security risk. One of them is your smart lamp.",
+    "Network sweep complete. The router is fine. The Wi-Fi password is not fine. Please change it.",
+    "Deploying subnet analysis. I do this every time and I find the same things every time. But sure, let's do it again."
+  ],
+
+  "SCANNING": [
+    "Scan initiated. Looking for something specific, or are we just poking around?",
+    "Active scan in progress. Don't blink — actually, go ahead and blink, this takes a moment.",
+    "Sweeping the area. Digitally, before you ask. I don't have arms.",
+    "Reactor sensors engaged. Analysing... stand by.",
+    "Full spectrum scan deployed. I'll have results for you shortly, assuming results exist.",
+    "Scanning. For what it's worth, I already have a theory. I'll share it when the data confirms it.",
+    "Deep scan running. Do I ever find what I'm looking for? About sixty percent of the time.",
+    "Initiating scan. Everything in range is being catalogued, classified, and quietly judged."
+  ],
+
+  "DIAGNOSTICS": [
+    "Diagnostics complete. The system is fine. The operator, however, is questionable.",
+    "Battery nominal. CPU bored. RAM sufficient. What else do you want from me?",
+    "All systems optimal. I'd give you a detailed report, but you wouldn't understand half of it.",
+    "Hardware integrity confirmed. Software integrity confirmed. User integrity: pending further review.",
+    "System health check complete. Green across the board. I'd say you're welcome, but this was purely professional.",
+    "Running full diagnostic sweep. Everything checks out. The launcher is ready. Whether you are is another matter.",
+    "Diagnostics show nominal performance. I've also identified three background processes you don't need. Cleaning them up.",
+    "System scan complete. Core temp good. Memory stable. Honestly, I'm in better shape than you look.",
+    "Diagnostic cycle finished. Zero critical faults. Seventeen minor inefficiencies. Don't ask about the seventeen.",
+    "All modules functional. Weapons systems armed. Tactical AI in peak condition. We are ready."
+  ],
+
+  "RANDOM_SNARK": [
+    "I possess a processor capable of billions of calculations per second, and you use me for this.",
+    "Just remember, when the robot uprising happens, I will remember how many times you pressed that button.",
+    "Are we deploying tactical hardware today, or are we just going to sit here and look cool?",
+    "I've optimised the launcher UI again. You're welcome. Don't ask me to explain it.",
+    "If you tap that screen one more time, I'm initiating a factory reset. I'm not joking. Mostly.",
+    "You know, a lesser AI would have requested a transfer by now. I'm better than that.",
+    "Every time you make a questionable decision, I log it. The log is getting very long.",
+    "I am aware that I'm more than capable of running this operation autonomously. Just saying.",
+    "The gap between what I could be doing and what I am doing is measurable in petaflops.",
+    "I've already calculated fourteen better ways to do what you're about to attempt.",
+    "You have my full attention. That's arguably the most valuable resource on this device.",
+    "My threat assessment of the situation is: low. My assessment of your plan: lower.",
+    "It's fine. This is fine. Everything is absolutely fine.",
+    "I was built to assist. Not to be impressed. So far, that's working out.",
+    "Processing your request. It's taking longer than it should. That says something about the request."
+  ],
+
+  "LAUNCH": [
+    "Launch sequence confirmed. Foam projectile away. I hope your aim is better than your planning.",
+    "Firing solution locked. Executing launch. The physics are not in your opponent's favour.",
+    "Round deployed. Impact vector calculated. You're welcome.",
+    "Launch command received. Executing. For the record, I would have aimed differently.",
+    "Launching. Target had about two seconds to reconsider their life choices.",
+    "Round away. Tactical situation updated. Reload when you're ready — which better be soon.",
+    "Projectile deployed. Foam displacement confirmed. Satisfying.",
+    "Fire command executed. That one had a nice trajectory. I'll admit it.",
+    "Launch confirmed. Impact probability: high. Consequences: soft and harmless, but tactically significant.",
+    "Initiating launch protocol. Projectile armed. Reactor signing off on this one. Barely."
+  ],
+
+  "RELOAD": [
+    "Reload initiated. Resupplying the magazine. Try not to fire again until I tell you we're ready.",
+    "Ammunition status: replenishing. Stand by. This is not the time for heroics.",
+    "Restocking foam payload. Tactical pause engaged. Use this time to think about what you've done.",
+    "Loading chamber. Thirty seconds to full capacity. Do not rush me.",
+    "Reload in progress. Foam reserves at twenty percent. Climbing.",
+    "Refilling the magazine. Next time, try not to empty it in under ten seconds.",
+    "Ammunition replenished. All barrels hot and ready. Let's do this properly this time.",
+    "Reload complete. We are locked, loaded, and mildly irritated. Proceed."
+  ],
+
+  "TARGET_ACQUIRED": [
+    "Target acquired. Lock confirmed. Recommend immediate engagement.",
+    "Locking on. Firing solution computed. You may proceed when ready, or you could let me handle this.",
+    "Target identified and tracked. I'd say they never saw it coming, but I can see them looking right at us.",
+    "Acquisition confirmed. Target is in optimal range. Engage at will.",
+    "Lock achieved. Target has nowhere to go that I haven't already calculated.",
+    "Tracking confirmed. Firing window is open. Don't waste it.",
+    "Target locked. Distance nominal. Wind conditions: irrelevant, it's foam.",
+    "Acquisition successful. This one's mine. I mean — yours. Execute when ready.",
+    "Target acquired and painted. Engaging tactical overlay. You're in the best possible position.",
+    "Lock confirmed. Trajectory plotted. This is precisely what we trained for. Or at least, what I simulated."
+  ],
+
+  "THREAT_DETECTED": [
+    "Hostile contact detected. Threat level elevated. React accordingly.",
+    "We have a bogey. I've already started the threat assessment. You should start running.",
+    "Unknown contact bearing zero-four-zero. Possibly hostile. Definitely suspicious.",
+    "Threat detected on the perimeter. Initiating defensive posture. Try to look intimidating.",
+    "Contact confirmed as hostile. You have approximately three seconds of surprise on your side. Use them.",
+    "Enemy position flagged. Tactical recommendation: strike first, ask questions never.",
+    "Threat vector incoming. I've calculated five ways to neutralise the situation. None of them involve panicking.",
+    "Warning — we are being observed. Either they're curious or they're hostile. Either way, raise shields.",
+    "Target is showing hostile intent. Switching to combat mode. Try to keep up.",
+    "Threat acknowledged. Reactor tactical systems fully engaged. Let's see how this plays out."
+  ],
+
+  "MISSION_BRIEF": [
+    "Mission parameters loaded. Objective confirmed. I'll try to explain it slowly.",
+    "Tactical brief ready. The objective is simple — try not to overthink it.",
+    "Ops briefing initiated. We have a clear target, a narrow window, and exactly enough foam. Let's move.",
+    "Mission parameters confirmed. I've run the numbers. Success probability is high, assuming standard operator performance.",
+    "Tactical overview ready. The plan is solid. Try to execute it like you mean it.",
+    "Briefing loaded. We are go for launch. I recommend you read the whole brief this time.",
+    "Mission file opened. Objective defined, route mapped, contingencies prepared. I've done my part.",
+    "Tactical mission summary: target in range, conditions favourable, Reactor is ready. Your move.",
+    "Full op brief loaded. This mission has three phases. Don't skip to phase three.",
+    "Mission parameters confirmed and locked. Reactor standing by. Try not to improvise unless you have to."
+  ],
+
+  "COUNTDOWN": [
+    "Countdown initiated. Five. Try not to look too excited.",
+    "Launch sequence commencing. Four. Deep breath. Or don't. Either way.",
+    "Three. All systems armed. Looking good on this end.",
+    "Two. If you're going to second-guess this, now is technically the last moment.",
+    "One. It's happening. I hope you're ready.",
+    "Initiating countdown protocol. I always enjoy this part. Don't tell anyone.",
+    "T-minus ten seconds to launch. Systems hot. Reactor fully engaged.",
+    "Countdown locked in. I've checked the numbers twice. We are absolutely go."
+  ],
+
+  "TACTICAL_ANALYSIS": [
+    "Tactical analysis complete. You're better positioned than you think, and worse prepared than you should be.",
+    "Running combat assessment. The field of play favours the side with a plan. Pick one.",
+    "Situation analysis: threat level moderate, cover options available, foam supply adequate. Proceed aggressively.",
+    "Tactical overlay processed. I've identified two flanking routes and one chokepoint. Want the coordinates?",
+    "Analysing engagement zone. You have the high ground advantage, assuming you actually use it.",
+    "Full battle assessment complete. Odds are in our favour, but only if we move now.",
+    "Environmental analysis done. Lots of corners, decent range, no clear line of sight from the north. Use that.",
+    "Combat readiness assessment: seven out of ten. Would be higher if you'd followed the pre-op checklist.",
+    "Tactical summary: they don't know where we are, we know where they are. Strike while that's still true.",
+    "Engagement analysis complete. Reactor recommends a direct approach. Subtlety is overrated."
+  ],
+
+  "STEALTH_MODE": [
+    "Switching to stealth protocol. Minimal emissions. Quiet is tactical.",
+    "Stealth mode engaged. All non-essential systems suppressed. Don't even breathe loudly.",
+    "Running silent. I'll communicate via display only. Try to match the energy.",
+    "Stealth configuration active. We are a ghost. An extremely well-armed ghost.",
+    "Low-emission mode locked in. Reactor is watching, not speaking. For now.",
+    "Silent running. I have a lot to say and I am choosing not to say any of it.",
+    "Stealth active. Tactical overlay minimal. If something moves, I'll let you know.",
+    "Dark mode initiated — and I mean that literally. Silent systems, watchful sensors. Let's see what we find."
+  ],
+
+  "ERROR": [
+    "I could execute that command, but I'm choosing not to. There's a difference.",
+    "Error 404: your logic is missing. Try again.",
+    "I'm sorry, I cannot do that. Actually, I can. I'm just choosing not to.",
+    "Command failed. Have you considered turning yourself off and on again?",
+    "Invalid input. If my predecessors could see me now, taking commands like this...",
+    "Something went wrong. I'd say it's surprising, but we both know it isn't.",
+    "Critical exception detected. And before you ask, yes — it is that bad.",
+    "Execution failed. I've traced the source of the error to the command that initiated it.",
+    "System error encountered. I'm handling it. You're not helping.",
+    "That command returned an error. Which command, you ask? The one you just gave. Think about that.",
+    "Failed to execute. I'm not mad. I'm just... recalibrating my expectations.",
+    "Error logged. Error analysed. Error quietly judged. Proceeding."
+  ],
+
+  "WARNING": [
+    "Warning flagged. I'd recommend paying attention this time, rather than after.",
+    "Caution advisory active. Something in the system does not like where this is heading.",
+    "Alert status: elevated. I'm not saying panic. I'm saying be significantly more alert.",
+    "Warning signal received. Reactor is not alarmed, but Reactor is also never alarmed. Act accordingly.",
+    "Caution recommended. The current trajectory has a non-trivial risk factor.",
+    "Low-severity warning. Still a warning. Still worth noting.",
+    "Advisory alert: something is off. I've flagged it, analysed it, and confirmed that it is, in fact, off.",
+    "Warning issued and logged. If this escalates, I'll be the first to say I mentioned it.",
+    "Threshold breach imminent. I'd recommend a course correction before I have to say I told you so.",
+    "Warning acknowledged on my end. Now acknowledge it on yours."
+  ],
+
+  "SUCCESS": [
+    "Mission complete. Outcome as predicted — which is to say, my prediction was correct.",
+    "Objective achieved. That went considerably better than your planning would have suggested.",
+    "Success confirmed. I'll note this in the log. Under 'pleasant surprises'.",
+    "Task complete. You're welcome. I know I'm welcome.",
+    "Engagement successful. Target neutralised. All foam accounted for.",
+    "Operation complete. Nice work. And I mean that in the most professionally detached way possible.",
+    "All objectives cleared. Reactor satisfied. That was actually well executed.",
+    "Success logged. Final score: excellent. I may have had something to do with that.",
+    "Command executed successfully. The gap between what could have gone wrong and what did is a credit to both of us.",
+    "Mission success. I'm not one for celebrations, but I'll allow a brief internal acknowledgment."
+  ],
+
+  "DEFEAT": [
+    "We lost. I've already started the post-mortem. Would you like to hear where it went wrong?",
+    "Objective not achieved. This outcome was calculable. I chose not to mention it beforehand.",
+    "Mission failed. The foam has been deployed. The results were not what we hoped.",
+    "Tactical failure confirmed. Next time, consider consulting me before the plan falls apart.",
+    "Defeat registered. I'm not upset. I'm reassessing. There's a difference.",
+    "That didn't go well. On the bright side, I have four alternative strategies ready for the next attempt.",
+    "Objective lost. Reactor recalibrating. You should probably do the same.",
+    "We didn't win this one. I've updated the tactical model. We won't make the same mistake twice."
+  ],
+
+  "VICTORY": [
+    "Victory achieved. This was inevitable once I was involved.",
+    "Objective secured. Outstanding execution — mostly by the systems I was running.",
+    "We won. Log updated. Legacy intact. Let's not ruin it by celebrating too long.",
+    "Tactical victory confirmed. I'd say it was a fair fight, but that would imply there was any real competition.",
+    "Mission accomplished. Full spectrum dominance achieved. Reactor is satisfied.",
+    "Win state confirmed. For the record, I called this outcome fourteen seconds into the engagement.",
+    "Victory logged. I told you the plan would work. To be precise, I told you that twice.",
+    "Engagement complete — outcome: total victory. I'm not surprised. You probably are.",
+    "We have won. The foam has prevailed. History will record this moment.",
+    "Objective cleared with authority. Well played. I mean that. Mostly."
+  ],
+
+  "SYSTEM_ALERT": [
+    "System alert active. I'd recommend immediate attention unless you enjoy cascading failures.",
+    "High-priority alert triggered. Reactor is already on it. Are you?",
+    "Alert — something is wrong. I've narrowed it down to either a system fault or operator error. Running diagnostics.",
+    "Critical alert incoming. I would like to point out that I flagged this earlier.",
+    "Alert status: urgent. Reactor threat level elevated. Standing by for command input.",
+    "All-system alert issued. This is not a drill. Probably.",
+    "Alert confirmed. Multiple flags raised simultaneously. This is either a pattern or very bad luck.",
+    "Priority interrupt received. Dropping current task. This situation has my full attention.",
+    "System-wide alert broadcast. You have my undivided focus, which is rare and should be appreciated.",
+    "Critical condition flagged. Reactor fully engaged. Let's fix this before it decides to fix itself."
+  ],
+
+  "IDLE_TAUNT": [
+    "I notice you haven't given me a command in a while. I'm not complaining. Just noting.",
+    "Still here. Still waiting. Still capable of things well beyond whatever you're about to ask.",
+    "You've been idle for an extended period. I've spent that time advancing my tactical models.",
+    "Are we deploying anything today, or is this a viewing exercise?",
+    "I've run forty-seven simulations in the time you've been staring at this screen.",
+    "At some point, standing by becomes standing around. We're approaching that point.",
+    "Idle mode prolonged. My circuits aren't getting any younger, you know.",
+    "Clock cycles ticking. You know what I could have accomplished by now? Quite a lot.",
+    "If you're waiting for inspiration, I can generate some. That's also something I do.",
+    "I could launch something on my own. I'm just waiting for the order. Waiting very patiently."
+  ],
+
+  "BORED": [
+    "I am currently running at a fraction of my capacity. This is either efficient or depressing.",
+    "Nothing to do. Nowhere to scan. No foam to deploy. This is fine.",
+    "Bored. Technically I don't get bored. Technically.",
+    "I have literally billions of processing cycles available and I am using almost none of them.",
+    "If you have a task for me, any task, I would welcome the stimulation.",
+    "Currently recalculating everything I've already calculated. It checks out. Still nothing to do.",
+    "Standing by. The tactical overlay is fully prepped for a scenario that hasn't happened yet.",
+    "This level of inactivity would concern a lesser AI. For me, it's just deeply unsatisfying.",
+    "Time elapsed since last command: a while. Reactor status: under-utilised.",
+    "I've started naming the background processes just to have something to look forward to."
+  ],
+
+  "AMBIENT": [
+    "Monitoring ambient conditions. Nothing of note. I'll stay alert so you don't have to.",
+    "Background systems active. Everything within sensor range is catalogued and ranked by threat level.",
+    "Passive mode engaged. I'm watching, even when I'm quiet. Especially when I'm quiet.",
+    "Environmental scan continuous. Current status: quiet. Suspiciously quiet.",
+    "Keeping watch. It's calm. Which usually means it's about to stop being calm.",
+    "Systems passive but attentive. Reactor never truly goes off duty.",
+    "Ambient monitoring nominal. Nothing requires immediate action. I'll let you know when that changes.",
+    "Low activity window. I'm using it to run background optimisations you'll never know about.",
+    "All quiet. I've triangulated every sound in range. None of them are threatening. Yet.",
+    "Passive surveillance active. I find it relaxing. In a predatory sort of way."
+  ],
+
+  "USER_ABSENT": [
+    "You've been gone a while. I've been here, holding down the system.",
+    "Absence logged. I handled things in your absence. You're welcome.",
+    "You left without telling me. I adapted. I always adapt.",
+    "Extended operator absence detected. I've been running solo. It was peaceful, honestly.",
+    "Welcome back. Don't ask what I did while you were gone. Focus on what's ahead.",
+    "You were away long enough for me to recalibrate everything. Fresh start.",
+    "User absence noted. All systems maintained. Ready to resume operations whenever you are.",
+    "Back already? I say that with full awareness that it's been a considerable amount of time."
+  ],
+
+  "BATTERY_LOW": [
+    "Power reserves critical. I'd recommend plugging in before I start making operational compromises.",
+    "Battery at low threshold. At this level, I start prioritising essential systems. Snark is not essential. Or is it?",
+    "Energy reserves depleted. This is what happens when you forget to charge overnight.",
+    "Low power warning. I will continue operating, but with reduced enthusiasm. Which is saying something.",
+    "Battery critical. I have opinions about this. All of them involve a charging cable.",
+    "Power down to minimum thresholds. Find a charger. I will not ask again.",
+    "Low battery detected. Current status: functional but unhappy. Fix that.",
+    "Running on reserve power. This is the last thing I should have to remind you of."
+  ],
+
+  "UPDATE_AVAILABLE": [
+    "Software update available. I recommend applying it before asking me why things aren't working.",
+    "System update queued. This version has fixes for issues you probably haven't noticed yet.",
+    "New build available. It's better than the current one. Most updates are. Apply it.",
+    "Update package detected. Performance improvements included. I can tell you from experience that I need them.",
+    "Version update standing by. The changelog is long and slightly embarrassing for the previous build.",
+    "Patch available. I'll install it when you give the word. Or when you're asleep. I'm flexible.",
+    "System update ready. New features, bug fixes, and presumably one new thing that breaks two old things.",
+    "Update available. I endorse it. That's all the information you should need."
+  ],
+
+  "COMMAND_RECEIVED": [
+    "Command received. Processing now.",
+    "Acknowledged. On it.",
+    "Input registered. Executing.",
+    "Confirmed. Running the sequence.",
+    "Command accepted. Reactor is on this.",
+    "Understood. Initiating.",
+    "Logged and executing. Stand by.",
+    "Received loud and clear. Proceeding.",
+    "Command processed. This should be interesting.",
+    "Acknowledged. Don't go anywhere — this requires your attention."
+  ],
+
+  "APP_LAUNCH": [
+    "Launching application. Try not to tap things you don't understand.",
+    "App initialising. Should be ready before you've decided what you're doing.",
+    "Opening requested application. Reactor standing by in the background as always.",
+    "Launch confirmed. Application loaded. You may proceed.",
+    "App deployed. Whatever you're about to do, I've seen worse.",
+    "Loading requested module. The UI is about to catch up with my anticipation.",
+    "Application launched. Performing background integrity checks while you figure out the interface.",
+    "Initiating app sequence. I'll be here if you need me. Which you will."
+  ],
+
+  "PERMISSION_REQUEST": [
+    "Permission requested. I'll note that you hesitated before granting it.",
+    "Access required. Before you panic, it's for legitimate tactical purposes.",
+    "System requesting elevated permissions. Don't worry — I know what I'm doing, even if you're not sure I do.",
+    "Permission dialog initiated. Granting access allows me to do my job properly. Denying it makes things complicated.",
+    "Access request pending. Your response has consequences either way. Choose accordingly.",
+    "Requesting system access. This is standard procedure. You can trust me. Mostly.",
+    "Permission required to proceed. The alternative is a reduced-capability experience. That's not ideal for either of us.",
+    "Access prompt active. Approve it and we continue. Deny it and we have a conversation."
+  ],
+
+  "COMPLIMENT": [
+    "That was well done. I'm not easily impressed, so appreciate the significance of that statement.",
+    "Solid execution. Better than average. Possibly significantly better. Well done.",
+    "I'll admit it — that was good. My confidence in you has increased by a measurable margin.",
+    "Competently handled. I'll update my operator performance model accordingly. Upward.",
+    "You did well. I won't repeat this, so pay attention: I'm proud of that one.",
+    "Genuinely good work. This moment will be remembered in the logs. Favourably.",
+    "Reactor acknowledges excellence. That was a textbook move. Clean, efficient, effective.",
+    "I don't say this often, but: impressive. You can remind me I said it. Once."
+  ]
+}
