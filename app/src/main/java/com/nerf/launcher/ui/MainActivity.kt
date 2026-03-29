@@ -26,7 +26,10 @@ import com.nerf.launcher.adapter.AppAdapter
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityMainBinding
 import com.nerf.launcher.model.AppInfo
+import com.nerf.launcher.ui.assistant.AssistantOverlayController
+import com.nerf.launcher.ui.reactor.ReactorDiagnosticsActivity
 import com.nerf.launcher.ui.reactor.ReactorCoordinator
+import com.nerf.launcher.ui.nodehunter.NodeHunterActivity
 import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.AppUtils
 import com.nerf.launcher.util.ConfigRepository
@@ -38,6 +41,7 @@ import com.nerf.launcher.util.StatusBarManager
 import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
+import com.nerf.launcher.util.assistant.AssistantController
 import com.nerf.launcher.viewmodel.LauncherViewModel
 import android.view.animation.LinearInterpolator
 import java.util.Calendar
@@ -57,6 +61,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var iconProvider: IconProvider
     private lateinit var hudController: HudController
     private lateinit var reactorCoordinator: ReactorCoordinator
+    private lateinit var assistantOverlayController: AssistantOverlayController
     private var allApps: List<AppInfo> = emptyList()
     private var filteredAppCount: Int = 0
     private var batteryPercent: Int? = null
@@ -106,6 +111,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         iconProvider = IconProvider(applicationContext, IconCache(50))
+        setupAssistantOverlay()
+        setupReactorCoordinator()
 
         setupRecyclerView()
         setupDrawerSearch()
@@ -121,7 +128,6 @@ class MainActivity : AppCompatActivity() {
         setupPressFeedbacks()
         setupLockSurface()
 
-        setupReactorCoordinator()
         setupQuickControls()
         setupConfigObservers()
         setupSystemModules()
@@ -240,9 +246,32 @@ class MainActivity : AppCompatActivity() {
             onRefreshDiagnostics = {
                 viewModel.loadApps()
                 updateSystemModules()
+            },
+            onOpenAssistantOverlay = {
+                assistantOverlayController.showWakeOverlay()
             }
         )
         reactorCoordinator.bind()
+    }
+
+    private fun setupAssistantOverlay() {
+        assistantOverlayController = AssistantOverlayController(
+            binding = binding.assistantOverlay,
+            assistantController = AssistantController(this),
+            onOpenSettings = {
+                startActivity(Intent(this, SettingsActivity::class.java))
+            },
+            onOpenDiagnostics = {
+                startActivity(Intent(this, ReactorDiagnosticsActivity::class.java))
+            },
+            onOpenNodeHunter = {
+                startActivity(Intent(this, NodeHunterActivity::class.java))
+            },
+            onShowLockSurface = {
+                showLockSurface()
+            }
+        )
+        assistantOverlayController.bind()
     }
 
     private fun setupSurfaceTransitions() {
@@ -341,6 +370,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun showLockSurface() {
         if (isLockSurfaceVisible) return
+        if (assistantOverlayController.isShowing()) {
+            assistantOverlayController.hide()
+        }
         isLockSurfaceVisible = true
         binding.lockSurfaceRoot.visibility = View.VISIBLE
         binding.lockSurfaceRoot.alpha = 0f
@@ -635,6 +667,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        if (assistantOverlayController.isShowing()) {
+            assistantOverlayController.hide()
+            return
+        }
         if (isLockSurfaceVisible) {
             hideLockSurface()
             return
@@ -668,6 +704,7 @@ class MainActivity : AppCompatActivity() {
         moduleRefreshHandler.removeCallbacks(moduleRefreshTick)
         lockSurfaceClockHandler.removeCallbacks(lockSurfaceClockTick)
         unregisterReceiver(batteryReceiver)
+        assistantOverlayController.release()
         hudController.release()
         StatusBarManager.resetStatusBar(this)
     }

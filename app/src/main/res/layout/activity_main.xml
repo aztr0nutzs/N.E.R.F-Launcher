@@ -759,6 +759,10 @@
             android:orientation="horizontal" />
     </LinearLayout>
 
+    <include
+        android:id="@+id/assistant_overlay"
+        layout="@layout/layout_assistant_overlay" />
+
     <LinearLayout
         android:id="@+id/lock_surface_root"
         android:layout_width="match_parent"

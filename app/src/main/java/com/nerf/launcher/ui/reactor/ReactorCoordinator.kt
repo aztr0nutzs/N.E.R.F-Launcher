@@ -13,7 +13,8 @@ class ReactorCoordinator(
     private val themeNames: List<String>,
     private val getCurrentThemeName: () -> String,
     private val onThemeSelected: (String) -> Unit,
-    private val onRefreshDiagnostics: () -> Unit
+    private val onRefreshDiagnostics: () -> Unit,
+    private val onOpenAssistantOverlay: () -> Unit
 ) {
 
     fun bind() {
@@ -57,7 +58,7 @@ class ReactorCoordinator(
 
     private fun launchAssistantDiagnostics() {
         updateStatus(activity.getString(R.string.reactor_home_status_assistant))
-        activity.startActivity(Intent(activity, ReactorDiagnosticsActivity::class.java))
+        onOpenAssistantOverlay()
     }
 
     private fun refreshDiagnostics() {

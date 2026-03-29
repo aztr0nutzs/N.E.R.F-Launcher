@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/assistant_overlay_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:id="@+id/assistant_overlay_card"
+        android:layout_width="292dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="68dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/hud_frame_panel"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/assistant_overlay_title"
+                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                    android:textColor="@color/nerf_hud_magenta" />
+
+                <TextView
+                    android:id="@+id/assistant_overlay_bank_state"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                    android:textColor="@color/nerf_hud_panel_text_secondary" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/assistant_overlay_close_button"
+                style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                android:layout_width="40dp"
+                android:layout_height="36dp"
+                android:text="@string/assistant_overlay_close"
+                android:textColor="@color/nerf_hud_orange"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/assistant_overlay_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/assistant_overlay_status_idle"
+            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+            android:textColor="@color/nerf_hud_cyan" />
+
+        <TextView
+            android:id="@+id/assistant_overlay_response"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/drawer_header_panel"
+            android:padding="10dp"
+            android:text="@string/assistant_overlay_response_idle"
+            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
+            android:textColor="@color/nerf_hud_panel_text_primary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/assistant_overlay_actions_label"
+            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+            android:textColor="@color/nerf_hud_lime" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/assistant_action_settings"
+                style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="@string/assistant_overlay_action_settings"
+                android:textColor="@color/nerf_hud_cyan"
+                android:textSize="10sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/assistant_action_diagnostics"
+                style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="@string/assistant_overlay_action_diagnostics"
+                android:textColor="@color/nerf_hud_orange"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/assistant_action_node_hunter"
+                style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="@string/assistant_overlay_action_node_hunter"
+                android:textColor="@color/nerf_hud_lime"
+                android:textSize="10sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/assistant_action_lock"
+                style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="@string/assistant_overlay_action_lock"
+                android:textColor="@color/nerf_hud_magenta"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
