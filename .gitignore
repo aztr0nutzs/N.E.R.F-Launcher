@@ -12,8 +12,6 @@ local.properties
 .gradle/
 build/
 app/build/
-gradlew
-gradlew.bat
 
 # OS-specific files
 .DS_Store
