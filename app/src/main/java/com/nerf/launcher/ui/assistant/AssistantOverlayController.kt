@@ -153,6 +153,11 @@ class AssistantOverlayController(
             AssistantState.SPEAKING -> R.string.assistant_overlay_status_speaking
             AssistantState.MUTED -> R.string.assistant_overlay_status_muted
             AssistantState.ERROR -> R.string.assistant_overlay_status_error
+            AssistantState.PROCESSING -> R.string.assistant_overlay_status_thinking
+            AssistantState.AWAITING_INPUT -> R.string.assistant_overlay_status_listening
+            AssistantState.COOLING_DOWN -> R.string.assistant_overlay_status_idle
+            AssistantState.REBOOTING -> R.string.assistant_overlay_status_wake
+            AssistantState.SHUTTING_DOWN -> R.string.assistant_overlay_status_muted
         }
         return binding.root.context.getString(stringRes)
     }
@@ -165,8 +170,13 @@ class AssistantOverlayController(
             AssistantState.THINKING -> R.color.nerf_hud_orange
             AssistantState.RESPONDING -> R.color.nerf_hud_cyan
             AssistantState.SPEAKING -> R.color.nerf_hud_magenta
+            AssistantState.PROCESSING -> R.color.nerf_hud_orange
+            AssistantState.AWAITING_INPUT -> R.color.nerf_hud_lime
+            AssistantState.COOLING_DOWN -> R.color.nerf_hud_cyan
+            AssistantState.REBOOTING -> R.color.nerf_hud_orange
             AssistantState.MUTED,
-            AssistantState.ERROR -> android.R.color.holo_red_light
+            AssistantState.ERROR,
+            AssistantState.SHUTTING_DOWN -> android.R.color.holo_red_light
         }
     }
 }
