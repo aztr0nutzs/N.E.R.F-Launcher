@@ -53,8 +53,8 @@ Source: `NodeHunterGameView.kt`
 Target: `app/src/main/java/com/nerf/launcher/ui/nodehunter/NodeHunterGameView.kt`
 
 ### Node Hunter activity
-Source: `NodeHunterActivity.kt`
-Target: `app/src/main/java/com/nerf/launcher/ui/nodehunter/NodeHunterActivity.kt`
+Source: uploaded Node Hunter activity prototype
+Target: `app/src/main/java/com/nerf/launcher/ui/nodehunter/NodeHunterModuleActivity.kt`
 
 ### Node Hunter layout
 Source: `activity_node_hunter.xml`
@@ -62,15 +62,20 @@ Target: `app/src/main/res/layout/activity_node_hunter.xml`
 
 ### Compose reactor staging
 Targets:
-- `app/src/composeStaging/java/com/nerf/launcher/reactor/compose/ReactorCore.kt`
-- `.../ReactorDraw.kt`
-- `.../ReactorDrawing.kt`
-- `.../ReactorInteractions.kt`
-- `.../ReactorState.kt`
-- `.../AudioReactive.kt`
-- `.../ReactorDemoScreen.kt`
+- `app/src/composeStaging/java/com/nerf/launcher/ui/reactor/compose/premium/ReactorCore.kt`
+- `.../premium/ReactorDraw.kt`
+- `.../premium/ReactorDrawing.kt`
+- `.../premium/ReactorInteractions.kt`
+- `.../premium/ReactorState.kt`
+- `.../premium/AudioReactive.kt`
+- `.../premium/ReactorDemoScreen.kt`
 - `.../prototype/LegacyReactorScreen.kt`
 Role: future premium upgrade path, not first production merge
+
+Migration note:
+- keep Compose staging isolated until the repo explicitly enables Compose in `app/build.gradle`
+- keep `ReactorModuleView` as the only production home reactor until a deliberate premium switch plan exists
+- when migrating, bridge `ReactorCoordinator` and assistant state into the Compose reactor instead of introducing a second independent home system
 
 ## New classes to create
 
@@ -189,7 +194,7 @@ Add:
 ## Manifest updates
 
 ### Add
-- `NodeHunterActivity`
+- `NodeHunterModuleActivity`
 
 ### Do not add
 - prototype `ReactorActivity` as a production launcher screen

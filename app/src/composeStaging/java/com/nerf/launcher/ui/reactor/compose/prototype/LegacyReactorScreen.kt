@@ -8,7 +8,7 @@
 //   implementation("androidx.compose.ui:ui-graphics")
 // ============================================================
 
-package com.nerf.launcher.reactor.compose.prototype
+package com.nerf.launcher.ui.reactor.compose.prototype
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas

@@ -1,5 +1,5 @@
 // ReactorInteractions.kt
-package com.nerf.launcher.reactor.compose
+package com.nerf.launcher.ui.reactor.compose.premium
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.runtime.rememberCoroutineScope

@@ -1,5 +1,5 @@
 // ReactorCore.kt
-package com.nerf.launcher.reactor.compose
+package com.nerf.launcher.ui.reactor.compose.premium
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing

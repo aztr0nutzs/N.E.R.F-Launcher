@@ -1,5 +1,5 @@
 // AudioReactive.kt
-package com.nerf.launcher.reactor.compose
+package com.nerf.launcher.ui.reactor.compose.premium
 
 import android.media.audiofx.Visualizer
 import androidx.compose.runtime.Composable
