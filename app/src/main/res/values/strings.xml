@@ -89,4 +89,17 @@
     <string name="node_hunter_title">Node Hunter</string>
     <string name="node_hunter_scan_status">N.E.R.F. SYSTEM: SCANNING SUBNET...</string>
     <string name="node_hunter_scan_details">RESOLVING HARDWARE ADDRESSES</string>
+    <string name="reactor_home_title">HOME REACTOR</string>
+    <string name="reactor_home_status_ready">Core linked. Tap center to cycle theme.</string>
+    <string name="reactor_home_status_theme">Theme node advanced to %1$s.</string>
+    <string name="reactor_home_status_node_hunter">System/network rail: launching Node Hunter.</string>
+    <string name="reactor_home_status_assistant">Assistant rail: opening Reactor Diagnostics.</string>
+    <string name="reactor_home_status_diagnostics">Diagnostics rail: refreshing launcher telemetry.</string>
+    <string name="reactor_home_status_settings">Settings rail: opening launcher controls.</string>
+    <string name="reactor_home_sync_default">SYNC 0%</string>
+    <string name="reactor_home_hint">CENTER: THEME CYCLE</string>
+    <string name="reactor_home_action_top">TOP  NODE HUNTER</string>
+    <string name="reactor_home_action_right">RIGHT  DIAGNOSTICS</string>
+    <string name="reactor_home_action_left">LEFT  SETTINGS</string>
+    <string name="reactor_home_action_bottom">BOTTOM  REFRESH</string>
 </resources>

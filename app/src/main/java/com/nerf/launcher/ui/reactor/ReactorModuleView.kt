@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
+import kotlin.math.min
 import kotlin.math.atan2
 import kotlin.math.hypot
 
@@ -72,7 +73,17 @@ class ReactorModuleView @JvmOverloads constructor(
     private val rectF = RectF()
 
     init {
+        isClickable = true
+        isFocusable = true
         startIdleAnimations()
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val desired = (260 * resources.displayMetrics.density).toInt()
+        val width = resolveSize(desired, widthMeasureSpec)
+        val height = resolveSize(desired, heightMeasureSpec)
+        val size = min(width, height)
+        setMeasuredDimension(size, size)
     }
 
     private fun startIdleAnimations() {
@@ -123,6 +134,7 @@ class ReactorModuleView @JvmOverloads constructor(
             val ringOuterRadius = width * 0.45f
 
             if (distance <= coreRadius) {
+                performClick()
                 onCoreTapped?.invoke()
                 return true
             } else if (distance in ringInnerRadius..ringOuterRadius) {
@@ -131,6 +143,7 @@ class ReactorModuleView @JvmOverloads constructor(
 
                 val tappedSector = determineSector(angle)
                 if (tappedSector != null) {
+                    performClick()
                     triggerHighlightAnimation(tappedSector)
                     onSectorTapped?.invoke(tappedSector)
                 }
@@ -138,6 +151,11 @@ class ReactorModuleView @JvmOverloads constructor(
             }
         }
         return super.onTouchEvent(event)
+    }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+        return true
     }
 
     private fun determineSector(touchAngle: Float): Sector? {

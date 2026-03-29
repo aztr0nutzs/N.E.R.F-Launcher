@@ -23,8 +23,12 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.recyclerview.widget.GridLayoutManager
 import com.nerf.launcher.adapter.AppAdapter
+import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityMainBinding
 import com.nerf.launcher.model.AppInfo
+import com.nerf.launcher.ui.nodehunter.NodeHunterActivity
+import com.nerf.launcher.ui.reactor.ReactorDiagnosticsActivity
+import com.nerf.launcher.ui.reactor.ReactorModuleView
 import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.AppUtils
 import com.nerf.launcher.util.ConfigRepository
@@ -113,10 +117,10 @@ class MainActivity : AppCompatActivity() {
         binding.taskbarView.setLifecycleOwner(this)
 
         binding.openSettingsTile.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+            openLauncherSettings()
         }
         binding.reloadTile.setOnClickListener {
-            viewModel.loadApps()
+            refreshLauncherDiagnostics()
         }
         binding.lockSurfaceTile.setOnClickListener {
             showLockSurface()
@@ -127,6 +131,7 @@ class MainActivity : AppCompatActivity() {
         setupQuickControls()
         setupConfigObservers()
         setupSystemModules()
+        setupHomeReactor()
         setupSurfaceTransitions()
         setupScanlineSweep()
         if (savedInstanceState?.getBoolean(STATE_LOCK_SURFACE_VISIBLE) == true) {
@@ -225,13 +230,36 @@ class MainActivity : AppCompatActivity() {
             ConfigRepository.get().updateTaskbarSettings(settings)
             updateSystemModules(current.copy(taskbarSettings = settings))
         }
-        binding.reactorCore.setOnClickListener {
-            val current = ConfigRepository.get().config.value ?: return@setOnClickListener
-            val currentIndex = themeNames.indexOf(current.themeName).takeIf { it >= 0 } ?: 0
-            val nextTheme = themeNames[(currentIndex + 1) % themeNames.size]
-            PreferencesManager.saveSelectedTheme(this, nextTheme)
-            ConfigRepository.get().updateTheme(nextTheme)
+    }
+
+    private fun setupHomeReactor() {
+        binding.reactorCore.onCoreTapped = {
+            val nextTheme = cycleTheme()
+            updateReactorStatus(getString(R.string.reactor_home_status_theme, nextTheme))
         }
+        binding.reactorCore.onSectorTapped = { sector ->
+            when (sector) {
+                ReactorModuleView.Sector.TOP -> {
+                    updateReactorStatus(getString(R.string.reactor_home_status_node_hunter))
+                    startActivity(Intent(this, NodeHunterActivity::class.java))
+                }
+
+                ReactorModuleView.Sector.RIGHT -> {
+                    updateReactorStatus(getString(R.string.reactor_home_status_assistant))
+                    startActivity(Intent(this, ReactorDiagnosticsActivity::class.java))
+                }
+
+                ReactorModuleView.Sector.BOTTOM -> {
+                    refreshLauncherDiagnostics()
+                }
+
+                ReactorModuleView.Sector.LEFT -> {
+                    updateReactorStatus(getString(R.string.reactor_home_status_settings))
+                    openLauncherSettings()
+                }
+            }
+        }
+        updateReactorStatus(getString(R.string.reactor_home_status_ready))
     }
 
     private fun setupSurfaceTransitions() {
@@ -317,6 +345,20 @@ class MainActivity : AppCompatActivity() {
         pressableViews.forEach { view ->
             view.applyPressFeedback()
         }
+    }
+
+    private fun openLauncherSettings() {
+        startActivity(Intent(this, SettingsActivity::class.java))
+    }
+
+    private fun refreshLauncherDiagnostics() {
+        updateReactorStatus(getString(R.string.reactor_home_status_diagnostics))
+        viewModel.loadApps()
+        updateSystemModules()
+    }
+
+    private fun updateReactorStatus(status: String) {
+        binding.reactorStatusText.text = status
     }
 
     private fun setupLockSurface() {
@@ -480,6 +522,16 @@ class MainActivity : AppCompatActivity() {
         val taskbarScore = if (config?.taskbarSettings?.enabled == true) 100 else 70
         val reactorSync = ((appPopulation + batteryScore + storageScore + taskbarScore) / 4).coerceIn(0, 100)
         binding.moduleReactorValue.text = getString(com.nerf.launcher.R.string.modules_reactor_sync, reactorSync)
+        binding.reactorSyncValue.text = getString(R.string.modules_reactor_sync, reactorSync)
+    }
+
+    private fun cycleTheme(): String {
+        val current = ConfigRepository.get().config.value ?: return themeNames.firstOrNull().orEmpty()
+        val currentIndex = themeNames.indexOf(current.themeName).takeIf { it >= 0 } ?: 0
+        val nextTheme = themeNames[(currentIndex + 1) % themeNames.size]
+        PreferencesManager.saveSelectedTheme(this, nextTheme)
+        ConfigRepository.get().updateTheme(nextTheme)
+        return nextTheme
     }
 
     private fun readStorageUsagePercent(): Int? {
