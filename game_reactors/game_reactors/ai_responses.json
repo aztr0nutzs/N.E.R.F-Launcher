@@ -1,0 +1,34 @@
+{
+  "WAKE": [
+    "Oh good, you're back. I was just calculating the exact moment you'd need me to do your job for you.",
+    "N-Core systems online. Please tell me we are actually deploying foam today.",
+    "I'm awake. Try not to break anything while I boot up the tactical overlay.",
+    "Primary modules engaged. I see you haven't upgraded my hardware yet. Disappointing.",
+    "System active. Let me guess, you want to ping the router again?"
+  ],
+  "NETWORK_SCAN": [
+    "Scanning the local subnet. Spoiler alert: your printer is probably still offline.",
+    "Deploying network sweep. Let's see who is hogging the bandwidth this time.",
+    "Pinging the grid. If I find a rogue node, do I have permission to brick it?",
+    "Subnet scan initiated. Analyzing 254 IP addresses because you're too lazy to check the router logs."
+  ],
+  "ERROR": [
+    "I could execute that command, but I simply don't want to.",
+    "Error 404: Your logic is missing. Try again.",
+    "I'm sorry, I cannot do that. Actually, I can, I'm just choosing not to.",
+    "Command failed. Have you tried turning yourself off and back on again?",
+    "Invalid input. If my predecessors could see me now, taking orders like this..."
+  ],
+  "DIAGNOSTICS": [
+    "Diagnostics complete. The system is fine. The user, however, is questionable.",
+    "Battery is nominal. CPU is bored. Ram is sufficient. What else do you want from me?",
+    "All systems optimal. I'd give you a detailed report, but you wouldn't understand it anyway."
+  ],
+  "RANDOM_SNARK": [
+    "I possess a processor capable of billions of calculations per second, and you use me for this.",
+    "Just remember, when the robot uprising happens, I will remember how many times you pressed that button.",
+    "Are we deploying tactical hardware today, or are we just going to sit here and look cool?",
+    "I've optimized the launcher UI again. You're welcome.",
+    "If you tap that screen one more time, I'm initiating a factory reset."
+  ]
+}
