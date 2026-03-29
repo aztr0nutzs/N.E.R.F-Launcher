@@ -361,7 +361,7 @@
                     android:contentDescription="@string/nerf_brand_mark_cd"
                     android:importantForAccessibility="no"
                     android:src="@drawable/ic_launcher_monochrome"
-                    android:tint="@color/nerf_hud_orange"
+                    app:tint="@color/nerf_hud_orange"
                     app:layout_constraintBottom_toBottomOf="@id/reactor_mode_label"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/reactor_mode_label" />
@@ -782,7 +782,7 @@
                                 android:alpha="0.86"
                                 android:contentDescription="@string/drawer_brand_mark_cd"
                                 android:src="@drawable/ic_launcher_monochrome"
-                                android:tint="@color/nerf_hud_magenta" />
+                                app:tint="@color/nerf_hud_magenta" />
                         </LinearLayout>
 
                         <TextView

@@ -1,5 +1,6 @@
 package com.nerf.launcher.ui
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
@@ -686,6 +687,7 @@ class MainActivity : AppCompatActivity() {
         imm.hideSoftInputFromWindow(binding.drawerSearchInput.windowToken, 0)
     }
 
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         if (assistantOverlayController.isShowing()) {
             assistantOverlayController.hide()

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/hud_root"
     style="@style/Widget.NerfLauncher.Hud.FramedPanel"
     android:layout_width="match_parent"
@@ -74,7 +75,7 @@
             android:alpha="0.82"
             android:contentDescription="@string/nerf_brand_mark_cd"
             android:src="@drawable/ic_launcher_monochrome"
-            android:tint="@color/nerf_hud_cyan" />
+            app:tint="@color/nerf_hud_cyan" />
 
         <TextView
             android:layout_width="wrap_content"

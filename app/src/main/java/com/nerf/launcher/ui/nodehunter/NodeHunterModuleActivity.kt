@@ -64,6 +64,7 @@ class NodeHunterModuleActivity : AppCompatActivity() {
             binding.scanProgressBar.visibility = View.GONE
             binding.nodeHunterView.visibility = View.VISIBLE
             binding.nodeHunterView.populateNetworkNodes(activeNodes)
+            binding.nodeHunterView.requestFocus()
             binding.nodeHunterStatusValue.text = getString(
                 if (activeNodes.isEmpty()) {
                     R.string.node_hunter_status_no_nodes

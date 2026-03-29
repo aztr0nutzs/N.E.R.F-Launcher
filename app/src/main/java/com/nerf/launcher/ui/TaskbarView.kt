@@ -3,8 +3,6 @@ package com.nerf.launcher.ui
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
@@ -42,7 +40,7 @@ class TaskbarView @JvmOverloads constructor(
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         setPadding(8, 6, 8, 6)
-        background = ContextCompat.getDrawable(context, R.drawable.hud_frame_panel)
+        applyShellBackground(1f)
         setOnLongClickListener {
             openTaskbarCustomization()
             true
@@ -92,14 +90,7 @@ class TaskbarView @JvmOverloads constructor(
     }
 
     fun setTransparency(alpha: Float) {
-        val currentColor = (background as? ColorDrawable)?.color ?: Color.BLACK
-        val newColor = Color.argb(
-            (alpha * 255).toInt(),
-            Color.red(currentColor),
-            Color.green(currentColor),
-            Color.blue(currentColor)
-        )
-        super.setBackgroundColor(newColor)
+        applyShellBackground(alpha)
     }
 
     private fun setupConfigObservers() {
@@ -114,8 +105,6 @@ class TaskbarView @JvmOverloads constructor(
                 val iconSizePx = (settings.iconSize * resources.displayMetrics.density).roundToInt()
                 setIconSize(iconSizePx)
 
-                val backgroundColor = ContextCompat.getColor(context, settings.backgroundStyle)
-                super.setBackgroundColor(backgroundColor)
                 setTransparency(settings.transparency)
 
                 val baseTheme = ThemeRepository.byName(config.themeName)
@@ -212,6 +201,12 @@ class TaskbarView @JvmOverloads constructor(
         params.width = sizePx
         params.height = sizePx
         view.layoutParams = params
+    }
+
+    private fun applyShellBackground(alpha: Float) {
+        background = ContextCompat.getDrawable(context, R.drawable.hud_frame_panel)?.mutate()?.apply {
+            this.alpha = (alpha.coerceIn(0f, 1f) * 255).roundToInt()
+        }
     }
 
     private fun openTaskbarCustomization() {
