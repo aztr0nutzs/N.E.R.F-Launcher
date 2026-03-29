@@ -27,9 +27,9 @@ import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityMainBinding
 import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.ui.assistant.AssistantOverlayController
+import com.nerf.launcher.ui.nodehunter.NodeHunterModuleActivity
 import com.nerf.launcher.ui.reactor.ReactorDiagnosticsActivity
 import com.nerf.launcher.ui.reactor.ReactorCoordinator
-import com.nerf.launcher.ui.nodehunter.NodeHunterActivity
 import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.AppUtils
 import com.nerf.launcher.util.ConfigRepository
@@ -248,6 +248,9 @@ class MainActivity : AppCompatActivity() {
             onWakeAssistant = {
                 assistantOverlayController.wakeForCoreAction()
             },
+            onOpenNodeHunter = {
+                openNodeHunterModule(NodeHunterModuleActivity.SOURCE_REACTOR)
+            },
             onRefreshDiagnostics = {
                 viewModel.loadApps()
                 updateSystemModules()
@@ -271,7 +274,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, ReactorDiagnosticsActivity::class.java))
             },
             onOpenNodeHunter = {
-                startActivity(Intent(this, NodeHunterActivity::class.java))
+                openNodeHunterModule(NodeHunterModuleActivity.SOURCE_ASSISTANT)
             },
             onShowLockSurface = {
                 showLockSurface()
@@ -285,6 +288,10 @@ class MainActivity : AppCompatActivity() {
             assistantOverlayController.renderState(snapshot)
             reactorCoordinator.renderAssistantState(snapshot.state)
         }
+    }
+
+    private fun openNodeHunterModule(launchSource: String) {
+        startActivity(NodeHunterModuleActivity.createIntent(this, launchSource))
     }
 
     private fun setupSurfaceTransitions() {

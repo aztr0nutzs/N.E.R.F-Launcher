@@ -88,7 +88,14 @@
     <string name="reactor_assistant_online">Reactor assistant online</string>
     <string name="node_hunter_title">Node Hunter</string>
     <string name="node_hunter_scan_status">N.E.R.F. SYSTEM: SCANNING SUBNET...</string>
-    <string name="node_hunter_scan_details">RESOLVING HARDWARE ADDRESSES</string>
+    <string name="node_hunter_scan_details">LOCAL WI-FI SWEEP. RESULTS DEPEND ON REACHABILITY AND ARP VISIBILITY.</string>
+    <string name="node_hunter_back">RETURN</string>
+    <string name="node_hunter_source_reactor">REACTOR-LAUNCHED MODULE</string>
+    <string name="node_hunter_source_assistant">ASSISTANT-LAUNCHED MODULE</string>
+    <string name="node_hunter_status_initial">Sweep pending. Waiting for local network telemetry.</string>
+    <string name="node_hunter_status_nodes_detected">%1$d reachable nodes surfaced for Node Hunter.</string>
+    <string name="node_hunter_status_no_nodes">%1$d reachable nodes surfaced. Check Wi-Fi or scan visibility constraints.</string>
+    <string name="node_hunter_footer_note">Launcher-owned network game surface. Back returns to the home shell. Scanner data is local-subnet only and not production-grade discovery.</string>
     <string name="reactor_home_title">HOME REACTOR</string>
     <string name="reactor_home_status_ready">Core linked. Tap center to cycle theme.</string>
     <string name="reactor_home_status_theme">Theme node advanced to %1$s.</string>

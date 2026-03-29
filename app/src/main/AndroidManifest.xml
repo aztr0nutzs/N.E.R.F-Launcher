@@ -47,8 +47,9 @@
             android:label="@string/reactor_diagnostics_title" />
 
         <activity
-            android:name=".ui.nodehunter.NodeHunterActivity"
+            android:name=".ui.nodehunter.NodeHunterModuleActivity"
             android:exported="false"
+            android:parentActivityName=".ui.MainActivity"
             android:label="@string/node_hunter_title" />
     </application>
 

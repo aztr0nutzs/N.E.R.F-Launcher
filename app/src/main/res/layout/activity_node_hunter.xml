@@ -1,33 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout 
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black">
+    android:background="@drawable/gradient_background"
+    android:paddingStart="@dimen/nerf_shell_padding_horizontal"
+    android:paddingTop="@dimen/nerf_shell_padding_top"
+    android:paddingEnd="@dimen/nerf_shell_padding_horizontal"
+    android:paddingBottom="@dimen/nerf_shell_padding_bottom">
 
-    <com.nerf.launcher.ui.nodehunter.NodeHunterGameView
-        android:id="@+id/nodeHunterView"
+    <LinearLayout
+        android:id="@+id/nodeHunterHeaderPanel"
+        style="@style/Widget.NerfLauncher.Hud.FramedPanel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/node_hunter_title"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                android:textColor="@color/nerf_hud_lime" />
+
+            <TextView
+                android:id="@+id/nodeHunterSourceLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                android:textColor="@color/nerf_hud_panel_text_secondary" />
+
+            <TextView
+                android:id="@+id/nodeHunterStatusValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/node_hunter_status_initial"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
+                android:textColor="@color/nerf_hud_cyan" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/nodeHunterBackButton"
+            style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+            android:layout_width="82dp"
+            android:layout_height="@dimen/nerf_hud_button_small_height"
+            android:text="@string/node_hunter_back"
+            android:textColor="@color/nerf_hud_orange"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/nodeHunterSurface"
+        style="@style/Widget.NerfLauncher.Hud.FramedPanel"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="invisible"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="@dimen/nerf_section_gap"
+        android:layout_marginBottom="@dimen/nerf_section_gap"
+        app:layout_constraintBottom_toTopOf="@id/nodeHunterFooterPanel"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/nodeHunterHeaderPanel">
+
+        <com.nerf.launcher.ui.nodehunter.NodeHunterGameView
+            android:id="@+id/nodeHunterView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:visibility="invisible" />
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/scanOverlay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:background="@drawable/hud_frame_panel"
         android:gravity="center"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="@id/nodeHunterSurface"
+        app:layout_constraintEnd_toEndOf="@id/nodeHunterSurface"
+        app:layout_constraintStart_toStartOf="@id/nodeHunterSurface"
+        app:layout_constraintTop_toTopOf="@id/nodeHunterSurface">
 
         <ProgressBar
             android:id="@+id/scanProgressBar"
@@ -40,26 +107,40 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="@string/node_hunter_scan_status"
-            android:textColor="@color/nerf_hud_cyan"
-            android:textSize="18sp"
-            android:textStyle="bold"
             android:letterSpacing="0.1"
             android:shadowColor="@color/nerf_hud_cyan"
-            android:shadowRadius="10"
             android:shadowDx="0"
-            android:shadowDy="0" />
-            
+            android:shadowDy="0"
+            android:shadowRadius="10"
+            android:text="@string/node_hunter_scan_status"
+            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+            android:textColor="@color/nerf_hud_cyan" />
+
         <TextView
             android:id="@+id/scanDetailsText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/node_hunter_scan_details"
-            android:textColor="@color/nerf_hud_panel_text_secondary"
-            android:textSize="12sp"
-            android:letterSpacing="0.05" />
-
+            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
+            android:textColor="@color/nerf_hud_panel_text_secondary" />
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/nodeHunterFooterPanel"
+        style="@style/Widget.NerfLauncher.Hud.FramedPanel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/nodeHunterFooterText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
+            android:textColor="@color/nerf_hud_panel_text_secondary" />
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

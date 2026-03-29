@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityMainBinding
 import com.nerf.launcher.ui.SettingsActivity
-import com.nerf.launcher.ui.nodehunter.NodeHunterActivity
 import com.nerf.launcher.util.assistant.AssistantState
 
 class ReactorCoordinator(
@@ -15,6 +14,7 @@ class ReactorCoordinator(
     private val getCurrentThemeName: () -> String,
     private val onThemeSelected: (String) -> Unit,
     private val onWakeAssistant: () -> Unit,
+    private val onOpenNodeHunter: () -> Unit,
     private val onRefreshDiagnostics: () -> Unit,
     private val onOpenAssistantOverlay: () -> Unit
 ) {
@@ -60,7 +60,7 @@ class ReactorCoordinator(
 
     private fun launchNodeHunter() {
         updateStatus(activity.getString(R.string.reactor_home_status_node_hunter))
-        activity.startActivity(Intent(activity, NodeHunterActivity::class.java))
+        onOpenNodeHunter()
     }
 
     private fun launchAssistantDiagnostics() {
