@@ -105,6 +105,7 @@
     <string name="reactor_home_status_settings">Settings rail: opening launcher controls.</string>
     <string name="reactor_home_sync_default">SYNC 0%</string>
     <string name="reactor_home_hint">CENTER: THEME CYCLE</string>
+    <string name="reactor_home_active_rails">ACTIVE RAILS</string>
     <string name="reactor_home_action_top">TOP  NODE HUNTER</string>
     <string name="reactor_home_action_right">RIGHT  ASSISTANT</string>
     <string name="reactor_home_action_left">LEFT  SETTINGS</string>
@@ -122,6 +123,8 @@
     <string name="assistant_overlay_status_error">Assistant signal fault detected.</string>
     <string name="assistant_overlay_response_idle">Wake the assistant from the reactor to get a voice line and quick launcher actions.</string>
     <string name="assistant_overlay_actions_label">QUICK ACTIONS</string>
+    <string name="assistant_overlay_visual_label">VOICE CORE</string>
+    <string name="assistant_overlay_visual_hint">Launcher-owned rail with live reactor guidance and quick tool access.</string>
     <string name="assistant_overlay_action_settings">SETTINGS</string>
     <string name="assistant_overlay_action_diagnostics">DIAGNOSTICS</string>
     <string name="assistant_overlay_action_node_hunter">NODE HUNTER</string>

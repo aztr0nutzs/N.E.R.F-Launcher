@@ -328,6 +328,20 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintWidth_percent="0.5">
 
+                <ImageView
+                    android:id="@+id/reactor_panel_art"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:alpha="0.22"
+                    android:contentDescription="@null"
+                    android:importantForAccessibility="no"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/reactor_hud_mock"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <TextView
                     android:id="@+id/reactor_mode_label"
                     android:layout_width="0dp"
@@ -378,83 +392,105 @@
                     app:layout_constraintVertical_bias="0.42"
                     app:layout_constraintWidth_percent="0.88" />
 
-                <LinearLayout
+                <FrameLayout
                     android:id="@+id/reactor_legend_panel"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/module_stat_card"
-                    android:orientation="vertical"
-                    android:padding="8dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent">
 
-                    <TextView
-                        android:id="@+id/reactor_sync_value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/reactor_home_sync_default"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
-                        android:textColor="@color/nerf_hud_panel_text_primary" />
-
-                    <TextView
-                        android:id="@+id/reactor_hint_text"
+                    <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/reactor_home_hint"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                        android:textColor="@color/nerf_hud_panel_text_secondary" />
+                        android:layout_height="match_parent"
+                        android:alpha="0.17"
+                        android:contentDescription="@null"
+                        android:importantForAccessibility="no"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/reactor_panel_mock" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:padding="8dp">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:id="@+id/reactor_sync_value"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/reactor_home_action_top"
+                            android:text="@string/reactor_home_sync_default"
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
+                            android:textColor="@color/nerf_hud_panel_text_primary" />
+
+                        <TextView
+                            android:id="@+id/reactor_hint_text"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/reactor_home_hint"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_cyan" />
+                            android:textColor="@color/nerf_hud_panel_text_secondary" />
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="@string/reactor_home_action_right"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/reactor_home_active_rails"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                             android:textColor="@color/nerf_hud_orange" />
-                    </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="@string/reactor_home_action_left"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_lime" />
+                            android:layout_marginTop="4dp"
+                            android:orientation="horizontal">
 
-                        <TextView
-                            android:layout_width="0dp"
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/reactor_home_action_top"
+                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                                android:textColor="@color/nerf_hud_cyan" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="end"
+                                android:text="@string/reactor_home_action_right"
+                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                                android:textColor="@color/nerf_hud_orange" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="@string/reactor_home_action_bottom"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_magenta" />
+                            android:layout_marginTop="3dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/reactor_home_action_left"
+                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                                android:textColor="@color/nerf_hud_lime" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="end"
+                                android:text="@string/reactor_home_action_bottom"
+                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                                android:textColor="@color/nerf_hud_magenta" />
+                        </LinearLayout>
                     </LinearLayout>
-                </LinearLayout>
+                </FrameLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
@@ -477,38 +513,52 @@
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                     android:textColor="@color/nerf_hud_lime" />
 
-                <LinearLayout
+                <FrameLayout
                     android:id="@+id/module_energy_card"
                     style="@style/Widget.NerfLauncher.Hud.StatCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:clickable="true"
-                    android:focusable="true"
-                    android:orientation="vertical">
+                    android:focusable="true">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/modules_energy_label"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                        android:textColor="@color/nerf_hud_orange" />
-
-                    <TextView
-                        android:id="@+id/module_energy_value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="--%"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
-                        android:textColor="@color/nerf_hud_orange" />
-
-                    <com.nerf.launcher.ui.SegmentedBarView
-                        android:id="@+id/module_energy_bar"
+                    <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="14dp"
-                        android:layout_marginTop="5dp" />
-                </LinearLayout>
+                        android:layout_height="match_parent"
+                        android:alpha="0.16"
+                        android:contentDescription="@null"
+                        android:importantForAccessibility="no"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/reactor_panel_alt_mock" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/modules_energy_label"
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                            android:textColor="@color/nerf_hud_orange" />
+
+                        <TextView
+                            android:id="@+id/module_energy_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="--%"
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
+                            android:textColor="@color/nerf_hud_orange" />
+
+                        <com.nerf.launcher.ui.SegmentedBarView
+                            android:id="@+id/module_energy_bar"
+                            android:layout_width="match_parent"
+                            android:layout_height="14dp"
+                            android:layout_marginTop="5dp" />
+                    </LinearLayout>
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -613,33 +663,62 @@
                             android:textColor="@color/nerf_hud_lime" />
                     </LinearLayout>
 
-                    <LinearLayout
+                    <FrameLayout
                         style="@style/Widget.NerfLauncher.Hud.StatCard"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:layout_weight="1"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_weight="1">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/modules_reactor_label"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_orange" />
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:alpha="0.18"
+                            android:contentDescription="@null"
+                            android:importantForAccessibility="no"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/reactor_panel_alt_mock" />
 
-                        <TextView
-                            android:id="@+id/module_reactor_value"
-                            android:layout_width="0dp"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:layout_weight="1"
-                            android:gravity="end"
-                            android:text="SYNC 0%"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
-                            android:textColor="@color/nerf_hud_panel_text_primary" />
-                    </LinearLayout>
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <com.nerf.launcher.ui.ReactorCoreView
+                                android:layout_width="58dp"
+                                android:layout_height="58dp"
+                                android:alpha="0.95"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:importantForAccessibility="no" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/modules_reactor_label"
+                                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                                    android:textColor="@color/nerf_hud_orange" />
+
+                                <TextView
+                                    android:id="@+id/module_reactor_value"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:gravity="end"
+                                    android:text="SYNC 0%"
+                                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
+                                    android:textColor="@color/nerf_hud_panel_text_primary" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </FrameLayout>
                 </LinearLayout>
 
                 <LinearLayout

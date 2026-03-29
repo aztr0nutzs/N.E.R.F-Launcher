@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:id="@+id/assistant_overlay_card"
-        android:layout_width="292dp"
+        android:layout_width="308dp"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
         android:layout_marginTop="68dp"
@@ -55,6 +55,61 @@
                 android:textColor="@color/nerf_hud_orange"
                 android:textSize="12sp" />
         </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="122dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/drawer_header_panel">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:alpha="0.3"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:scaleType="centerCrop"
+                android:src="@drawable/reactor_assistant_cutout" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <com.nerf.launcher.ui.ReactorCoreView
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:alpha="0.96"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:importantForAccessibility="no" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/assistant_overlay_visual_label"
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                        android:textColor="@color/nerf_hud_cyan" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/assistant_overlay_visual_hint"
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
+                        android:textColor="@color/nerf_hud_panel_text_primary" />
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
 
         <TextView
             android:id="@+id/assistant_overlay_status"
