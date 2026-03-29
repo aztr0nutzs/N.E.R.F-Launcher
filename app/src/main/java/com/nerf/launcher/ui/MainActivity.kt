@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var iconProvider: IconProvider
     private lateinit var hudController: HudController
     private lateinit var reactorCoordinator: ReactorCoordinator
+    private lateinit var assistantController: AssistantController
     private lateinit var assistantOverlayController: AssistantOverlayController
     private var allApps: List<AppInfo> = emptyList()
     private var filteredAppCount: Int = 0
@@ -113,6 +114,7 @@ class MainActivity : AppCompatActivity() {
         iconProvider = IconProvider(applicationContext, IconCache(50))
         setupAssistantOverlay()
         setupReactorCoordinator()
+        bindAssistantStateSync()
 
         setupRecyclerView()
         setupDrawerSearch()
@@ -243,6 +245,9 @@ class MainActivity : AppCompatActivity() {
                 PreferencesManager.saveSelectedTheme(this, nextTheme)
                 ConfigRepository.get().updateTheme(nextTheme)
             },
+            onWakeAssistant = {
+                assistantOverlayController.wakeForCoreAction()
+            },
             onRefreshDiagnostics = {
                 viewModel.loadApps()
                 updateSystemModules()
@@ -255,9 +260,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAssistantOverlay() {
+        assistantController = AssistantController(this)
         assistantOverlayController = AssistantOverlayController(
             binding = binding.assistantOverlay,
-            assistantController = AssistantController(this),
+            assistantController = assistantController,
             onOpenSettings = {
                 startActivity(Intent(this, SettingsActivity::class.java))
             },
@@ -272,6 +278,13 @@ class MainActivity : AppCompatActivity() {
             }
         )
         assistantOverlayController.bind()
+    }
+
+    private fun bindAssistantStateSync() {
+        assistantController.onStateChanged = { snapshot ->
+            assistantOverlayController.renderState(snapshot)
+            reactorCoordinator.renderAssistantState(snapshot.state)
+        }
     }
 
     private fun setupSurfaceTransitions() {

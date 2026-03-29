@@ -10,6 +10,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
+import androidx.core.graphics.ColorUtils
+import com.nerf.launcher.util.assistant.AssistantState
 import kotlin.math.min
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -34,9 +36,14 @@ class ReactorModuleView @JvmOverloads constructor(
     private var corePulseAlpha = 255
     private var activeSector: Sector? = null
     private var highlightAlpha = 0
+    private var assistantState = AssistantState.IDLE
+    private var assistantSignalColor = Color.parseColor("#FF4400")
+    private var assistantSignalStrength = 0f
 
     private var gameLoopAnimator: ValueAnimator? = null
     private var highlightAnimator: ValueAnimator? = null
+    private var assistantColorAnimator: ValueAnimator? = null
+    private var assistantStrengthAnimator: ValueAnimator? = null
 
     private val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.parseColor("#FF4400") 
@@ -76,6 +83,19 @@ class ReactorModuleView @JvmOverloads constructor(
         isClickable = true
         isFocusable = true
         startIdleAnimations()
+    }
+
+    fun setAssistantState(state: AssistantState) {
+        if (assistantState == state) return
+        assistantState = state
+        animateAssistantSignal(targetAssistantColor(state), targetAssistantStrength(state))
+        if (state == AssistantState.IDLE) {
+            activeSector = null
+            highlightAlpha = 0
+            invalidate()
+        } else {
+            triggerHighlightAnimation(Sector.RIGHT)
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -118,6 +138,27 @@ class ReactorModuleView @JvmOverloads constructor(
             })
         }
         highlightAnimator?.start()
+    }
+
+    private fun animateAssistantSignal(color: Int, strength: Float) {
+        assistantColorAnimator?.cancel()
+        assistantStrengthAnimator?.cancel()
+        assistantColorAnimator = ValueAnimator.ofArgb(assistantSignalColor, color).apply {
+            duration = 240L
+            addUpdateListener { anim ->
+                assistantSignalColor = anim.animatedValue as Int
+                invalidate()
+            }
+            start()
+        }
+        assistantStrengthAnimator = ValueAnimator.ofFloat(assistantSignalStrength, strength).apply {
+            duration = 240L
+            addUpdateListener { anim ->
+                assistantSignalStrength = anim.animatedValue as Float
+                invalidate()
+            }
+            start()
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -188,18 +229,38 @@ class ReactorModuleView @JvmOverloads constructor(
         rectF.set(cx - ringRadius, cy - ringRadius, cx + ringRadius, cy + ringRadius)
 
         for (sector in Sector.values()) {
-            ringPaint.color = sector.color
+            val sectorColor = if (sector == Sector.RIGHT && assistantSignalStrength > 0f) {
+                ColorUtils.blendARGB(
+                    sector.color,
+                    assistantSignalColor,
+                    assistantSignalStrength.coerceIn(0f, 1f)
+                )
+            } else {
+                sector.color
+            }
+            ringPaint.color = sectorColor
             canvas.drawArc(rectF, sector.startAngle + 2f, sector.sweepAngle - 4f, false, ringPaint)
 
             if (activeSector == sector) {
-                highlightPaint.color = sector.color
+                highlightPaint.color = sectorColor
                 highlightPaint.alpha = highlightAlpha
-                highlightPaint.setShadowLayer(20f, 0f, 0f, sector.color)
+                highlightPaint.setShadowLayer(20f, 0f, 0f, sectorColor)
                 canvas.drawArc(rectF, sector.startAngle + 2f, sector.sweepAngle - 4f, false, highlightPaint)
+                highlightPaint.clearShadowLayer()
+            }
+
+            if (sector == Sector.RIGHT && assistantSignalStrength > 0.05f) {
+                highlightPaint.color = assistantSignalColor
+                highlightPaint.alpha = ((90 + (assistantSignalStrength * 145f)) * (corePulseAlpha / 255f)).toInt()
+                highlightPaint.setShadowLayer(18f, 0f, 0f, assistantSignalColor)
+                canvas.drawArc(rectF, sector.startAngle + 6f, sector.sweepAngle - 12f, false, highlightPaint)
                 highlightPaint.clearShadowLayer()
             }
         }
 
+        val coreColor = if (assistantSignalStrength > 0f) assistantSignalColor else Color.parseColor("#FF4400")
+        corePaint.color = coreColor
+        corePaint.setShadowLayer(15f + (assistantSignalStrength * 18f), 0f, 0f, coreColor)
         corePaint.alpha = corePulseAlpha
         val coreRadius = radius * 0.3f
         canvas.drawCircle(cx, cy, coreRadius, corePaint)
@@ -211,5 +272,33 @@ class ReactorModuleView @JvmOverloads constructor(
         super.onDetachedFromWindow()
         gameLoopAnimator?.cancel()
         highlightAnimator?.cancel()
+        assistantColorAnimator?.cancel()
+        assistantStrengthAnimator?.cancel()
+    }
+
+    private fun targetAssistantColor(state: AssistantState): Int {
+        return when (state) {
+            AssistantState.IDLE -> Color.parseColor("#FF4400")
+            AssistantState.WAKE -> Color.parseColor("#FFE66A")
+            AssistantState.LISTENING -> Color.parseColor("#00E9FF")
+            AssistantState.THINKING -> Color.parseColor("#FFB300")
+            AssistantState.RESPONDING -> Color.parseColor("#FF8A00")
+            AssistantState.SPEAKING -> Color.parseColor("#FF39B5")
+            AssistantState.MUTED -> Color.parseColor("#9E9E9E")
+            AssistantState.ERROR -> Color.parseColor("#FF5252")
+        }
+    }
+
+    private fun targetAssistantStrength(state: AssistantState): Float {
+        return when (state) {
+            AssistantState.IDLE -> 0f
+            AssistantState.WAKE -> 0.42f
+            AssistantState.LISTENING -> 0.58f
+            AssistantState.THINKING -> 0.72f
+            AssistantState.RESPONDING -> 0.66f
+            AssistantState.SPEAKING -> 0.88f
+            AssistantState.MUTED -> 0.34f
+            AssistantState.ERROR -> 0.52f
+        }
     }
 }

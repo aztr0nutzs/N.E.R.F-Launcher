@@ -106,6 +106,13 @@
     <string name="assistant_overlay_close">X</string>
     <string name="assistant_overlay_status_idle">Stand by. Assistant overlay is idle.</string>
     <string name="assistant_overlay_status_awake">Voice link awake. Launcher tools are available.</string>
+    <string name="assistant_overlay_status_wake">Wake sequence engaged. Reactor link is coming online.</string>
+    <string name="assistant_overlay_status_listening">Listening for launcher commands.</string>
+    <string name="assistant_overlay_status_thinking">Resolving a launcher-safe response.</string>
+    <string name="assistant_overlay_status_responding">Response line selected. Preparing output.</string>
+    <string name="assistant_overlay_status_speaking">Voice output active.</string>
+    <string name="assistant_overlay_status_muted">Voice output unavailable. Text channel only.</string>
+    <string name="assistant_overlay_status_error">Assistant signal fault detected.</string>
     <string name="assistant_overlay_response_idle">Wake the assistant from the reactor to get a voice line and quick launcher actions.</string>
     <string name="assistant_overlay_actions_label">QUICK ACTIONS</string>
     <string name="assistant_overlay_action_settings">SETTINGS</string>

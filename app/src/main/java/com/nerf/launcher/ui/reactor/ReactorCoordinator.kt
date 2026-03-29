@@ -6,6 +6,7 @@ import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityMainBinding
 import com.nerf.launcher.ui.SettingsActivity
 import com.nerf.launcher.ui.nodehunter.NodeHunterActivity
+import com.nerf.launcher.util.assistant.AssistantState
 
 class ReactorCoordinator(
     private val activity: AppCompatActivity,
@@ -13,6 +14,7 @@ class ReactorCoordinator(
     private val themeNames: List<String>,
     private val getCurrentThemeName: () -> String,
     private val onThemeSelected: (String) -> Unit,
+    private val onWakeAssistant: () -> Unit,
     private val onRefreshDiagnostics: () -> Unit,
     private val onOpenAssistantOverlay: () -> Unit
 ) {
@@ -26,6 +28,7 @@ class ReactorCoordinator(
         }
         binding.reactorCore.onCoreTapped = {
             cycleTheme()
+            onWakeAssistant()
         }
         binding.reactorCore.onSectorTapped = { sector ->
             when (sector) {
@@ -40,6 +43,10 @@ class ReactorCoordinator(
 
     fun updateSyncPreview(sync: Int) {
         binding.reactorSyncValue.text = activity.getString(R.string.modules_reactor_sync, sync)
+    }
+
+    fun renderAssistantState(state: AssistantState) {
+        binding.reactorCore.setAssistantState(state)
     }
 
     private fun cycleTheme() {
