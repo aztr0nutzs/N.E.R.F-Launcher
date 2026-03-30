@@ -16,6 +16,7 @@ import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.LifecycleOwner
 import com.nerf.launcher.R
 import com.nerf.launcher.util.ConfigRepository
+import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.LifecycleOwnerAware
 import com.nerf.launcher.util.ThemeRepository
@@ -35,6 +36,7 @@ class TaskbarView @JvmOverloads constructor(
     private var lifecycleOwner: LifecycleOwner? = null
     private var currentIconTint: Int? = null
     private var currentIconSizePx: Int? = null
+    private var lastObservedConfig: AppConfig? = null
 
     init {
         orientation = HORIZONTAL
@@ -96,27 +98,44 @@ class TaskbarView @JvmOverloads constructor(
     private fun setupConfigObservers() {
         lifecycleOwner?.let { owner ->
             ConfigRepository.get().config.observe(owner) { config ->
+                val previous = lastObservedConfig
                 val settings = config.taskbarSettings
-                visibility = if (settings.enabled) View.VISIBLE else View.GONE
-
-                val heightPx = (settings.height * resources.displayMetrics.density).roundToInt()
-                setTaskbarHeight(heightPx)
-
-                val iconSizePx = (settings.iconSize * resources.displayMetrics.density).roundToInt()
-                setIconSize(iconSizePx)
-
-                setTransparency(settings.transparency)
-
-                val baseTheme = ThemeRepository.byName(config.themeName)
-                    ?: ThemeRepository.CLASSIC_NERF
-                val iconTint = if (com.nerf.launcher.util.ColorUtils.isColorLight(baseTheme.primary)) {
-                    ContextCompat.getColor(context, R.color.nerf_on_secondary)
-                } else {
-                    ContextCompat.getColor(context, R.color.nerf_on_background)
+                if (previous?.taskbarSettings?.enabled != settings.enabled || previous == null) {
+                    visibility = if (settings.enabled) View.VISIBLE else View.GONE
                 }
-                setIconTint(iconTint)
+                if (previous?.taskbarSettings?.height != settings.height || previous == null) {
+                    val heightPx = (settings.height * resources.displayMetrics.density).roundToInt()
+                    setTaskbarHeight(heightPx)
+                }
+                if (previous?.taskbarSettings?.iconSize != settings.iconSize || previous == null) {
+                    val iconSizePx = (settings.iconSize * resources.displayMetrics.density).roundToInt()
+                    setIconSize(iconSizePx)
+                }
+                if (previous?.taskbarSettings?.transparency != settings.transparency || previous == null) {
+                    setTransparency(settings.transparency)
+                }
 
-                updateIcons(settings.pinnedApps)
+                val iconTintNeedsUpdate = previous == null ||
+                        previous.themeName != config.themeName ||
+                        previous.glowIntensity != config.glowIntensity
+                if (iconTintNeedsUpdate) {
+                    val baseTheme = ThemeRepository.byName(config.themeName)
+                        ?: ThemeRepository.CLASSIC_NERF
+                    val iconTint = if (com.nerf.launcher.util.ColorUtils.isColorLight(baseTheme.primary)) {
+                        ContextCompat.getColor(context, R.color.nerf_on_secondary)
+                    } else {
+                        ContextCompat.getColor(context, R.color.nerf_on_background)
+                    }
+                    setIconTint(iconTint)
+                }
+
+                val pinnedAppsChanged = previous?.taskbarSettings?.pinnedApps != settings.pinnedApps
+                val iconPackChanged = previous?.iconPack != config.iconPack
+                if (previous == null || pinnedAppsChanged || iconPackChanged) {
+                    updateIcons(settings.pinnedApps)
+                }
+
+                lastObservedConfig = config
             }
         }
     }
