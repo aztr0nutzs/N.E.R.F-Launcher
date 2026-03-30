@@ -15,12 +15,12 @@ object IconPackManager {
 
     /** Returns the currently selected pack name, defaulting to system icons if none set. */
     fun getCurrentPack(context: Context): String =
-        PreferencesManager.getIconPack(context) ?: DEFAULT_PACK
+        ConfigRepository.get().config.value?.iconPack ?: DEFAULT_PACK
 
     /** Saves the selected pack name if it is valid. */
     fun setCurrentPack(context: Context, packName: String) {
         if (getAvailablePacks().contains(packName)) {
-            PreferencesManager.saveIconPack(context, packName)
+            ConfigRepository.get().updateIconPack(packName)
         }
     }
 }

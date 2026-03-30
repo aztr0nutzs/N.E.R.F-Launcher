@@ -37,9 +37,7 @@ import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconCache
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.IconProvider
-import com.nerf.launcher.util.PreferencesManager
 import com.nerf.launcher.util.StatusBarManager
-import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.util.assistant.AssistantController
@@ -228,7 +226,6 @@ class MainActivity : AppCompatActivity() {
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val toggled = !current.taskbarSettings.enabled
             val settings = current.taskbarSettings.copy(enabled = toggled)
-            saveTaskbarSettings(settings)
             ConfigRepository.get().updateTaskbarSettings(settings)
             updateSystemModules(current.copy(taskbarSettings = settings))
         }
@@ -243,7 +240,6 @@ class MainActivity : AppCompatActivity() {
                 ConfigRepository.get().config.value?.themeName ?: themeNames.firstOrNull().orEmpty()
             },
             onThemeSelected = { nextTheme ->
-                PreferencesManager.saveSelectedTheme(this, nextTheme)
                 ConfigRepository.get().updateTheme(nextTheme)
             },
             onWakeAssistant = {
@@ -562,7 +558,6 @@ class MainActivity : AppCompatActivity() {
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val currentIndex = themeNames.indexOf(current.themeName).takeIf { it >= 0 } ?: 0
             val nextTheme = themeNames[(currentIndex + 1) % themeNames.size]
-            PreferencesManager.saveSelectedTheme(this, nextTheme)
             ConfigRepository.get().updateTheme(nextTheme)
         }
 
@@ -571,14 +566,12 @@ class MainActivity : AppCompatActivity() {
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val currentIndex = iconPackNames.indexOf(current.iconPack).takeIf { it >= 0 } ?: 0
             val nextPack = iconPackNames[(currentIndex + 1) % iconPackNames.size]
-            PreferencesManager.saveIconPack(this, nextPack)
             ConfigRepository.get().updateIconPack(nextPack)
         }
 
         binding.quickAnimationBtn.setOnClickListener {
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val toggled = !current.animationSpeedEnabled
-            PreferencesManager.saveAnimationSpeed(this, toggled)
             ConfigRepository.get().updateAnimationSpeed(toggled)
         }
 
@@ -586,7 +579,6 @@ class MainActivity : AppCompatActivity() {
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val toggled = !current.taskbarSettings.enabled
             val settings = current.taskbarSettings.copy(enabled = toggled)
-            saveTaskbarSettings(settings)
             ConfigRepository.get().updateTaskbarSettings(settings)
         }
 
@@ -599,7 +591,6 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (!fromUser) return
                 val value = progress / 100f
-                PreferencesManager.saveGlowIntensity(this@MainActivity, value)
                 ConfigRepository.get().updateGlowIntensity(value)
             }
 
@@ -616,7 +607,6 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (!fromUser) return
                 val gridSize = progress + 2
-                PreferencesManager.saveGridSize(this@MainActivity, gridSize)
                 ConfigRepository.get().updateGridSize(gridSize)
             }
 
@@ -658,15 +648,6 @@ class MainActivity : AppCompatActivity() {
         if (binding.quickGridSeekbar.progress != sliderProgress) {
             binding.quickGridSeekbar.progress = sliderProgress
         }
-    }
-
-    private fun saveTaskbarSettings(settings: TaskbarSettings) {
-        PreferencesManager.saveTaskbarHeight(this, settings.height)
-        PreferencesManager.saveTaskbarIconSize(this, settings.iconSize)
-        PreferencesManager.saveTaskbarBackgroundStyle(this, settings.backgroundStyle)
-        PreferencesManager.saveTaskbarTransparency(this, settings.transparency)
-        PreferencesManager.saveTaskbarEnabled(this, settings.enabled)
-        PreferencesManager.savePinnedApps(this, settings.pinnedApps)
     }
 
     private fun updateTaskbarIcons() {
