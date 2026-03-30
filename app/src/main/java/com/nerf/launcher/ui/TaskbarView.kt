@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.LifecycleOwner
@@ -42,7 +43,7 @@ class TaskbarView @JvmOverloads constructor(
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         setPadding(8, 6, 8, 6)
-        applyShellBackground(1f)
+        applyShellBackground(android.R.color.background_dark, 1f)
         setOnLongClickListener {
             openTaskbarCustomization()
             true
@@ -92,7 +93,8 @@ class TaskbarView @JvmOverloads constructor(
     }
 
     fun setTransparency(alpha: Float) {
-        applyShellBackground(alpha)
+        val styleRes = lastObservedConfig?.taskbarSettings?.backgroundStyle ?: android.R.color.background_dark
+        applyShellBackground(styleRes, alpha)
     }
 
     private fun setupConfigObservers() {
@@ -112,7 +114,10 @@ class TaskbarView @JvmOverloads constructor(
                     setIconSize(iconSizePx)
                 }
                 if (previous?.taskbarSettings?.transparency != settings.transparency || previous == null) {
-                    setTransparency(settings.transparency)
+                    applyShellBackground(settings.backgroundStyle, settings.transparency)
+                }
+                if (previous?.taskbarSettings?.backgroundStyle != settings.backgroundStyle || previous == null) {
+                    applyShellBackground(settings.backgroundStyle, settings.transparency)
                 }
 
                 val iconTintNeedsUpdate = previous == null ||
@@ -220,10 +225,12 @@ class TaskbarView @JvmOverloads constructor(
         view.layoutParams = params
     }
 
-    private fun applyShellBackground(alpha: Float) {
-        background = ContextCompat.getDrawable(context, R.drawable.hud_frame_panel)?.mutate()?.apply {
-            this.alpha = (alpha.coerceIn(0f, 1f) * 255).roundToInt()
-        }
+    private fun applyShellBackground(backgroundStyle: Int, alpha: Float) {
+        val shellDrawable = ContextCompat.getDrawable(context, R.drawable.hud_frame_panel)?.mutate() ?: return
+        val wrapped = DrawableCompat.wrap(shellDrawable)
+        DrawableCompat.setTint(wrapped, context.getColor(backgroundStyle))
+        wrapped.alpha = (alpha.coerceIn(0f, 1f) * 255).roundToInt()
+        background = wrapped
     }
 
     private fun openTaskbarCustomization() {

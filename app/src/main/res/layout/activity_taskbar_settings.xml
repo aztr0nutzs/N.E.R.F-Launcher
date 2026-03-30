@@ -103,6 +103,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
+                android:text="@string/taskbar_settings_background_style"
+                android:textAppearance="?attr/textAppearanceBody1" />
+
+            <Spinner
+                android:id="@+id/taskbarBackgroundStyleSpinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:text="@string/taskbar_settings_pinned_apps"
                 android:textAppearance="?attr/textAppearanceBody1" />
 

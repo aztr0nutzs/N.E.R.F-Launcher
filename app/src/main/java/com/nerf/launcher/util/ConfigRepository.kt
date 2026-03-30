@@ -29,14 +29,14 @@ class ConfigRepository(private val context: Context) {
     val config: LiveData<AppConfig> = _config
 
     private fun loadConfig(): AppConfig {
-        return AppConfig(
-            themeName = PreferencesManager.getSelectedTheme(context)
-                ?: ThemeRepository.CLASSIC_NERF.name,
-            iconPack = PreferencesManager.getIconPack(context) ?: IconPackManager.DEFAULT_PACK,
-            gridSize = PreferencesManager.getGridSize(context),
-            animationSpeedEnabled = PreferencesManager.isAnimationSpeedEnabled(context),
-            glowIntensity = PreferencesManager.getGlowIntensity(context),
-            taskbarSettings = TaskbarSettings(
+        val themeName = PreferencesManager.getSelectedTheme(context)
+            ?.takeIf { ThemeRepository.byName(it) != null }
+            ?: ThemeRepository.CLASSIC_NERF.name
+        val iconPack = PreferencesManager.getIconPack(context)
+            ?.takeIf { IconPackManager.getAvailablePacks(context).contains(it) }
+            ?: IconPackManager.DEFAULT_PACK
+        val taskbarSettings = normalizeTaskbarSettings(
+            TaskbarSettings(
                 height = PreferencesManager.getTaskbarHeight(context),
                 iconSize = PreferencesManager.getTaskbarIconSize(context),
                 backgroundStyle = PreferencesManager.getTaskbarBackgroundStyle(context),
@@ -45,23 +45,41 @@ class ConfigRepository(private val context: Context) {
                 pinnedApps = PreferencesManager.getPinnedApps(context)
             )
         )
+        return AppConfig(
+            themeName = themeName,
+            iconPack = iconPack,
+            gridSize = PreferencesManager.getGridSize(context).coerceIn(2, 6),
+            animationSpeedEnabled = PreferencesManager.isAnimationSpeedEnabled(context),
+            glowIntensity = PreferencesManager.getGlowIntensity(context).coerceIn(0f, 1f),
+            taskbarSettings = taskbarSettings
+        )
     }
 
     fun saveConfig(config: AppConfig) {
-        PreferencesManager.saveSelectedTheme(context, config.themeName)
-        PreferencesManager.saveIconPack(context, config.iconPack)
-        PreferencesManager.saveGridSize(context, config.gridSize)
-        PreferencesManager.saveAnimationSpeed(context, config.animationSpeedEnabled)
-        PreferencesManager.saveGlowIntensity(context, config.glowIntensity)
+        val sanitized = config.copy(
+            themeName = config.themeName.takeIf { ThemeRepository.byName(it) != null }
+                ?: ThemeRepository.CLASSIC_NERF.name,
+            iconPack = config.iconPack.takeIf { IconPackManager.getAvailablePacks(context).contains(it) }
+                ?: IconPackManager.DEFAULT_PACK,
+            gridSize = config.gridSize.coerceIn(2, 6),
+            glowIntensity = config.glowIntensity.coerceIn(0f, 1f),
+            taskbarSettings = normalizeTaskbarSettings(config.taskbarSettings)
+        )
 
-        PreferencesManager.saveTaskbarHeight(context, config.taskbarSettings.height)
-        PreferencesManager.saveTaskbarIconSize(context, config.taskbarSettings.iconSize)
-        PreferencesManager.saveTaskbarBackgroundStyle(context, config.taskbarSettings.backgroundStyle)
-        PreferencesManager.saveTaskbarTransparency(context, config.taskbarSettings.transparency)
-        PreferencesManager.saveTaskbarEnabled(context, config.taskbarSettings.enabled)
-        PreferencesManager.savePinnedApps(context, config.taskbarSettings.pinnedApps)
+        PreferencesManager.saveSelectedTheme(context, sanitized.themeName)
+        PreferencesManager.saveIconPack(context, sanitized.iconPack)
+        PreferencesManager.saveGridSize(context, sanitized.gridSize)
+        PreferencesManager.saveAnimationSpeed(context, sanitized.animationSpeedEnabled)
+        PreferencesManager.saveGlowIntensity(context, sanitized.glowIntensity)
 
-        _config.value = config
+        PreferencesManager.saveTaskbarHeight(context, sanitized.taskbarSettings.height)
+        PreferencesManager.saveTaskbarIconSize(context, sanitized.taskbarSettings.iconSize)
+        PreferencesManager.saveTaskbarBackgroundStyle(context, sanitized.taskbarSettings.backgroundStyle)
+        PreferencesManager.saveTaskbarTransparency(context, sanitized.taskbarSettings.transparency)
+        PreferencesManager.saveTaskbarEnabled(context, sanitized.taskbarSettings.enabled)
+        PreferencesManager.savePinnedApps(context, sanitized.taskbarSettings.pinnedApps)
+
+        _config.value = sanitized
     }
 
     fun updateTheme(themeName: String) {
@@ -91,6 +109,31 @@ class ConfigRepository(private val context: Context) {
 
     fun updateTaskbarSettings(settings: TaskbarSettings) {
         val current = _config.value ?: return
-        saveConfig(current.copy(taskbarSettings = settings))
+        saveConfig(current.copy(taskbarSettings = normalizeTaskbarSettings(settings)))
+    }
+
+    private fun normalizeTaskbarSettings(settings: TaskbarSettings): TaskbarSettings {
+        val validBackgrounds = setOf(
+            android.R.color.background_dark,
+            android.R.color.background_light,
+            android.R.color.transparent
+        )
+        val sanitizedBackground = if (settings.backgroundStyle in validBackgrounds) {
+            settings.backgroundStyle
+        } else {
+            android.R.color.background_dark
+        }
+        return settings.copy(
+            height = settings.height.coerceIn(40, 96),
+            iconSize = settings.iconSize.coerceIn(24, 72),
+            backgroundStyle = sanitizedBackground,
+            transparency = settings.transparency.coerceIn(0f, 1f),
+            pinnedApps = settings.pinnedApps
+                .asSequence()
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .distinct()
+                .toList()
+        )
     }
 }

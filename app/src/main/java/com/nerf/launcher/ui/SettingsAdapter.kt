@@ -102,7 +102,8 @@ class SettingsAdapter(
                     binding.spinnerContainer.visibility = View.GONE
 
                     val seekBar = binding.glowSeekBar
-                    val progress = (item.payload as Float * 100).toInt()
+                    seekBar.setOnSeekBarChangeListener(null)
+                    val progress = ((currentConfig?.glowIntensity ?: item.payload as Float) * 100).toInt()
                     seekBar.progress = progress
                     seekBar.setOnSeekBarChangeListener(object :
                         SeekBar.OnSeekBarChangeListener {
@@ -126,7 +127,8 @@ class SettingsAdapter(
                     binding.spinnerContainer.visibility = View.GONE
 
                     val switchCompat = binding.animationSwitch
-                    switchCompat.isChecked = item.payload as Boolean
+                    switchCompat.setOnCheckedChangeListener(null)
+                    switchCompat.isChecked = currentConfig?.animationSpeedEnabled ?: item.payload as Boolean
                     switchCompat.setOnCheckedChangeListener { _, isChecked ->
                         if (isChecked != currentConfig?.animationSpeedEnabled) {
                             onSettingChanged(SettingItem(SettingsType.ANIMATION_SPEED, item.title, isChecked))
