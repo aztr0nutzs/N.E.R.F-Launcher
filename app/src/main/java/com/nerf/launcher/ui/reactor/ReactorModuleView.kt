@@ -14,6 +14,8 @@ import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import com.nerf.launcher.R
+import com.nerf.launcher.util.NerfTheme
+import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.assistant.AssistantState
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -46,11 +48,11 @@ class ReactorModuleView @JvmOverloads constructor(
     private val reactorMidB = ContextCompat.getColor(context, R.color.nerf_reactor_mid_b)
     private val reactorAccent = ContextCompat.getColor(context, R.color.nerf_reactor_accent_ring)
     private val reactorCoreGlow = ContextCompat.getColor(context, R.color.nerf_reactor_core_glow)
-    private val armorDark = Color.parseColor("#293039")
-    private val armorMid = Color.parseColor("#58626B")
-    private val interiorDark = Color.parseColor("#05070A")
-    private val interiorMid = Color.parseColor("#0C1016")
-    private val frameShadow = Color.parseColor("#020304")
+    private var armorDark = ContextCompat.getColor(context, R.color.theme_shared_reactor_armor_dark)
+    private var armorMid = ContextCompat.getColor(context, R.color.theme_shared_reactor_armor_mid)
+    private var interiorDark = ContextCompat.getColor(context, R.color.theme_shared_reactor_interior_dark)
+    private var interiorMid = ContextCompat.getColor(context, R.color.theme_shared_reactor_interior_mid)
+    private var frameShadow = ContextCompat.getColor(context, R.color.theme_shared_reactor_frame_shadow)
 
     private var rotationAngle = 0f
     private var counterRotationAngle = 0f
@@ -59,8 +61,10 @@ class ReactorModuleView @JvmOverloads constructor(
     private var activeSector: Sector? = null
     private var highlightAlpha = 0
     private var assistantState = AssistantState.IDLE
-    private var assistantSignalColor = Color.parseColor("#FF4400")
+    private var assistantSignalColor = hudOrange
     private var assistantSignalStrength = 0f
+    private var assistantMutedColor = ContextCompat.getColor(context, R.color.theme_shared_assistant_muted)
+    private var assistantErrorColor = ContextCompat.getColor(context, R.color.theme_shared_assistant_error)
 
     private var idleAnimator: ValueAnimator? = null
     private var highlightAnimator: ValueAnimator? = null
@@ -113,6 +117,21 @@ class ReactorModuleView @JvmOverloads constructor(
     init {
         isClickable = true
         isFocusable = true
+        updateTheme(ThemeManager.resolveActiveTheme(context))
+    }
+
+    fun updateTheme(theme: NerfTheme) {
+        armorDark = theme.reactorArmorDarkColor
+        armorMid = theme.reactorArmorMidColor
+        interiorDark = theme.reactorInteriorDarkColor
+        interiorMid = theme.reactorInteriorMidColor
+        frameShadow = theme.reactorFrameShadowColor
+        assistantMutedColor = theme.assistantMutedColor
+        assistantErrorColor = theme.assistantErrorColor
+        if (assistantState == AssistantState.IDLE) {
+            assistantSignalColor = targetAssistantColor(assistantState)
+        }
+        invalidate()
     }
 
     fun setAssistantState(state: AssistantState) {
@@ -538,9 +557,9 @@ class ReactorModuleView @JvmOverloads constructor(
             AssistantState.AWAITING_INPUT -> hudCyan
             AssistantState.COOLING_DOWN -> reactorCoreGlow
             AssistantState.REBOOTING -> reactorAccent
-            AssistantState.MUTED -> Color.parseColor("#9E9E9E")
+            AssistantState.MUTED -> assistantMutedColor
             AssistantState.ERROR,
-            AssistantState.SHUTTING_DOWN -> Color.parseColor("#FF5252")
+            AssistantState.SHUTTING_DOWN -> assistantErrorColor
         }
     }
 

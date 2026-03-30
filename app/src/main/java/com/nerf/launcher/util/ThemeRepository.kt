@@ -20,11 +20,19 @@ object ThemeRepository {
         @ColorRes val windowBackgroundRes: Int,
         @ColorRes val taskbarDarkBackgroundRes: Int,
         @ColorRes val taskbarLightBackgroundRes: Int,
+        @ColorRes val lockSurfaceScrimRes: Int,
         @ColorRes val hudInactiveMeterRes: Int,
         @ColorRes val hudPanelTextPrimaryRes: Int,
         @ColorRes val hudPanelTextSecondaryRes: Int,
         @ColorRes val hudEnergyHighRes: Int,
-        @ColorRes val hudEnergyLowRes: Int
+        @ColorRes val hudEnergyLowRes: Int,
+        @ColorRes val reactorArmorDarkRes: Int,
+        @ColorRes val reactorArmorMidRes: Int,
+        @ColorRes val reactorInteriorDarkRes: Int,
+        @ColorRes val reactorInteriorMidRes: Int,
+        @ColorRes val reactorFrameShadowRes: Int,
+        @ColorRes val assistantMutedRes: Int,
+        @ColorRes val assistantErrorRes: Int
     )
 
     private val classicNerf = ThemeSpec(
@@ -35,11 +43,19 @@ object ThemeRepository {
         windowBackgroundRes = R.color.theme_shared_window_background,
         taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
         taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        lockSurfaceScrimRes = R.color.theme_shared_lock_surface_scrim,
         hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
         hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
         hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
         hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
-        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low,
+        reactorArmorDarkRes = R.color.theme_shared_reactor_armor_dark,
+        reactorArmorMidRes = R.color.theme_shared_reactor_armor_mid,
+        reactorInteriorDarkRes = R.color.theme_shared_reactor_interior_dark,
+        reactorInteriorMidRes = R.color.theme_shared_reactor_interior_mid,
+        reactorFrameShadowRes = R.color.theme_shared_reactor_frame_shadow,
+        assistantMutedRes = R.color.theme_shared_assistant_muted,
+        assistantErrorRes = R.color.theme_shared_assistant_error
     )
 
     private val stealthOps = ThemeSpec(
@@ -50,11 +66,19 @@ object ThemeRepository {
         windowBackgroundRes = R.color.theme_shared_window_background,
         taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
         taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        lockSurfaceScrimRes = R.color.theme_shared_lock_surface_scrim,
         hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
         hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
         hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
         hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
-        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low,
+        reactorArmorDarkRes = R.color.theme_shared_reactor_armor_dark,
+        reactorArmorMidRes = R.color.theme_shared_reactor_armor_mid,
+        reactorInteriorDarkRes = R.color.theme_shared_reactor_interior_dark,
+        reactorInteriorMidRes = R.color.theme_shared_reactor_interior_mid,
+        reactorFrameShadowRes = R.color.theme_shared_reactor_frame_shadow,
+        assistantMutedRes = R.color.theme_shared_assistant_muted,
+        assistantErrorRes = R.color.theme_shared_assistant_error
     )
 
     private val eliteBlue = ThemeSpec(
@@ -65,11 +89,19 @@ object ThemeRepository {
         windowBackgroundRes = R.color.theme_shared_window_background,
         taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
         taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        lockSurfaceScrimRes = R.color.theme_shared_lock_surface_scrim,
         hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
         hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
         hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
         hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
-        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low,
+        reactorArmorDarkRes = R.color.theme_shared_reactor_armor_dark,
+        reactorArmorMidRes = R.color.theme_shared_reactor_armor_mid,
+        reactorInteriorDarkRes = R.color.theme_shared_reactor_interior_dark,
+        reactorInteriorMidRes = R.color.theme_shared_reactor_interior_mid,
+        reactorFrameShadowRes = R.color.theme_shared_reactor_frame_shadow,
+        assistantMutedRes = R.color.theme_shared_assistant_muted,
+        assistantErrorRes = R.color.theme_shared_assistant_error
     )
 
     private val zombieStrike = ThemeSpec(
@@ -80,11 +112,19 @@ object ThemeRepository {
         windowBackgroundRes = R.color.theme_shared_window_background,
         taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
         taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        lockSurfaceScrimRes = R.color.theme_shared_lock_surface_scrim,
         hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
         hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
         hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
         hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
-        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low,
+        reactorArmorDarkRes = R.color.theme_shared_reactor_armor_dark,
+        reactorArmorMidRes = R.color.theme_shared_reactor_armor_mid,
+        reactorInteriorDarkRes = R.color.theme_shared_reactor_interior_dark,
+        reactorInteriorMidRes = R.color.theme_shared_reactor_interior_mid,
+        reactorFrameShadowRes = R.color.theme_shared_reactor_frame_shadow,
+        assistantMutedRes = R.color.theme_shared_assistant_muted,
+        assistantErrorRes = R.color.theme_shared_assistant_error
     )
 
     private val hyperNeon = ThemeSpec(
@@ -95,11 +135,19 @@ object ThemeRepository {
         windowBackgroundRes = R.color.theme_shared_window_background,
         taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
         taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        lockSurfaceScrimRes = R.color.theme_shared_lock_surface_scrim,
         hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
         hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
         hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
         hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
-        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low,
+        reactorArmorDarkRes = R.color.theme_shared_reactor_armor_dark,
+        reactorArmorMidRes = R.color.theme_shared_reactor_armor_mid,
+        reactorInteriorDarkRes = R.color.theme_shared_reactor_interior_dark,
+        reactorInteriorMidRes = R.color.theme_shared_reactor_interior_mid,
+        reactorFrameShadowRes = R.color.theme_shared_reactor_frame_shadow,
+        assistantMutedRes = R.color.theme_shared_assistant_muted,
+        assistantErrorRes = R.color.theme_shared_assistant_error
     )
 
     private val allSpecs: List<ThemeSpec> = listOf(
@@ -129,11 +177,19 @@ object ThemeRepository {
             windowBackground = context.color(spec.windowBackgroundRes),
             taskbarDarkBackground = context.color(spec.taskbarDarkBackgroundRes),
             taskbarLightBackground = context.color(spec.taskbarLightBackgroundRes),
+            lockSurfaceScrim = context.color(spec.lockSurfaceScrimRes),
             hudInactiveMeterColor = context.color(spec.hudInactiveMeterRes),
             hudPanelTextPrimary = context.color(spec.hudPanelTextPrimaryRes),
             hudPanelTextSecondary = context.color(spec.hudPanelTextSecondaryRes),
             hudEnergyHighColor = context.color(spec.hudEnergyHighRes),
-            hudEnergyLowColor = context.color(spec.hudEnergyLowRes)
+            hudEnergyLowColor = context.color(spec.hudEnergyLowRes),
+            reactorArmorDarkColor = context.color(spec.reactorArmorDarkRes),
+            reactorArmorMidColor = context.color(spec.reactorArmorMidRes),
+            reactorInteriorDarkColor = context.color(spec.reactorInteriorDarkRes),
+            reactorInteriorMidColor = context.color(spec.reactorInteriorMidRes),
+            reactorFrameShadowColor = context.color(spec.reactorFrameShadowRes),
+            assistantMutedColor = context.color(spec.assistantMutedRes),
+            assistantErrorColor = context.color(spec.assistantErrorRes)
         )
     }
 

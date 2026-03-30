@@ -15,11 +15,19 @@ data class NerfTheme(
     val windowBackground: Int,
     val taskbarDarkBackground: Int,
     val taskbarLightBackground: Int,
+    val lockSurfaceScrim: Int,
     val hudInactiveMeterColor: Int,
     val hudPanelTextPrimary: Int,
     val hudPanelTextSecondary: Int,
     val hudEnergyHighColor: Int,
     val hudEnergyLowColor: Int,
+    val reactorArmorDarkColor: Int,
+    val reactorArmorMidColor: Int,
+    val reactorInteriorDarkColor: Int,
+    val reactorInteriorMidColor: Int,
+    val reactorFrameShadowColor: Int,
+    val assistantMutedColor: Int,
+    val assistantErrorColor: Int,
     val glowIntensity: Float = 1.0f
 ) {
     fun withGlowIntensity(value: Float): NerfTheme = copy(glowIntensity = value.coerceIn(0f, 1f))
