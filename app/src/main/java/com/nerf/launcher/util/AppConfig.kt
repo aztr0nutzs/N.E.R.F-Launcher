@@ -19,4 +19,12 @@ data class TaskbarSettings(
     val transparency: Float, // 0.0f to 1.0f (0 = fully transparent, 1 = opaque)
     val enabled: Boolean,
     val pinnedApps: List<String> = emptyList()
-)
+) {
+    companion object {
+        val supportedBackgroundStyles: Set<Int> = setOf(
+            android.R.color.background_dark,
+            android.R.color.background_light,
+            android.R.color.transparent
+        )
+    }
+}

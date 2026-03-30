@@ -20,6 +20,7 @@ import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.LifecycleOwnerAware
+import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ThemeManager
 import kotlin.math.roundToInt
 
@@ -102,23 +103,7 @@ class TaskbarView @JvmOverloads constructor(
             ConfigRepository.get().config.observe(owner) { config ->
                 val previous = lastObservedConfig
                 val settings = config.taskbarSettings
-                if (previous?.taskbarSettings?.enabled != settings.enabled || previous == null) {
-                    visibility = if (settings.enabled) View.VISIBLE else View.GONE
-                }
-                if (previous?.taskbarSettings?.height != settings.height || previous == null) {
-                    val heightPx = (settings.height * resources.displayMetrics.density).roundToInt()
-                    setTaskbarHeight(heightPx)
-                }
-                if (previous?.taskbarSettings?.iconSize != settings.iconSize || previous == null) {
-                    val iconSizePx = (settings.iconSize * resources.displayMetrics.density).roundToInt()
-                    setIconSize(iconSizePx)
-                }
-                if (previous?.taskbarSettings?.transparency != settings.transparency || previous == null) {
-                    applyShellBackground(settings.backgroundStyle, settings.transparency)
-                }
-                if (previous?.taskbarSettings?.backgroundStyle != settings.backgroundStyle || previous == null) {
-                    applyShellBackground(settings.backgroundStyle, settings.transparency)
-                }
+                applyTaskbarSettings(previous?.taskbarSettings, settings)
 
                 val iconTintNeedsUpdate = previous == null ||
                         previous.themeName != config.themeName ||
@@ -140,6 +125,26 @@ class TaskbarView @JvmOverloads constructor(
 
                 lastObservedConfig = config
             }
+        }
+    }
+
+    private fun applyTaskbarSettings(previous: TaskbarSettings?, current: TaskbarSettings) {
+        if (previous?.enabled != current.enabled || previous == null) {
+            visibility = if (current.enabled) View.VISIBLE else View.GONE
+        }
+        if (previous?.height != current.height || previous == null) {
+            val heightPx = (current.height * resources.displayMetrics.density).roundToInt()
+            setTaskbarHeight(heightPx)
+        }
+        if (previous?.iconSize != current.iconSize || previous == null) {
+            val iconSizePx = (current.iconSize * resources.displayMetrics.density).roundToInt()
+            setIconSize(iconSizePx)
+        }
+        if (previous?.transparency != current.transparency ||
+            previous?.backgroundStyle != current.backgroundStyle ||
+            previous == null
+        ) {
+            applyShellBackground(current.backgroundStyle, current.transparency)
         }
     }
 
