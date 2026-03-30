@@ -10,11 +10,15 @@ import androidx.core.content.ContextCompat
 import com.nerf.launcher.R
 import java.io.File
 import java.io.IOException
-
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Provides the appropriate icon for a given package name based on the selected icon pack.
@@ -36,7 +40,9 @@ class IconProvider(
 
     private val packageManager: PackageManager = context.packageManager
     private val assets: AssetManager = context.assets
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val inFlightLoads = mutableMapOf<String, kotlinx.coroutines.Deferred<Drawable>>()
+    private val inFlightLock = Mutex()
 
     /**
      * Loads an icon asynchronously and sets it onto the target ImageView.
@@ -45,23 +51,56 @@ class IconProvider(
     fun loadIconInto(packageName: String, imageView: android.widget.ImageView) {
         val selectedPack = IconPackManager.getCurrentPack(context)
         val cacheKey = "$selectedPack:$packageName"
+        if (imageView.tag == cacheKey) {
+            return
+        }
         val cached = iconCache.get(cacheKey)
         if (cached != null) {
+            imageView.tag = cacheKey
             imageView.setImageDrawable(cached)
             return
         }
 
         // Apply placeholder and tag mapping
         imageView.setImageDrawable(null)
-        imageView.tag = packageName
+        imageView.tag = cacheKey
 
         scope.launch {
-            val icon = resolveIcon(packageName, selectedPack)
+            val icon = getOrLoadIcon(cacheKey, packageName, selectedPack)
             iconCache.put(cacheKey, icon)
 
             withContext(Dispatchers.Main) {
-                if (imageView.tag == packageName && IconPackManager.getCurrentPack(context) == selectedPack) {
+                if (imageView.tag == cacheKey && IconPackManager.getCurrentPack(context) == selectedPack) {
                     imageView.setImageDrawable(icon)
+                }
+            }
+        }
+    }
+
+    private suspend fun getOrLoadIcon(
+        cacheKey: String,
+        packageName: String,
+        selectedPack: String
+    ): Drawable {
+        val cached = iconCache.get(cacheKey)
+        if (cached != null) return cached
+
+        val deferred = inFlightLock.withLock {
+            inFlightLoads[cacheKey] ?: scope.async {
+                resolveIcon(packageName, selectedPack)
+            }.also { created ->
+                inFlightLoads[cacheKey] = created
+            }
+        }
+
+        return try {
+            deferred.await()
+        } catch (e: CancellationException) {
+            throw e
+        } finally {
+            inFlightLock.withLock {
+                if (inFlightLoads[cacheKey] === deferred) {
+                    inFlightLoads.remove(cacheKey)
                 }
             }
         }
@@ -119,7 +158,20 @@ class IconProvider(
     }
 
     /** Clears the internal icon cache. */
-    fun evictCache() {
-        iconCache.evictAll()
+    fun evictCache(packName: String? = null) {
+        if (packName.isNullOrBlank()) {
+            iconCache.evictAll()
+            return
+        }
+        iconCache.evictPack(packName)
+    }
+
+    fun clearInFlightLoads() {
+        inFlightLoads.clear()
+    }
+
+    fun release() {
+        clearInFlightLoads()
+        scope.coroutineContext.cancelChildren()
     }
 }

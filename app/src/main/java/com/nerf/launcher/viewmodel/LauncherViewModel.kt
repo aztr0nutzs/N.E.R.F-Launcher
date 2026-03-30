@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.util.AppUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
@@ -19,7 +20,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     /** Triggers an asynchronous load of all launchable apps. */
     fun loadApps() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val appList = AppUtils.loadInstalledApps(getApplication<Application>())
             _apps.postValue(appList)
         }

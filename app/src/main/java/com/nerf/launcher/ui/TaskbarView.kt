@@ -39,6 +39,7 @@ class TaskbarView @JvmOverloads constructor(
     private var currentIconTint: Int? = null
     private var currentIconSizePx: Int? = null
     private var lastObservedConfig: AppConfig? = null
+    private var renderedPackages: List<String> = emptyList()
 
     init {
         orientation = HORIZONTAL
@@ -60,7 +61,7 @@ class TaskbarView @JvmOverloads constructor(
         iconProvider = provider
     }
 
-    fun updateIcons(packageNames: List<String>) {
+    fun updateIcons(packageNames: List<String>, forceRebind: Boolean = false) {
         val renderablePackages = packageNames
             .asSequence()
             .map { it.trim() }
@@ -68,6 +69,10 @@ class TaskbarView @JvmOverloads constructor(
             .distinct()
             .toList()
 
+        if (!forceRebind && renderedPackages == renderablePackages) {
+            return
+        }
+        renderedPackages = renderablePackages
         syncIconSlots(renderablePackages.size)
         iconViews.forEachIndexed { index, view ->
             bindIconView(view, renderablePackages[index])
@@ -120,7 +125,7 @@ class TaskbarView @JvmOverloads constructor(
                 val pinnedAppsChanged = previous?.taskbarSettings?.pinnedApps != settings.pinnedApps
                 val iconPackChanged = previous?.iconPack != config.iconPack
                 if (previous == null || pinnedAppsChanged || iconPackChanged) {
-                    updateIcons(settings.pinnedApps)
+                    updateIcons(settings.pinnedApps, forceRebind = iconPackChanged)
                 }
 
                 lastObservedConfig = config
@@ -173,53 +178,53 @@ class TaskbarView @JvmOverloads constructor(
             background = ContextCompat.getDrawable(context, R.drawable.dock_tile_background)
             contentDescription = context.getString(R.string.app_icon)
             currentIconTint?.let { setColorFilter(it) }
+            setOnClickListener {
+                val packageName = it.tag as? String ?: return@setOnClickListener
+                val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
+                if (launchIntent != null) {
+                    context.startActivity(launchIntent)
+                }
+            }
+
+            setOnLongClickListener {
+                openTaskbarCustomization()
+                true
+            }
+
+            setOnTouchListener { touchedView, event ->
+                when (event.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        touchedView.animate().cancel()
+                        touchedView.animate()
+                            .scaleX(0.965f)
+                            .scaleY(0.965f)
+                            .alpha(0.92f)
+                            .setDuration(70L)
+                            .setInterpolator(FastOutSlowInInterpolator())
+                            .start()
+                    }
+
+                    MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
+                        touchedView.animate().cancel()
+                        touchedView.animate()
+                            .scaleX(1f)
+                            .scaleY(1f)
+                            .alpha(1f)
+                            .setDuration(150L)
+                            .setInterpolator(LinearOutSlowInInterpolator())
+                            .start()
+                    }
+                }
+                false
+            }
         }
     }
 
     private fun bindIconView(view: ImageView, packageName: String) {
+        view.tag = packageName
         iconProvider?.loadIconInto(packageName, view)
             ?: view.setImageResource(R.drawable.ic_module)
-
         currentIconTint?.let { view.setColorFilter(it) }
-
-        view.setOnClickListener {
-            val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
-            if (launchIntent != null) {
-                context.startActivity(launchIntent)
-            }
-        }
-
-        view.setOnLongClickListener {
-            openTaskbarCustomization()
-            true
-        }
-
-        view.setOnTouchListener { touchedView, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    touchedView.animate().cancel()
-                    touchedView.animate()
-                        .scaleX(0.965f)
-                        .scaleY(0.965f)
-                        .alpha(0.92f)
-                        .setDuration(70L)
-                        .setInterpolator(FastOutSlowInInterpolator())
-                        .start()
-                }
-
-                MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-                    touchedView.animate().cancel()
-                    touchedView.animate()
-                        .scaleX(1f)
-                        .scaleY(1f)
-                        .alpha(1f)
-                        .setDuration(150L)
-                        .setInterpolator(LinearOutSlowInInterpolator())
-                        .start()
-                }
-            }
-            false
-        }
     }
 
     private fun applyIconSize(view: ImageView) {

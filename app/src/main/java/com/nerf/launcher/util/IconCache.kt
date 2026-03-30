@@ -18,6 +18,17 @@ class IconCache(private val maxSize: Int) {
         cache.put(key, value)
     }
 
+    /** Remove all entries for a specific icon pack prefix. */
+    fun evictPack(packName: String) {
+        val snapshot = cache.snapshot().keys
+        val prefix = "$packName:"
+        snapshot.forEach { key ->
+            if (key.startsWith(prefix)) {
+                cache.remove(key)
+            }
+        }
+    }
+
     /** Remove all cached entries. */
     fun evictAll() {
         cache.evictAll()
