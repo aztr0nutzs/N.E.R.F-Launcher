@@ -1,25 +1,25 @@
 package com.nerf.launcher.ui
 
-import android.content.Context
 import com.nerf.launcher.util.ConfigRepository
+import com.nerf.launcher.util.TaskbarSettings
 
 /**
  * Manages pinned apps for the taskbar.
  */
 object TaskbarController {
 
-    fun getPinnedApps(context: Context): List<String> {
+    fun getPinnedApps(): List<String> {
         return ConfigRepository.get().config.value?.taskbarSettings?.pinnedApps.orEmpty()
     }
 
-    fun savePinnedApps(context: Context, packages: List<String>) {
+    fun savePinnedApps(packages: List<String>) {
         val current = ConfigRepository.get().config.value ?: return
         ConfigRepository.get().updateTaskbarSettings(
             current.taskbarSettings.copy(pinnedApps = packages.distinct())
         )
     }
 
-    fun addPinnedApp(context: Context, packageName: String) {
+    fun addPinnedApp(packageName: String) {
         val current = ConfigRepository.get().config.value ?: return
         val mutable = current.taskbarSettings.pinnedApps.toMutableList()
         if (!mutable.contains(packageName)) {
@@ -30,7 +30,7 @@ object TaskbarController {
         }
     }
 
-    fun removePinnedApp(context: Context, packageName: String) {
+    fun removePinnedApp(packageName: String) {
         val current = ConfigRepository.get().config.value ?: return
         val mutable = current.taskbarSettings.pinnedApps.filterNot { it == packageName }
         if (mutable.size != current.taskbarSettings.pinnedApps.size) {
@@ -40,12 +40,17 @@ object TaskbarController {
         }
     }
 
-    fun clearPinnedApps(context: Context) {
+    fun clearPinnedApps() {
         val current = ConfigRepository.get().config.value ?: return
         if (current.taskbarSettings.pinnedApps.isNotEmpty()) {
             ConfigRepository.get().updateTaskbarSettings(
                 current.taskbarSettings.copy(pinnedApps = emptyList())
             )
         }
+    }
+
+    fun updateSettings(transform: TaskbarSettings.() -> TaskbarSettings) {
+        val current = ConfigRepository.get().config.value ?: return
+        ConfigRepository.get().updateTaskbarSettings(current.taskbarSettings.transform())
     }
 }

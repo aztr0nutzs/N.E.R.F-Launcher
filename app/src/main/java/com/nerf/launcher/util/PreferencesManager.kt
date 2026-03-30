@@ -16,6 +16,7 @@ object PreferencesManager {
     const val KEY_ANIMATION_SPEED = "animation_speed"
     const val KEY_GLOW_INTENSITY = "glow_intensity"
     const val KEY_PINNED_APPS = "pinned_apps"
+    const val KEY_PINNED_APPS_ORDERED = "pinned_apps_ordered"
     const val KEY_TASKBAR_ICON_SIZE = "taskbar_icon_size"
     const val KEY_TASKBAR_BACKGROUND_STYLE = "taskbar_background_style"
     const val KEY_TASKBAR_HEIGHT = "taskbar_height"
@@ -61,13 +62,32 @@ object PreferencesManager {
         getPrefs(context).getFloat(KEY_GLOW_INTENSITY, 0.0f)
 
     fun savePinnedApps(context: Context, apps: List<String>) {
+        val sanitized = apps
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
         getPrefs(context).edit()
-            .putStringSet(KEY_PINNED_APPS, apps.toSet())
+            .putString(KEY_PINNED_APPS_ORDERED, sanitized.joinToString(","))
+            .putStringSet(KEY_PINNED_APPS, sanitized.toSet())
             .apply()
     }
 
-    fun getPinnedApps(context: Context): List<String> =
-        getPrefs(context).getStringSet(KEY_PINNED_APPS, emptySet())?.toList() ?: emptyList()
+    fun getPinnedApps(context: Context): List<String> {
+        val prefs = getPrefs(context)
+        val ordered = prefs.getString(KEY_PINNED_APPS_ORDERED, null)
+        if (!ordered.isNullOrBlank()) {
+            return ordered
+                .split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .distinct()
+        }
+        return prefs.getStringSet(KEY_PINNED_APPS, emptySet())
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?.distinct()
+            ?: emptyList()
+    }
 
     fun saveTaskbarIconSize(context: Context, size: Int) {
         getPrefs(context).edit().putInt(KEY_TASKBAR_ICON_SIZE, size).apply()

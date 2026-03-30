@@ -113,12 +113,7 @@ class ConfigRepository(private val context: Context) {
     }
 
     private fun normalizeTaskbarSettings(settings: TaskbarSettings): TaskbarSettings {
-        val validBackgrounds = setOf(
-            android.R.color.background_dark,
-            android.R.color.background_light,
-            android.R.color.transparent
-        )
-        val sanitizedBackground = if (settings.backgroundStyle in validBackgrounds) {
+        val sanitizedBackground = if (settings.backgroundStyle in TaskbarSettings.supportedBackgroundStyles) {
             settings.backgroundStyle
         } else {
             android.R.color.background_dark

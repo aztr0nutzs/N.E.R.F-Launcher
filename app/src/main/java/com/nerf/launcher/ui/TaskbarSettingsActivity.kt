@@ -7,8 +7,8 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityTaskbarSettingsBinding
-import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.TaskbarSettings
+import com.nerf.launcher.util.ConfigRepository
 
 class TaskbarSettingsActivity : AppCompatActivity() {
 
@@ -76,9 +76,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
                 override fun onNothingSelected(parent: android.widget.AdapterView<*>?) = Unit
             }
 
-        binding.clearPinnedAppsButton.setOnClickListener {
-            TaskbarController.clearPinnedApps(this)
-        }
+        binding.clearPinnedAppsButton.setOnClickListener { TaskbarController.clearPinnedApps() }
     }
 
     private fun observeConfig() {
@@ -120,9 +118,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     }
 
     private fun updateTaskbarSettings(transform: TaskbarSettings.() -> TaskbarSettings) {
-        val repo = ConfigRepository.get()
-        val current = repo.config.value ?: return
-        repo.updateTaskbarSettings(current.taskbarSettings.transform())
+        TaskbarController.updateSettings(transform)
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -151,11 +147,23 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         private const val MAX_HEIGHT_DP = 96
         private const val MIN_ICON_SIZE_DP = 24
         private const val MAX_ICON_SIZE_DP = 72
-        private val TASKBAR_BACKGROUND_OPTIONS = listOf(
-            TaskbarBackgroundOption(android.R.color.background_dark, R.string.taskbar_settings_background_dark),
-            TaskbarBackgroundOption(android.R.color.background_light, R.string.taskbar_settings_background_light),
-            TaskbarBackgroundOption(android.R.color.transparent, R.string.taskbar_settings_background_transparent)
+        private val BACKGROUND_LABELS = mapOf(
+            android.R.color.background_dark to R.string.taskbar_settings_background_dark,
+            android.R.color.background_light to R.string.taskbar_settings_background_light,
+            android.R.color.transparent to R.string.taskbar_settings_background_transparent
         )
+        private val TASKBAR_BACKGROUND_OPTIONS = listOf(
+            android.R.color.background_dark,
+            android.R.color.background_light,
+            android.R.color.transparent
+        )
+            .filter { it in TaskbarSettings.supportedBackgroundStyles }
+            .map { styleRes ->
+                TaskbarBackgroundOption(
+                    styleRes = styleRes,
+                    labelRes = BACKGROUND_LABELS.getValue(styleRes)
+                )
+            }
 
         fun createIntent(context: Context): Intent = Intent(context, TaskbarSettingsActivity::class.java)
     }

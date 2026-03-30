@@ -239,8 +239,7 @@ class MainActivity : AppCompatActivity() {
         binding.moduleStateCard.setOnClickListener {
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val toggled = !current.taskbarSettings.enabled
-            val settings = current.taskbarSettings.copy(enabled = toggled)
-            ConfigRepository.get().updateTaskbarSettings(settings)
+            TaskbarController.updateSettings { copy(enabled = toggled) }
         }
     }
 
@@ -591,8 +590,7 @@ class MainActivity : AppCompatActivity() {
         binding.quickTaskbarBtn.setOnClickListener {
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val toggled = !current.taskbarSettings.enabled
-            val settings = current.taskbarSettings.copy(enabled = toggled)
-            ConfigRepository.get().updateTaskbarSettings(settings)
+            TaskbarController.updateSettings { copy(enabled = toggled) }
         }
 
         binding.quickGlowSeekbar.setOnSeekBarChangeListener(object :
