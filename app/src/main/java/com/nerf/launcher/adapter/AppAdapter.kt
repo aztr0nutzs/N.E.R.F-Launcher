@@ -4,7 +4,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.LifecycleOwner
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.recyclerview.widget.DiffUtil
@@ -12,7 +11,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.databinding.ItemAppBinding
 import com.nerf.launcher.model.AppInfo
-import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconProvider
 
 /**
@@ -22,10 +20,8 @@ import com.nerf.launcher.util.IconProvider
  */
 class AppAdapter(
     private val iconProvider: IconProvider,
-    private val onAppClicked: (AppInfo) -> Unit,
-    private val lifecycleOwner: LifecycleOwner
+    private val onAppClicked: (AppInfo) -> Unit
 ) : ListAdapter<AppInfo, AppAdapter.AppViewHolder>(DIFF_CALLBACK) {
-    private var observedIconPack: String? = null
     private val iconOnlyPayload = Any()
 
     inner class AppViewHolder(val binding: ItemAppBinding) :
@@ -109,17 +105,9 @@ class AppAdapter(
         super.onViewRecycled(holder)
     }
 
-    init {
-        // Observe configuration and react only when icon pack changes.
-        ConfigRepository.get().config.observe(lifecycleOwner) {
-            val previousPack = observedIconPack
-            observedIconPack = it.iconPack
-            if (previousPack == null || previousPack == it.iconPack) {
-                return@observe
-            }
-            if (itemCount > 0) {
-                notifyItemRangeChanged(0, itemCount, iconOnlyPayload)
-            }
+    fun refreshIcons() {
+        if (itemCount > 0) {
+            notifyItemRangeChanged(0, itemCount, iconOnlyPayload)
         }
     }
 

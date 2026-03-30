@@ -147,7 +147,7 @@ class MainActivity : AppCompatActivity() {
             binding.drawerSearchInput.clearFocus()
             hideDrawerKeyboard()
             AppUtils.launchApp(this, app)
-        }, lifecycleOwner = this)
+        })
 
         binding.recyclerView.apply {
             layoutManager = GridLayoutManager(
@@ -209,8 +209,10 @@ class MainActivity : AppCompatActivity() {
                     themeName = config.themeName,
                     glowIntensity = config.glowIntensity
                 )
-                ThemeManager.applyTheme(this, binding.rootContainer, activeTheme)
+                ThemeManager.applyWindowTheme(this, activeTheme)
+                ThemeManager.applyLauncherShellTheme(binding.rootContainer, activeTheme)
                 applyStatusBarTheme(config)
+                updateSystemModules(config)
             }
             if (gridChanged || previous == null) {
                 (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount =
@@ -232,6 +234,7 @@ class MainActivity : AppCompatActivity() {
             }
             if (iconPackChanged) {
                 iconProvider.evictCache(previous?.iconPack)
+                adapter.refreshIcons()
             }
             lastObservedConfig = config
         }

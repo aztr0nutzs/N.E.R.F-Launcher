@@ -49,9 +49,13 @@ object ThemeManager {
 
     fun applyTheme(activity: Activity, root: View? = null, theme: NerfTheme = resolveActiveTheme(activity)) {
         activity.setTheme(R.style.Theme_NerfLauncher)
-        updateWindowBackground(activity.window, theme)
+        applyWindowTheme(activity, theme)
         applyLauncherShellTheme(root ?: activity.findViewById(R.id.root_container), theme)
         applyHudTheme(activity, theme)
+    }
+
+    fun applyWindowTheme(activity: Activity, theme: NerfTheme) {
+        updateWindowBackground(activity.window, theme)
     }
 
     private fun updateWindowBackground(window: Window?, theme: NerfTheme) {

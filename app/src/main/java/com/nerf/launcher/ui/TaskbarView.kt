@@ -117,20 +117,20 @@ class TaskbarView @JvmOverloads constructor(
             ConfigRepository.get().config.observe(owner) { config ->
                 val previous = lastObservedConfig
                 val settings = config.taskbarSettings
-                applyTaskbarSettings(previous?.taskbarSettings, settings)
+                val resolvedTheme = ThemeManager.resolveActiveTheme(
+                    context = context,
+                    themeName = config.themeName,
+                    glowIntensity = config.glowIntensity
+                )
+                applyTaskbarSettings(previous?.taskbarSettings, settings, resolvedTheme)
 
                 val iconTintNeedsUpdate = previous == null ||
                         previous.themeName != config.themeName ||
                         previous.glowIntensity != config.glowIntensity
                 if (iconTintNeedsUpdate) {
-                    val theme = ThemeManager.resolveActiveTheme(
-                        context = context,
-                        themeName = config.themeName,
-                        glowIntensity = config.glowIntensity
-                    )
-                    val iconTint = ThemeManager.resolveTaskbarIconTint(context, theme)
+                    val iconTint = ThemeManager.resolveTaskbarIconTint(context, resolvedTheme)
                     setIconTint(iconTint)
-                    applyShellBackground(settings.backgroundStyle, settings.transparency, theme)
+                    applyShellBackground(settings.backgroundStyle, settings.transparency, resolvedTheme)
                 }
 
                 val pinnedAppsChanged = previous?.taskbarSettings?.pinnedApps != settings.pinnedApps
@@ -144,7 +144,11 @@ class TaskbarView @JvmOverloads constructor(
         }
     }
 
-    private fun applyTaskbarSettings(previous: TaskbarSettings?, current: TaskbarSettings) {
+    private fun applyTaskbarSettings(
+        previous: TaskbarSettings?,
+        current: TaskbarSettings,
+        resolvedTheme: NerfTheme
+    ) {
         if (previous?.enabled != current.enabled || previous == null) {
             visibility = if (current.enabled) View.VISIBLE else View.GONE
         }
@@ -160,12 +164,7 @@ class TaskbarView @JvmOverloads constructor(
             previous?.backgroundStyle != current.backgroundStyle ||
             previous == null
         ) {
-            val theme = ThemeManager.resolveActiveTheme(
-                context = context,
-                themeName = lastObservedConfig?.themeName,
-                glowIntensity = lastObservedConfig?.glowIntensity
-            )
-            applyShellBackground(current.backgroundStyle, current.transparency, theme)
+            applyShellBackground(current.backgroundStyle, current.transparency, resolvedTheme)
         }
     }
 
