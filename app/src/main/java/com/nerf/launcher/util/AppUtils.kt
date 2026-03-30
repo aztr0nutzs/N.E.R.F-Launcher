@@ -17,15 +17,13 @@ object AppUtils {
         for (info in resolveInfos.sortedWith(ResolveInfo.DisplayNameComparator(pm))) {
             val activityInfo = info.activityInfo
             val label = activityInfo.loadLabel(pm).toString()
-            val icon = activityInfo.loadIcon(pm)
             val packageName = activityInfo.packageName
             val className = activityInfo.name
             apps.add(
                 AppInfo(
                     appName = label,
                     packageName = packageName,
-                    className = className,
-                    icon = icon
+                    className = className
                 )
             )
         }

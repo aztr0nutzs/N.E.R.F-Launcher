@@ -99,7 +99,6 @@ class AppAdapter(
             if (previousPack == null || previousPack == it.iconPack) {
                 return@observe
             }
-            iconProvider.evictCache()
             notifyItemRangeChanged(0, itemCount)
         }
     }
