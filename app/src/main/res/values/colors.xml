@@ -32,6 +32,39 @@
 
     <color name="nerf_segmented_bar_inactive">#302A2A2A</color>
 
+
+    <!-- Centralized launcher theme palette entries used by ThemeRepository -->
+    <color name="theme_classic_primary">#FF6A00</color>
+    <color name="theme_classic_secondary">#00F0FF</color>
+    <color name="theme_classic_accent">#FFEA00</color>
+
+    <color name="theme_stealth_primary">#212121</color>
+    <color name="theme_stealth_secondary">#FF0000</color>
+    <color name="theme_stealth_accent">#FF4500</color>
+
+    <color name="theme_elite_primary">#00B0FF</color>
+    <color name="theme_elite_secondary">#00F0FF</color>
+    <color name="theme_elite_accent">#FFFF00</color>
+
+    <color name="theme_zombie_primary">#212121</color>
+    <color name="theme_zombie_secondary">#00BF00</color>
+    <color name="theme_zombie_accent">#00FF00</color>
+
+    <color name="theme_hyper_primary">#FF00FF</color>
+    <color name="theme_hyper_secondary">#00FFFF</color>
+    <color name="theme_hyper_accent">#FFFF00</color>
+
+    <color name="theme_shared_window_background">#212121</color>
+    <color name="theme_shared_taskbar_dark_background">#212121</color>
+    <color name="theme_shared_taskbar_light_background">#FFFFFF</color>
+    <color name="theme_shared_hud_inactive_meter">#50FFFFFF</color>
+    <color name="theme_shared_hud_panel_text_primary">#FFFFFF</color>
+    <color name="theme_shared_hud_panel_text_secondary">#66FFFFFF</color>
+    <color name="theme_shared_hud_energy_high">#FF8A00</color>
+    <color name="theme_shared_hud_energy_low">#FF39B5</color>
+
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
+    <color name="nerf_shell_background">#000000</color>
+    <color name="nerf_lock_surface_scrim">#F0000000</color>
 </resources>

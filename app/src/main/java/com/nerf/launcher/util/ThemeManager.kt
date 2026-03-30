@@ -16,20 +16,19 @@ import com.nerf.launcher.R
 import com.nerf.launcher.ui.SegmentedBarView
 
 /**
- * Applies a NerfTheme to an Activity. Reads the current configuration
- * exclusively from ConfigRepository (single source of truth).
+ * Applies launcher visuals from the authoritative NerfTheme produced by ThemeRepository.
  */
 object ThemeManager {
 
-    fun resolveActiveTheme(): NerfTheme {
+    fun resolveActiveTheme(context: Context): NerfTheme {
         val config = ConfigRepository.get().config.value
-        return resolveActiveTheme(config?.themeName, config?.glowIntensity)
+        return resolveActiveTheme(context, config?.themeName, config?.glowIntensity)
     }
 
-    fun resolveActiveTheme(themeName: String?, glowIntensity: Float?): NerfTheme {
-        val baseTheme = ThemeRepository.byName(themeName.orEmpty()) ?: ThemeRepository.CLASSIC_NERF
+    fun resolveActiveTheme(context: Context, themeName: String?, glowIntensity: Float?): NerfTheme {
+        val baseTheme = ThemeRepository.resolve(context, themeName)
         val resolvedGlow = glowIntensity ?: baseTheme.glowIntensity
-        return baseTheme.copy(glowIntensity = resolvedGlow)
+        return baseTheme.withGlowIntensity(resolvedGlow)
     }
 
     fun resolveTaskbarIconTint(context: Context, theme: NerfTheme): Int {
@@ -40,18 +39,31 @@ object ThemeManager {
         }
     }
 
-    fun applyTheme(activity: Activity) {
-        val finalTheme = resolveActiveTheme()
+    fun resolveTaskbarBackgroundColor(theme: NerfTheme, backgroundStyle: Int): Int {
+        return when (backgroundStyle) {
+            android.R.color.background_light -> theme.taskbarLightBackground
+            android.R.color.transparent -> Color.TRANSPARENT
+            else -> theme.taskbarDarkBackground
+        }
+    }
 
-        // Apply the base theme (styles.xml) – programmatic tweaks follow.
+    fun applyTheme(activity: Activity, root: View? = null, theme: NerfTheme = resolveActiveTheme(activity)) {
         activity.setTheme(R.style.Theme_NerfLauncher)
-        updateWindowBackground(activity.window, finalTheme)
-        applyHudTheme(activity, finalTheme)
+        updateWindowBackground(activity.window, theme)
+        applyLauncherShellTheme(root ?: activity.findViewById(R.id.root_container), theme)
+        applyHudTheme(activity, theme)
     }
 
     private fun updateWindowBackground(window: Window?, theme: NerfTheme) {
-        // Use the theme‑defined window background color.
         window?.setBackgroundDrawable(ColorDrawable(theme.windowBackground))
+    }
+
+    fun applyLauncherShellTheme(root: View?, theme: NerfTheme) {
+        root ?: return
+        root.setBackgroundColor(theme.windowBackground)
+        root.findViewById<View>(R.id.lock_surface_root)?.setBackgroundColor(
+            root.context.getColor(R.color.nerf_lock_surface_scrim)
+        )
     }
 
     fun applyHudTheme(activity: Activity, theme: NerfTheme) {
@@ -60,9 +72,13 @@ object ThemeManager {
         val batteryMeter = root.findViewById<SegmentedBarView>(R.id.battery_meter)
         batteryMeter?.setActiveColor(theme.primary)
         batteryMeter?.setInactiveColor(theme.hudInactiveMeterColor)
+        batteryMeter?.setGradientHighlightColor(theme.hudPanelTextPrimary)
 
         val timeDisplay = root.findViewById<TextView>(R.id.time_display)
         timeDisplay?.setTextColor(theme.secondary)
+
+        val dateDisplay = root.findViewById<TextView>(R.id.date_display)
+        dateDisplay?.setTextColor(theme.hudPanelTextSecondary)
 
         val addWidgetBtn = root.findViewById<MaterialButton>(R.id.add_widget_btn)
         addWidgetBtn?.setTextColor(theme.accent)

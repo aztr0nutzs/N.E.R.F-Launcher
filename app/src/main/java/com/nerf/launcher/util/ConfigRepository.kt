@@ -30,8 +30,8 @@ class ConfigRepository(private val context: Context) {
 
     private fun loadConfig(): AppConfig {
         val themeName = PreferencesManager.getSelectedTheme(context)
-            ?.takeIf { ThemeRepository.byName(it) != null }
-            ?: ThemeRepository.CLASSIC_NERF.name
+            ?.takeIf { ThemeRepository.containsTheme(it) }
+            ?: ThemeRepository.defaultThemeName
         val iconPack = PreferencesManager.getIconPack(context)
             ?.takeIf { IconPackManager.getAvailablePacks(context).contains(it) }
             ?: IconPackManager.DEFAULT_PACK
@@ -57,8 +57,8 @@ class ConfigRepository(private val context: Context) {
 
     fun saveConfig(config: AppConfig) {
         val sanitized = config.copy(
-            themeName = config.themeName.takeIf { ThemeRepository.byName(it) != null }
-                ?: ThemeRepository.CLASSIC_NERF.name,
+            themeName = config.themeName.takeIf { ThemeRepository.containsTheme(it) }
+                ?: ThemeRepository.defaultThemeName,
             iconPack = config.iconPack.takeIf { IconPackManager.getAvailablePacks(context).contains(it) }
                 ?: IconPackManager.DEFAULT_PACK,
             gridSize = config.gridSize.coerceIn(2, 6),

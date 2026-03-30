@@ -20,6 +20,7 @@ import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.LifecycleOwnerAware
+import com.nerf.launcher.util.NerfTheme
 import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ThemeManager
 import kotlin.math.roundToInt
@@ -45,7 +46,7 @@ class TaskbarView @JvmOverloads constructor(
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         setPadding(8, 6, 8, 6)
-        applyShellBackground(android.R.color.background_dark, 1f)
+        applyShellBackground(android.R.color.background_dark, 1f, null)
         setOnLongClickListener {
             openTaskbarCustomization()
             true
@@ -99,8 +100,16 @@ class TaskbarView @JvmOverloads constructor(
     }
 
     fun setTransparency(alpha: Float) {
-        val styleRes = lastObservedConfig?.taskbarSettings?.backgroundStyle ?: android.R.color.background_dark
-        applyShellBackground(styleRes, alpha)
+        val config = lastObservedConfig
+        val styleRes = config?.taskbarSettings?.backgroundStyle ?: android.R.color.background_dark
+        val theme = config?.let {
+            ThemeManager.resolveActiveTheme(
+                context = context,
+                themeName = it.themeName,
+                glowIntensity = it.glowIntensity
+            )
+        }
+        applyShellBackground(styleRes, alpha, theme)
     }
 
     private fun setupConfigObservers() {
@@ -115,11 +124,13 @@ class TaskbarView @JvmOverloads constructor(
                         previous.glowIntensity != config.glowIntensity
                 if (iconTintNeedsUpdate) {
                     val theme = ThemeManager.resolveActiveTheme(
+                        context = context,
                         themeName = config.themeName,
                         glowIntensity = config.glowIntensity
                     )
                     val iconTint = ThemeManager.resolveTaskbarIconTint(context, theme)
                     setIconTint(iconTint)
+                    applyShellBackground(settings.backgroundStyle, settings.transparency, theme)
                 }
 
                 val pinnedAppsChanged = previous?.taskbarSettings?.pinnedApps != settings.pinnedApps
@@ -149,7 +160,12 @@ class TaskbarView @JvmOverloads constructor(
             previous?.backgroundStyle != current.backgroundStyle ||
             previous == null
         ) {
-            applyShellBackground(current.backgroundStyle, current.transparency)
+            val theme = ThemeManager.resolveActiveTheme(
+                context = context,
+                themeName = lastObservedConfig?.themeName,
+                glowIntensity = lastObservedConfig?.glowIntensity
+            )
+            applyShellBackground(current.backgroundStyle, current.transparency, theme)
         }
     }
 
@@ -235,10 +251,12 @@ class TaskbarView @JvmOverloads constructor(
         view.layoutParams = params
     }
 
-    private fun applyShellBackground(backgroundStyle: Int, alpha: Float) {
+    private fun applyShellBackground(backgroundStyle: Int, alpha: Float, theme: NerfTheme?) {
         val shellDrawable = ContextCompat.getDrawable(context, R.drawable.hud_frame_panel)?.mutate() ?: return
         val wrapped = DrawableCompat.wrap(shellDrawable)
-        DrawableCompat.setTint(wrapped, context.getColor(backgroundStyle))
+        val resolvedTheme = theme ?: ThemeManager.resolveActiveTheme(context)
+        val bgColor = ThemeManager.resolveTaskbarBackgroundColor(resolvedTheme, backgroundStyle)
+        DrawableCompat.setTint(wrapped, bgColor)
         wrapped.alpha = (alpha.coerceIn(0f, 1f) * 255).roundToInt()
         background = wrapped
     }

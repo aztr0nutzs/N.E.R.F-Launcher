@@ -45,7 +45,7 @@ class SettingsAdapter(
                     spinner.adapter = adapter
                     // Set current selection
                     val current = currentConfig?.themeName
-                        ?: ThemeRepository.CLASSIC_NERF.name
+                        ?: ThemeRepository.defaultThemeName
                     val currentIndex = adapter.getPosition(current)
                     if (currentIndex >= 0) {
                         spinner.setSelection(currentIndex)
