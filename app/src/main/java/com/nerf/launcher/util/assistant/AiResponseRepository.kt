@@ -275,6 +275,8 @@ class AiResponseRepository(private val context: Context) {
             PersonalityMood.BORED -> "status report: operational. thrilling."
             PersonalityMood.SERIOUS -> "Status report: systems stable and standing by."
             PersonalityMood.SNARKY -> "Status report: stable, armed with patience, and waiting on you."
+            PersonalityMood.PLAYFUL -> "Status report: systems bright, stable, and ready for a better command."
+            PersonalityMood.SAVAGE -> "Status report: stable. The weakest link remains user input."
         }
         else -> when (mood) {
             PersonalityMood.TACTICAL -> "Acknowledged. Tactical response bank is temporarily offline."
@@ -282,6 +284,8 @@ class AiResponseRepository(private val context: Context) {
             PersonalityMood.BORED -> "response bank offline for ${category.name.lowercase().replace('_', ' ')}."
             PersonalityMood.SERIOUS -> "Response bank unavailable for ${category.name.lowercase().replace('_', ' ')}."
             PersonalityMood.SNARKY -> "Response bank unavailable for ${category.name.lowercase().replace('_', ' ')}. Inspiring."
+            PersonalityMood.PLAYFUL -> "Response bank unavailable for ${category.name.lowercase().replace('_', ' ')}. Improvisation mode is online."
+            PersonalityMood.SAVAGE -> "Response bank unavailable for ${category.name.lowercase().replace('_', ' ')}. Even the fallback judged this request."
         }
     }
 

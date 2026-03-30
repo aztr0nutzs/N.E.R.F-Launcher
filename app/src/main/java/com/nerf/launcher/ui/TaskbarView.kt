@@ -140,7 +140,7 @@ class TaskbarView @JvmOverloads constructor(
 
     private fun createIconView(): ImageView {
         return ImageView(context).apply {
-            setImageResource(android.R.drawable.sym_def_app_icon)
+            setImageResource(R.drawable.ic_module)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             setPadding(10, 8, 10, 8)
             background = ContextCompat.getDrawable(context, R.drawable.dock_tile_background)
@@ -151,7 +151,7 @@ class TaskbarView @JvmOverloads constructor(
 
     private fun bindIconView(view: ImageView, packageName: String) {
         iconProvider?.loadIconInto(packageName, view)
-            ?: view.setImageResource(android.R.drawable.sym_def_app_icon)
+            ?: view.setImageResource(R.drawable.ic_module)
 
         currentIconTint?.let { view.setColorFilter(it) }
 

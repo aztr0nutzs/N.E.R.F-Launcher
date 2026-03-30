@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/assistant_overlay_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -33,6 +34,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:drawablePadding="6dp"
+                    android:drawableStart="@drawable/ic_assistant"
                     android:text="@string/assistant_overlay_title"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                     android:textColor="@color/nerf_hud_magenta" />
@@ -154,7 +157,11 @@
                 android:layout_weight="1"
                 android:text="@string/assistant_overlay_action_settings"
                 android:textColor="@color/nerf_hud_cyan"
-                android:textSize="10sp" />
+                android:textSize="10sp"
+                app:icon="@drawable/ic_settings"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconSize="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/assistant_action_diagnostics"
@@ -165,7 +172,11 @@
                 android:layout_weight="1"
                 android:text="@string/assistant_overlay_action_diagnostics"
                 android:textColor="@color/nerf_hud_orange"
-                android:textSize="10sp" />
+                android:textSize="10sp"
+                app:icon="@drawable/ic_camera"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconSize="16dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -183,7 +194,11 @@
                 android:layout_weight="1"
                 android:text="@string/assistant_overlay_action_node_hunter"
                 android:textColor="@color/nerf_hud_lime"
-                android:textSize="10sp" />
+                android:textSize="10sp"
+                app:icon="@drawable/ic_node_hunter"
+                app:iconGravity="textStart"
+                app:iconPadding="6dp"
+                app:iconSize="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/assistant_action_lock"

@@ -93,5 +93,9 @@
         android:layout_marginStart="@dimen/nerf_section_gap"
         android:text="SETTINGS"
         android:textColor="@color/nerf_hud_lime"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        app:icon="@drawable/ic_settings"
+        app:iconGravity="textStart"
+        app:iconPadding="6dp"
+        app:iconSize="16dp" />
 </LinearLayout>

@@ -7,6 +7,7 @@ import android.content.res.AssetManager
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
+import com.nerf.launcher.R
 import java.io.IOException
 import java.io.InputStream
 
@@ -88,7 +89,7 @@ class IconProvider(
             // If the package cannot be found, use a generic placeholder.
             ContextCompat.getDrawable(
                 context,
-                android.R.drawable.sym_def_app_icon
+                R.drawable.ic_module
             ) ?: ColorDrawable(0xFFCCCCCC.toInt())
         }
     }

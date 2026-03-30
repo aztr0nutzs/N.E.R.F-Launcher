@@ -159,10 +159,10 @@
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_theme_cd"
-                            app:icon="@drawable/ic_quick_theme"
+                            app:icon="@drawable/ic_settings"
                             app:iconGravity="textStart"
                             app:iconPadding="4dp"
-                            app:iconTint="@color/nerf_hud_cyan"
+                            app:iconSize="18dp"
                             android:text="@string/quick_theme_label"
                             android:textColor="@color/nerf_hud_cyan"
                             android:textSize="10sp" />
@@ -176,10 +176,10 @@
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_icon_pack_cd"
-                            app:icon="@drawable/ic_quick_icons"
+                            app:icon="@drawable/ic_module"
                             app:iconGravity="textStart"
                             app:iconPadding="4dp"
-                            app:iconTint="@color/nerf_hud_lime"
+                            app:iconSize="18dp"
                             android:text="@string/quick_icon_pack_label"
                             android:textColor="@color/nerf_hud_lime"
                             android:textSize="10sp" />
@@ -212,10 +212,10 @@
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_animation_cd"
-                            app:icon="@drawable/ic_quick_motion"
+                            app:icon="@drawable/ic_power_up"
                             app:iconGravity="textStart"
                             app:iconPadding="4dp"
-                            app:iconTint="@color/nerf_hud_orange"
+                            app:iconSize="18dp"
                             android:text="@string/quick_animation_label"
                             android:textColor="@color/nerf_hud_orange"
                             android:textSize="10sp" />
@@ -229,10 +229,10 @@
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_taskbar_cd"
-                            app:icon="@drawable/ic_quick_taskbar"
+                            app:icon="@drawable/ic_settings"
                             app:iconGravity="textStart"
                             app:iconPadding="4dp"
-                            app:iconTint="@color/nerf_hud_magenta"
+                            app:iconSize="18dp"
                             android:text="@string/quick_taskbar_label"
                             android:textColor="@color/nerf_hud_magenta"
                             android:textSize="10sp" />
@@ -291,7 +291,11 @@
                     android:layout_marginTop="10dp"
                     android:text="SETTINGS"
                     android:textColor="@color/nerf_hud_cyan"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:icon="@drawable/ic_settings"
+                    app:iconGravity="textStart"
+                    app:iconPadding="6dp"
+                    app:iconSize="16dp" />
 
                 <com.google.android.material.button.MaterialButton
                     style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
@@ -301,7 +305,11 @@
                     android:layout_marginTop="6dp"
                     android:text="SCAN APPS"
                     android:textColor="@color/nerf_hud_orange"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    app:icon="@drawable/ic_network"
+                    app:iconGravity="textStart"
+                    app:iconPadding="6dp"
+                    app:iconSize="16dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/lock_surface_tile"
@@ -442,6 +450,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                android:drawablePadding="6dp"
+                                android:drawableStart="@drawable/ic_node_hunter"
                                 android:text="@string/reactor_home_action_top"
                                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                                 android:textColor="@color/nerf_hud_cyan" />
@@ -450,6 +460,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                android:drawablePadding="6dp"
+                                android:drawableEnd="@drawable/ic_assistant"
                                 android:gravity="end"
                                 android:text="@string/reactor_home_action_right"
                                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
@@ -466,6 +478,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                android:drawablePadding="6dp"
+                                android:drawableStart="@drawable/ic_settings"
                                 android:text="@string/reactor_home_action_left"
                                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                                 android:textColor="@color/nerf_hud_lime" />
@@ -474,6 +488,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
+                                android:drawablePadding="6dp"
+                                android:drawableEnd="@drawable/ic_network"
                                 android:gravity="end"
                                 android:text="@string/reactor_home_action_bottom"
                                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
@@ -521,6 +537,8 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:drawablePadding="6dp"
+                            android:drawableStart="@drawable/ic_power_up"
                             android:text="@string/modules_energy_label"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                             android:textColor="@color/nerf_hud_orange" />
@@ -563,6 +581,8 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:drawablePadding="6dp"
+                            android:drawableStart="@drawable/ic_module"
                             android:text="@string/modules_storage_label"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                             android:textColor="@color/nerf_hud_cyan" />
@@ -632,6 +652,8 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:drawablePadding="6dp"
+                            android:drawableStart="@drawable/ic_settings"
                             android:text="@string/modules_state_label"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
                             android:textColor="@color/nerf_hud_lime" />
