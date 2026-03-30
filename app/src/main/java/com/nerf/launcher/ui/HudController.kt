@@ -3,7 +3,6 @@ package com.nerf.launcher.ui
 import android.app.Activity
 import android.animation.ValueAnimator
 import android.content.Intent
-import android.graphics.Color
 import android.os.BatteryManager
 import android.os.Handler
 import android.os.Looper
@@ -18,7 +17,6 @@ import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.ThemeManager
-import com.nerf.launcher.util.ThemeRepository
 import java.util.Calendar
 import java.util.Locale
 
@@ -140,15 +138,11 @@ class HudController(
 
     private fun setupConfigObservers() {
         ConfigRepository.get().config.observe(lifecycleOwner) { config ->
-            val baseTheme = ThemeRepository.byName(config.themeName)
-                ?: ThemeRepository.CLASSIC_NERF
-            val finalTheme = baseTheme.copy(glowIntensity = config.glowIntensity)
-
-            batteryMeter.setActiveColor(finalTheme.primary)
-            batteryMeter.setInactiveColor(Color.argb(80, 255, 255, 255))
-            timeDisplay.setTextColor(finalTheme.secondary)
-            addWidgetBtn.setTextColor(finalTheme.accent)
-            ThemeManager.applyHudPanelGlow(hudView, finalTheme)
+            val finalTheme = ThemeManager.resolveActiveTheme(
+                themeName = config.themeName,
+                glowIntensity = config.glowIntensity
+            )
+            ThemeManager.applyHudTheme(activity, finalTheme)
         }
     }
 

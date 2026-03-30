@@ -39,7 +39,6 @@ import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.StatusBarManager
 import com.nerf.launcher.util.ThemeManager
-import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.util.assistant.AssistantController
 import com.nerf.launcher.viewmodel.LauncherViewModel
 import android.view.animation.LinearInterpolator
@@ -659,8 +658,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyStatusBarTheme(config: AppConfig) {
-        val primaryColor = (ThemeRepository.byName(config.themeName)
-            ?: ThemeRepository.CLASSIC_NERF).primary
+        val primaryColor = ThemeManager.resolveActiveTheme(
+            themeName = config.themeName,
+            glowIntensity = config.glowIntensity
+        ).primary
         val isLightTheme = com.nerf.launcher.util.ColorUtils.isColorLight(primaryColor)
         StatusBarManager.applyStatusBarTheme(this, primaryColor, isLightTheme)
     }

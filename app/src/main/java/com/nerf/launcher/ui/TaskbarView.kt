@@ -19,7 +19,7 @@ import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.LifecycleOwnerAware
-import com.nerf.launcher.util.ThemeRepository
+import com.nerf.launcher.util.ThemeManager
 import kotlin.math.roundToInt
 
 /**
@@ -119,13 +119,11 @@ class TaskbarView @JvmOverloads constructor(
                         previous.themeName != config.themeName ||
                         previous.glowIntensity != config.glowIntensity
                 if (iconTintNeedsUpdate) {
-                    val baseTheme = ThemeRepository.byName(config.themeName)
-                        ?: ThemeRepository.CLASSIC_NERF
-                    val iconTint = if (com.nerf.launcher.util.ColorUtils.isColorLight(baseTheme.primary)) {
-                        ContextCompat.getColor(context, R.color.nerf_on_secondary)
-                    } else {
-                        ContextCompat.getColor(context, R.color.nerf_on_background)
-                    }
+                    val theme = ThemeManager.resolveActiveTheme(
+                        themeName = config.themeName,
+                        glowIntensity = config.glowIntensity
+                    )
+                    val iconTint = ThemeManager.resolveTaskbarIconTint(context, theme)
                     setIconTint(iconTint)
                 }
 
