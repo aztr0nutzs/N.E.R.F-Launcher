@@ -39,6 +39,7 @@ import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.StatusBarManager
 import com.nerf.launcher.util.ThemeManager
+import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.util.assistant.AssistantController
 import com.nerf.launcher.viewmodel.LauncherViewModel
 import android.view.animation.LinearInterpolator
