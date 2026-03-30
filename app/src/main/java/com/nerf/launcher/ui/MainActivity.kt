@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     private var batteryPercent: Int? = null
     private var isCharging: Boolean = false
     private val themeNames by lazy { ThemeRepository.all.map { it.name } }
-    private val iconPackNames by lazy { IconPackManager.getAvailablePacks() }
+    private val iconPackNames by lazy { IconPackManager.getAvailablePacks(this) }
     private val moduleRefreshHandler = Handler(Looper.getMainLooper())
     private val lockSurfaceClockHandler = Handler(Looper.getMainLooper())
     private val powerManager by lazy { getSystemService(PowerManager::class.java) }

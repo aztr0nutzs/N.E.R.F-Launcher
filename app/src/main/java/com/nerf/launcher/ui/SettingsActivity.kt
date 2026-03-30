@@ -66,7 +66,7 @@ class SettingsActivity : AppCompatActivity() {
         list.add(SettingItem(
             SettingsType.ICON_PACK,
             getString(R.string.settings_icon_pack),
-            IconPackManager.getAvailablePacks().joinToString { it }
+            IconPackManager.getAvailablePacks(this).joinToString { it }
         ))
         // Glow intensity slider
         list.add(SettingItem(

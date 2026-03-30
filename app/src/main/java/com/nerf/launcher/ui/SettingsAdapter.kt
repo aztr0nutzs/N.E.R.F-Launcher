@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.databinding.ItemSettingBinding
-import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.SettingItem
 import com.nerf.launcher.util.SettingsType
 import com.nerf.launcher.util.AppConfig
@@ -79,7 +78,7 @@ class SettingsAdapter(
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinner.adapter = adapter
                     // Set current selection
-                    val current = currentConfig?.iconPack ?: IconPackManager.getCurrentPack(binderContext)
+                    val current = currentConfig?.iconPack
                     val currentIndex = adapter.getPosition(current)
                     if (currentIndex >= 0) {
                         spinner.setSelection(currentIndex)
