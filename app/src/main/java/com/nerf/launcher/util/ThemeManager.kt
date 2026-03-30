@@ -13,6 +13,7 @@ import android.view.Window
 import android.widget.TextView
 import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
+import com.nerf.launcher.ui.reactor.ReactorModuleView
 import com.nerf.launcher.ui.SegmentedBarView
 
 /**
@@ -65,9 +66,7 @@ object ThemeManager {
     fun applyLauncherShellTheme(root: View?, theme: NerfTheme) {
         root ?: return
         root.setBackgroundColor(theme.windowBackground)
-        root.findViewById<View>(R.id.lock_surface_root)?.setBackgroundColor(
-            root.context.getColor(R.color.nerf_lock_surface_scrim)
-        )
+        root.findViewById<View>(R.id.lock_surface_root)?.setBackgroundColor(theme.lockSurfaceScrim)
     }
 
     fun applyHudTheme(activity: Activity, theme: NerfTheme) {
@@ -88,6 +87,7 @@ object ThemeManager {
         addWidgetBtn?.setTextColor(theme.accent)
 
         applyHudPanelGlow(root, theme)
+        root.findViewById<ReactorModuleView>(R.id.reactor_module_view)?.updateTheme(theme)
     }
 
     fun applyHudPanelGlow(root: View, theme: NerfTheme) {

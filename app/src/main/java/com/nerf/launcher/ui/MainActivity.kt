@@ -209,8 +209,7 @@ class MainActivity : AppCompatActivity() {
                     themeName = config.themeName,
                     glowIntensity = config.glowIntensity
                 )
-                ThemeManager.applyWindowTheme(this, activeTheme)
-                ThemeManager.applyLauncherShellTheme(binding.rootContainer, activeTheme)
+                ThemeManager.applyTheme(this, binding.rootContainer, activeTheme)
                 applyStatusBarTheme(config)
                 updateSystemModules(config)
             }
