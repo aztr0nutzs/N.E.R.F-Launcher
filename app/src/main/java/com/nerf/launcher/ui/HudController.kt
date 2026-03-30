@@ -139,6 +139,7 @@ class HudController(
     private fun setupConfigObservers() {
         ConfigRepository.get().config.observe(lifecycleOwner) { config ->
             val finalTheme = ThemeManager.resolveActiveTheme(
+                context = activity,
                 themeName = config.themeName,
                 glowIntensity = config.glowIntensity
             )

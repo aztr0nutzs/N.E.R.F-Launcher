@@ -1,59 +1,141 @@
 package com.nerf.launcher.util
 
+import android.content.Context
+import androidx.annotation.ColorRes
+import androidx.core.content.ContextCompat
+import com.nerf.launcher.R
+
 /**
- * Repository of predefined Nerf themes.
+ * Authoritative source for launcher themes.
+ *
+ * Theme definitions are resource-based so launcher visuals stay centralized in XML palette tokens.
  */
 object ThemeRepository {
-    /** Classic Nerf – orange primary, blue accent, dark window background. */
-    val CLASSIC_NERF = NerfTheme(
+
+    private data class ThemeSpec(
+        val name: String,
+        @ColorRes val primaryRes: Int,
+        @ColorRes val secondaryRes: Int,
+        @ColorRes val accentRes: Int,
+        @ColorRes val windowBackgroundRes: Int,
+        @ColorRes val taskbarDarkBackgroundRes: Int,
+        @ColorRes val taskbarLightBackgroundRes: Int,
+        @ColorRes val hudInactiveMeterRes: Int,
+        @ColorRes val hudPanelTextPrimaryRes: Int,
+        @ColorRes val hudPanelTextSecondaryRes: Int,
+        @ColorRes val hudEnergyHighRes: Int,
+        @ColorRes val hudEnergyLowRes: Int
+    )
+
+    private val classicNerf = ThemeSpec(
         name = "Classic Nerf",
-        primary = 0xFFFF6A00.toInt(),   // #FF6A00
-        secondary = 0xFF00F0FF.toInt(), // #00F0FF
-        accent = 0xFFFFEA00.toInt(),    // #FFEA00
-        windowBackground = 0xFF212121.toInt() // #212121
+        primaryRes = R.color.theme_classic_primary,
+        secondaryRes = R.color.theme_classic_secondary,
+        accentRes = R.color.theme_classic_accent,
+        windowBackgroundRes = R.color.theme_shared_window_background,
+        taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
+        taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
+        hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
+        hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
+        hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
     )
 
-    /** Stealth Ops – dark primary, red accent, dark window background. */
-    val STEALTH_OPS = NerfTheme(
+    private val stealthOps = ThemeSpec(
         name = "Stealth Ops",
-        primary = 0xFF212121.toInt(), // #212121
-        secondary = 0xFFFF0000.toInt(), // #FF0000
-        accent = 0xFFFF4500.toInt(),  // #FF4500 (OrangeRed)
-        windowBackground = 0xFF212121.toInt() // #212121
+        primaryRes = R.color.theme_stealth_primary,
+        secondaryRes = R.color.theme_stealth_secondary,
+        accentRes = R.color.theme_stealth_accent,
+        windowBackgroundRes = R.color.theme_shared_window_background,
+        taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
+        taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
+        hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
+        hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
+        hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
     )
 
-    /** Elite Blue – blue primary, cyan accent, dark window background. */
-    val ELITE_BLUE = NerfTheme(
+    private val eliteBlue = ThemeSpec(
         name = "Elite Blue",
-        primary = 0xFF00B0FF.toInt(), // #00B0FF
-        secondary = 0xFF00F0FF.toInt(), // #00F0FF
-        accent = 0xFFFFFF00.toInt(),  // #FFFF00 (Yellow)
-        windowBackground = 0xFF212121.toInt() // #212121
+        primaryRes = R.color.theme_elite_primary,
+        secondaryRes = R.color.theme_elite_secondary,
+        accentRes = R.color.theme_elite_accent,
+        windowBackgroundRes = R.color.theme_shared_window_background,
+        taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
+        taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
+        hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
+        hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
+        hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
     )
 
-    /** Zombie Strike – green accent on dark. */
-    val ZOMBIE_STRIKE = NerfTheme(
+    private val zombieStrike = ThemeSpec(
         name = "Zombie Strike",
-        primary = 0xFF212121.toInt(), // #212121
-        secondary = 0xFF00BF00.toInt(), // #00BF00
-        accent = 0xFF00FF00.toInt(),  // #00FF00
-        windowBackground = 0xFF212121.toInt() // #212121
+        primaryRes = R.color.theme_zombie_primary,
+        secondaryRes = R.color.theme_zombie_secondary,
+        accentRes = R.color.theme_zombie_accent,
+        windowBackgroundRes = R.color.theme_shared_window_background,
+        taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
+        taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
+        hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
+        hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
+        hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
     )
 
-    /** Hyper Neon – vivid magenta primary, cyan secondary, dark window background. */
-    val HYPER_NEON = NerfTheme(
+    private val hyperNeon = ThemeSpec(
         name = "Hyper Neon",
-        primary = 0xFFFF00FF.toInt(), // #FF00FF
-        secondary = 0xFF00FFFF.toInt(), // #00FFFF
-        accent = 0xFFFFFF00.toInt(), // #FFFF00
-        windowBackground = 0xFF212121.toInt() // #212121
+        primaryRes = R.color.theme_hyper_primary,
+        secondaryRes = R.color.theme_hyper_secondary,
+        accentRes = R.color.theme_hyper_accent,
+        windowBackgroundRes = R.color.theme_shared_window_background,
+        taskbarDarkBackgroundRes = R.color.theme_shared_taskbar_dark_background,
+        taskbarLightBackgroundRes = R.color.theme_shared_taskbar_light_background,
+        hudInactiveMeterRes = R.color.theme_shared_hud_inactive_meter,
+        hudPanelTextPrimaryRes = R.color.theme_shared_hud_panel_text_primary,
+        hudPanelTextSecondaryRes = R.color.theme_shared_hud_panel_text_secondary,
+        hudEnergyHighRes = R.color.theme_shared_hud_energy_high,
+        hudEnergyLowRes = R.color.theme_shared_hud_energy_low
     )
 
-    /** Returns all predefined themes as a list. */
-    val all: List<NerfTheme>
-        get() = listOf(CLASSIC_NERF, STEALTH_OPS, ELITE_BLUE, ZOMBIE_STRIKE, HYPER_NEON)
+    private val allSpecs: List<ThemeSpec> = listOf(
+        classicNerf,
+        stealthOps,
+        eliteBlue,
+        zombieStrike,
+        hyperNeon
+    )
 
-    /** Find a theme by name (case‑insensitive). */
-    fun byName(name: String): NerfTheme? =
-        all.firstOrNull { it.name.equals(name, ignoreCase = true) }
+    val allThemeNames: List<String>
+        get() = allSpecs.map { it.name }
+
+    val defaultThemeName: String
+        get() = classicNerf.name
+
+    fun containsTheme(name: String): Boolean =
+        allSpecs.any { it.name.equals(name, ignoreCase = true) }
+
+    fun resolve(context: Context, name: String?): NerfTheme {
+        val spec = allSpecs.firstOrNull { it.name.equals(name, ignoreCase = true) } ?: classicNerf
+        return NerfTheme(
+            name = spec.name,
+            primary = context.color(spec.primaryRes),
+            secondary = context.color(spec.secondaryRes),
+            accent = context.color(spec.accentRes),
+            windowBackground = context.color(spec.windowBackgroundRes),
+            taskbarDarkBackground = context.color(spec.taskbarDarkBackgroundRes),
+            taskbarLightBackground = context.color(spec.taskbarLightBackgroundRes),
+            hudInactiveMeterColor = context.color(spec.hudInactiveMeterRes),
+            hudPanelTextPrimary = context.color(spec.hudPanelTextPrimaryRes),
+            hudPanelTextSecondary = context.color(spec.hudPanelTextSecondaryRes),
+            hudEnergyHighColor = context.color(spec.hudEnergyHighRes),
+            hudEnergyLowColor = context.color(spec.hudEnergyLowRes)
+        )
+    }
+
+    private fun Context.color(@ColorRes resId: Int): Int = ContextCompat.getColor(this, resId)
 }

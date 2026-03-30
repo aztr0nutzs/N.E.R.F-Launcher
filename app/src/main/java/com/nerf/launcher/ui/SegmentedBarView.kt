@@ -35,6 +35,7 @@ class SegmentedBarView @JvmOverloads constructor(
 
     private val rect = RectF()
     private var activeGradient: LinearGradient? = null
+    private var activeGradientHighlightColor: Int = ContextCompat.getColor(context, R.color.nerf_hud_panel_text_primary)
     private var cachedWidth = -1
     private var cachedHeight = -1
     private var animatedProgress: Float = 0f
@@ -63,6 +64,13 @@ class SegmentedBarView @JvmOverloads constructor(
 
     fun setInactiveColor(color: Int) {
         inactivePaint.color = color
+        invalidate()
+    }
+
+    fun setGradientHighlightColor(color: Int) {
+        activeGradientHighlightColor = color
+        activePaint.shader = null
+        activeGradient = null
         invalidate()
     }
 
@@ -108,7 +116,7 @@ class SegmentedBarView @JvmOverloads constructor(
             0f,
             height.toFloat(),
             activePaint.color,
-            ContextCompat.getColor(context, R.color.nerf_hud_panel_text_primary),
+            activeGradientHighlightColor,
             Shader.TileMode.CLAMP
         )
         activePaint.shader = activeGradient

@@ -3,24 +3,28 @@ package com.nerf.launcher.util
 import android.graphics.Color
 
 /**
- * Represents a Nerf launcher theme.
+ * Authoritative launcher theme model.
+ *
+ * Values here are fully-resolved ARGB colors consumed by launcher-owned surfaces.
  */
 data class NerfTheme(
     val name: String,
-    val primary: Int,   // ARGB color
-    val secondary: Int, // ARGB color
-    val accent: Int,    // ARGB color
-    val windowBackground: Int, // ARGB color for window background
-    val glowIntensity: Float = 1.0f,
-    val backgroundStyle: Int = android.R.color.background_dark,
-    val hudInactiveMeterColor: Int = Color.argb(80, 255, 255, 255)
+    val primary: Int,
+    val secondary: Int,
+    val accent: Int,
+    val windowBackground: Int,
+    val taskbarDarkBackground: Int,
+    val taskbarLightBackground: Int,
+    val hudInactiveMeterColor: Int,
+    val hudPanelTextPrimary: Int,
+    val hudPanelTextSecondary: Int,
+    val hudEnergyHighColor: Int,
+    val hudEnergyLowColor: Int,
+    val glowIntensity: Float = 1.0f
 ) {
-    /** Returns a copy with the primary color changed. */
-    fun withPrimary(color: Int) = copy(primary = color)
+    fun withGlowIntensity(value: Float): NerfTheme = copy(glowIntensity = value.coerceIn(0f, 1f))
 
-    /** Returns a copy with the secondary color changed. */
-    fun withSecondary(color: Int) = copy(secondary = color)
-
-    /** Returns a copy with the accent color changed. */
-    fun withAccent(color: Int) = copy(accent = color)
+    companion object {
+        val DEFAULT_HUD_INACTIVE_METER_COLOR: Int = Color.argb(80, 255, 255, 255)
+    }
 }

@@ -60,7 +60,7 @@ class SettingsActivity : AppCompatActivity() {
         list.add(SettingItem(
             SettingsType.THEME,
             getString(R.string.settings_theme),
-            ThemeRepository.all.joinToString { it.name }
+            ThemeRepository.allThemeNames.joinToString { it }
         ))
         // Icon pack selector
         list.add(SettingItem(

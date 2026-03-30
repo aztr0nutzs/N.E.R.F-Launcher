@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     private var filteredAppCount: Int = 0
     private var batteryPercent: Int? = null
     private var isCharging: Boolean = false
-    private val themeNames by lazy { ThemeRepository.all.map { it.name } }
+    private val themeNames by lazy { ThemeRepository.allThemeNames }
     private val iconPackNames by lazy { IconPackManager.getAvailablePacks(this) }
     private val moduleRefreshHandler = Handler(Looper.getMainLooper())
     private val lockSurfaceClockHandler = Handler(Looper.getMainLooper())
@@ -204,7 +204,12 @@ class MainActivity : AppCompatActivity() {
 
             animationSpeedMultiplier = if (config.animationSpeedEnabled) 0.65f else 1f
             if (themeChanged || previous == null) {
-                ThemeManager.applyTheme(this)
+                val activeTheme = ThemeManager.resolveActiveTheme(
+                    context = this,
+                    themeName = config.themeName,
+                    glowIntensity = config.glowIntensity
+                )
+                ThemeManager.applyTheme(this, binding.rootContainer, activeTheme)
                 applyStatusBarTheme(config)
             }
             if (gridChanged || previous == null) {
@@ -497,6 +502,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateSystemModules(config: AppConfig? = ConfigRepository.get().config.value) {
         val energy = batteryPercent
+        val activeTheme = ThemeManager.resolveActiveTheme(this)
         if (energy != null) {
             val batteryStateTextRes = if (isCharging) {
                 com.nerf.launcher.R.string.modules_battery_charging
@@ -510,8 +516,8 @@ class MainActivity : AppCompatActivity() {
             )
             binding.moduleEnergyBar.progress = energy
             binding.moduleEnergyBar.setActiveColor(
-                if (energy < 20) getColor(com.nerf.launcher.R.color.nerf_hud_magenta)
-                else getColor(com.nerf.launcher.R.color.nerf_hud_orange)
+                if (energy < 20) activeTheme.hudEnergyLowColor
+                else activeTheme.hudEnergyHighColor
             )
         } else {
             binding.moduleEnergyValue.text = "--"
@@ -668,6 +674,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun applyStatusBarTheme(config: AppConfig) {
         val primaryColor = ThemeManager.resolveActiveTheme(
+            context = this,
             themeName = config.themeName,
             glowIntensity = config.glowIntensity
         ).primary
