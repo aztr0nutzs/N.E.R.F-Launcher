@@ -25,6 +25,7 @@ class AppAdapter(
     private val onAppClicked: (AppInfo) -> Unit,
     private val lifecycleOwner: LifecycleOwner
 ) : ListAdapter<AppInfo, AppAdapter.AppViewHolder>(DIFF_CALLBACK) {
+    private var observedIconPack: String? = null
 
     inner class AppViewHolder(val binding: ItemAppBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -91,12 +92,14 @@ class AppAdapter(
     }
 
     init {
-        // Observe icon pack changes to refresh icons across all items.
+        // Observe configuration and react only when icon pack changes.
         ConfigRepository.get().config.observe(lifecycleOwner) {
-            // Clear icon pack cache so new icons are loaded on next bind.
+            val previousPack = observedIconPack
+            observedIconPack = it.iconPack
+            if (previousPack == null || previousPack == it.iconPack) {
+                return@observe
+            }
             iconProvider.evictCache()
-            // Notify adapter to rebind all visible items (icon pack change affects all items).
-            // Using notifyItemRangeChanged is more efficient than notifyDataSetChanged.
             notifyItemRangeChanged(0, itemCount)
         }
     }

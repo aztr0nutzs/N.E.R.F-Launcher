@@ -9,6 +9,7 @@ import com.nerf.launcher.databinding.ItemSettingBinding
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.SettingItem
 import com.nerf.launcher.util.SettingsType
+import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.ThemeRepository
 
@@ -20,6 +21,7 @@ class SettingsAdapter(
     private val items: List<SettingItem>,
     private val onSettingChanged: (SettingItem) -> Unit
 ) : RecyclerView.Adapter<SettingsAdapter.ViewHolder>() {
+    private var currentConfig: AppConfig? = ConfigRepository.get().config.value
 
     inner class ViewHolder(private val binding: ItemSettingBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -43,7 +45,7 @@ class SettingsAdapter(
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinner.adapter = adapter
                     // Set current selection
-                    val current = ConfigRepository.get().config.value?.themeName
+                    val current = currentConfig?.themeName
                         ?: ThemeRepository.CLASSIC_NERF.name
                     val currentIndex = adapter.getPosition(current)
                     if (currentIndex >= 0) {
@@ -53,7 +55,9 @@ class SettingsAdapter(
                         AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                             val selected = parent?.getItemAtPosition(pos) as String
-                            onSettingChanged(SettingItem(SettingsType.THEME, item.title, selected))
+                            if (selected != currentConfig?.themeName) {
+                                onSettingChanged(SettingItem(SettingsType.THEME, item.title, selected))
+                            }
                         }
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }
@@ -75,7 +79,7 @@ class SettingsAdapter(
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinner.adapter = adapter
                     // Set current selection
-                    val current = IconPackManager.getCurrentPack(binderContext)
+                    val current = currentConfig?.iconPack ?: IconPackManager.getCurrentPack(binderContext)
                     val currentIndex = adapter.getPosition(current)
                     if (currentIndex >= 0) {
                         spinner.setSelection(currentIndex)
@@ -84,7 +88,9 @@ class SettingsAdapter(
                         AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                             val selected = parent?.getItemAtPosition(pos) as String
-                            onSettingChanged(SettingItem(SettingsType.ICON_PACK, item.title, selected))
+                            if (selected != currentConfig?.iconPack) {
+                                onSettingChanged(SettingItem(SettingsType.ICON_PACK, item.title, selected))
+                            }
                         }
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }
@@ -104,7 +110,9 @@ class SettingsAdapter(
                         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                             if (fromUser) {
                                 val value = progress / 100f
-                                onSettingChanged(SettingItem(SettingsType.GLOW_INTENSITY, item.title, value))
+                                if (value != currentConfig?.glowIntensity) {
+                                    onSettingChanged(SettingItem(SettingsType.GLOW_INTENSITY, item.title, value))
+                                }
                             }
                         }
                         override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -121,7 +129,9 @@ class SettingsAdapter(
                     val switchCompat = binding.animationSwitch
                     switchCompat.isChecked = item.payload as Boolean
                     switchCompat.setOnCheckedChangeListener { _, isChecked ->
-                        onSettingChanged(SettingItem(SettingsType.ANIMATION_SPEED, item.title, isChecked))
+                        if (isChecked != currentConfig?.animationSpeedEnabled) {
+                            onSettingChanged(SettingItem(SettingsType.ANIMATION_SPEED, item.title, isChecked))
+                        }
                     }
                 }
                 SettingsType.GRID_SIZE -> {
@@ -141,13 +151,15 @@ class SettingsAdapter(
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinner.adapter = adapter
                     // Set current selection
-                    val current = ConfigRepository.get().config.value?.gridSize ?: 4
+                    val current = currentConfig?.gridSize ?: 4
                     spinner.setSelection(adapter.getPosition(current))
                     spinner.onItemSelectedListener = object :
                         AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                             val selected = parent?.getItemAtPosition(pos) as Int
-                            onSettingChanged(SettingItem(SettingsType.GRID_SIZE, item.title, selected))
+                            if (selected != currentConfig?.gridSize) {
+                                onSettingChanged(SettingItem(SettingsType.GRID_SIZE, item.title, selected))
+                            }
                         }
                         override fun onNothingSelected(parent: AdapterView<*>?) {}
                     }
@@ -173,4 +185,9 @@ class SettingsAdapter(
     }
 
     override fun getItemCount(): Int = items.size
+
+    fun updateFromConfig(config: AppConfig) {
+        currentConfig = config
+        notifyItemRangeChanged(0, itemCount)
+    }
 }

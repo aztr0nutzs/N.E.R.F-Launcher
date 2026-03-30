@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivitySettingsBinding
+import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.SettingItem
@@ -15,6 +16,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var adapter: SettingsAdapter
+    private var lastObservedConfig: AppConfig? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +41,12 @@ class SettingsActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@SettingsActivity)
             adapter = this@SettingsActivity.adapter
             setHasFixedSize(true)
+        }
+
+        ConfigRepository.get().config.observe(this) { config ->
+            if (lastObservedConfig == config) return@observe
+            adapter.updateFromConfig(config)
+            lastObservedConfig = config
         }
     }
 
@@ -84,26 +92,37 @@ class SettingsActivity : AppCompatActivity() {
     /** React to a setting change from the adapter. */
     private fun handleSettingChange(setting: SettingItem) {
         val repo = ConfigRepository.get()
+        val current = repo.config.value ?: return
         when (setting.type) {
             SettingsType.THEME -> {
                 val themeName = setting.payload as String
-                repo.updateTheme(themeName)
+                if (current.themeName != themeName) {
+                    repo.updateTheme(themeName)
+                }
             }
             SettingsType.ICON_PACK -> {
                 val packName = setting.payload as String
-                repo.updateIconPack(packName)
+                if (current.iconPack != packName) {
+                    repo.updateIconPack(packName)
+                }
             }
             SettingsType.GLOW_INTENSITY -> {
                 val intensity = setting.payload as Float
-                repo.updateGlowIntensity(intensity)
+                if (current.glowIntensity != intensity) {
+                    repo.updateGlowIntensity(intensity)
+                }
             }
             SettingsType.ANIMATION_SPEED -> {
                 val enabled = setting.payload as Boolean
-                repo.updateAnimationSpeed(enabled)
+                if (current.animationSpeedEnabled != enabled) {
+                    repo.updateAnimationSpeed(enabled)
+                }
             }
             SettingsType.GRID_SIZE -> {
                 val size = setting.payload as Int
-                repo.updateGridSize(size)
+                if (current.gridSize != size) {
+                    repo.updateGridSize(size)
+                }
             }
         }
     }

@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     private var scanlineSweepAnimator: ObjectAnimator? = null
     private var scanlineOpacityAnimator: ValueAnimator? = null
     private var isLockSurfaceVisible: Boolean = false
+    private var lastObservedConfig: AppConfig? = null
 
     private val batteryReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
@@ -171,7 +172,6 @@ class MainActivity : AppCompatActivity() {
             applyDrawerFilter(binding.drawerSearchInput.text?.toString().orEmpty())
             binding.moduleAppCount.text = getString(com.nerf.launcher.R.string.hud_apps_count, apps.size)
             binding.appsLoadBar.progress = ((apps.size / 48f) * 100f).toInt().coerceIn(10, 100)
-            updateTaskbarIcons()
         }
     }
 
@@ -193,12 +193,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupConfigObservers() {
         ConfigRepository.get().config.observe(this) { config ->
-            ThemeManager.applyTheme(this)
+            val previous = lastObservedConfig
+            val themeChanged = previous?.themeName != config.themeName ||
+                    previous?.glowIntensity != config.glowIntensity
+            val gridChanged = previous?.gridSize != config.gridSize
+            val taskbarSettingsChanged = previous?.taskbarSettings != config.taskbarSettings
 
-            iconProvider.evictCache()
-            adapter.notifyItemRangeChanged(0, adapter.itemCount)
-
-            (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount = config.gridSize.coerceAtLeast(2)
+            if (themeChanged || previous == null) {
+                ThemeManager.applyTheme(this)
+                applyStatusBarTheme(config)
+            }
+            if (gridChanged || previous == null) {
+                (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount =
+                    config.gridSize.coerceAtLeast(2)
+            }
 
             binding.moduleGridValue.text = getString(com.nerf.launcher.R.string.hud_grid_value, config.gridSize)
             binding.modulePinnedValue.text = getString(
@@ -206,10 +214,11 @@ class MainActivity : AppCompatActivity() {
                 config.taskbarSettings.pinnedApps.size
             )
 
-            applyStatusBarTheme(config)
-            updateTaskbarIcons()
             bindQuickControls(config)
-            updateSystemModules(config)
+            if (taskbarSettingsChanged || previous == null) {
+                updateSystemModules(config)
+            }
+            lastObservedConfig = config
         }
     }
 
@@ -227,7 +236,6 @@ class MainActivity : AppCompatActivity() {
             val toggled = !current.taskbarSettings.enabled
             val settings = current.taskbarSettings.copy(enabled = toggled)
             ConfigRepository.get().updateTaskbarSettings(settings)
-            updateSystemModules(current.copy(taskbarSettings = settings))
         }
     }
 
@@ -648,11 +656,6 @@ class MainActivity : AppCompatActivity() {
         if (binding.quickGridSeekbar.progress != sliderProgress) {
             binding.quickGridSeekbar.progress = sliderProgress
         }
-    }
-
-    private fun updateTaskbarIcons() {
-        val pinnedApps = TaskbarController.getPinnedApps(this)
-        binding.taskbarView.updateIcons(pinnedApps)
     }
 
     private fun applyStatusBarTheme(config: AppConfig) {
