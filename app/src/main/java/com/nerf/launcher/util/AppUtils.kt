@@ -4,10 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import com.nerf.launcher.model.AppInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object AppUtils {
 
-    fun loadInstalledApps(context: Context): List<AppInfo> {
+    suspend fun loadInstalledApps(context: Context): List<AppInfo> = withContext(Dispatchers.IO) {
         val pm = context.packageManager
         val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {
             addCategory(Intent.CATEGORY_LAUNCHER)
@@ -27,7 +29,7 @@ object AppUtils {
                 )
             )
         }
-        return apps
+        apps
     }
 
     fun launchApp(context: Context, appInfo: AppInfo) {

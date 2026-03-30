@@ -199,6 +199,7 @@ class MainActivity : AppCompatActivity() {
             val gridChanged = previous?.gridSize != config.gridSize
             val taskbarSettingsChanged = previous?.taskbarSettings != config.taskbarSettings
             val animationSpeedChanged = previous?.animationSpeedEnabled != config.animationSpeedEnabled
+            val iconPackChanged = previous?.iconPack != null && previous.iconPack != config.iconPack
 
             animationSpeedMultiplier = if (config.animationSpeedEnabled) 0.65f else 1f
             if (themeChanged || previous == null) {
@@ -222,6 +223,9 @@ class MainActivity : AppCompatActivity() {
             }
             if (animationSpeedChanged || previous == null) {
                 setupScanlineSweep()
+            }
+            if (iconPackChanged) {
+                iconProvider.evictCache(previous?.iconPack)
             }
             lastObservedConfig = config
         }
@@ -721,6 +725,7 @@ class MainActivity : AppCompatActivity() {
         unregisterReceiver(batteryReceiver)
         assistantOverlayController.release()
         hudController.release()
+        iconProvider.release()
         StatusBarManager.resetStatusBar(this)
     }
 }

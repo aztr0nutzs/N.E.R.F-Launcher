@@ -26,6 +26,7 @@ class AppAdapter(
     private val lifecycleOwner: LifecycleOwner
 ) : ListAdapter<AppInfo, AppAdapter.AppViewHolder>(DIFF_CALLBACK) {
     private var observedIconPack: String? = null
+    private val iconOnlyPayload = Any()
 
     inner class AppViewHolder(val binding: ItemAppBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -45,6 +46,10 @@ class AppAdapter(
                 }
                 false
             }
+        }
+
+        fun bindIconOnly(app: AppInfo) {
+            iconProvider.loadIconInto(app.packageName, binding.appIcon)
         }
 
         private fun animatePress(view: View, pressed: Boolean) {
@@ -83,6 +88,19 @@ class AppAdapter(
         holder.bind(app)
     }
 
+    override fun onBindViewHolder(
+        holder: AppViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        val app = getItem(position) ?: return
+        if (payloads.contains(iconOnlyPayload)) {
+            holder.bindIconOnly(app)
+            return
+        }
+        holder.bind(app)
+    }
+
     override fun onViewRecycled(holder: AppViewHolder) {
         holder.binding.root.animate().cancel()
         holder.binding.root.scaleX = 1f
@@ -99,7 +117,9 @@ class AppAdapter(
             if (previousPack == null || previousPack == it.iconPack) {
                 return@observe
             }
-            notifyItemRangeChanged(0, itemCount)
+            if (itemCount > 0) {
+                notifyItemRangeChanged(0, itemCount, iconOnlyPayload)
+            }
         }
     }
 
