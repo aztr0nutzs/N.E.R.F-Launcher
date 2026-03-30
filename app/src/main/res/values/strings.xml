@@ -80,6 +80,10 @@
     <string name="taskbar_settings_icon_size_value">%1$ddp</string>
     <string name="taskbar_settings_transparency">Transparency</string>
     <string name="taskbar_settings_transparency_value">%1$d%%</string>
+    <string name="taskbar_settings_background_style">Background Style</string>
+    <string name="taskbar_settings_background_dark">Dark</string>
+    <string name="taskbar_settings_background_light">Light</string>
+    <string name="taskbar_settings_background_transparent">Transparent</string>
     <string name="taskbar_settings_pinned_apps">Pinned Apps</string>
     <string name="taskbar_settings_pinned_summary">%1$d pinned</string>
     <string name="taskbar_settings_clear_pins">Clear pinned apps</string>

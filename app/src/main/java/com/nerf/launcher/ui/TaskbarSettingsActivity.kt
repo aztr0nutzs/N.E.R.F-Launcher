@@ -3,6 +3,7 @@ package com.nerf.launcher.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityTaskbarSettingsBinding
@@ -51,6 +52,30 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             updateTaskbarSettings { copy(transparency = progress / 100f) }
         })
 
+        val backgroundStyleAdapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            TASKBAR_BACKGROUND_OPTIONS.map { getString(it.labelRes) }
+        ).also {
+            it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+        binding.taskbarBackgroundStyleSpinner.adapter = backgroundStyleAdapter
+        binding.taskbarBackgroundStyleSpinner.onItemSelectedListener =
+            object : android.widget.AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: android.widget.AdapterView<*>?,
+                    view: android.view.View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    if (isBindingState) return
+                    val selected = TASKBAR_BACKGROUND_OPTIONS[position]
+                    updateTaskbarSettings { copy(backgroundStyle = selected.styleRes) }
+                }
+
+                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) = Unit
+            }
+
         binding.clearPinnedAppsButton.setOnClickListener {
             TaskbarController.clearPinnedApps(this)
         }
@@ -81,6 +106,11 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             R.string.taskbar_settings_transparency_value,
             transparencyPercent
         )
+        val selectedBackgroundIndex = TASKBAR_BACKGROUND_OPTIONS
+            .indexOfFirst { it.styleRes == settings.backgroundStyle }
+            .takeIf { it >= 0 }
+            ?: 0
+        binding.taskbarBackgroundStyleSpinner.setSelection(selectedBackgroundIndex, false)
 
         val pinnedCount = settings.pinnedApps.size
         binding.pinnedAppsSummary.text = getString(R.string.taskbar_settings_pinned_summary, pinnedCount)
@@ -121,7 +151,17 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         private const val MAX_HEIGHT_DP = 96
         private const val MIN_ICON_SIZE_DP = 24
         private const val MAX_ICON_SIZE_DP = 72
+        private val TASKBAR_BACKGROUND_OPTIONS = listOf(
+            TaskbarBackgroundOption(android.R.color.background_dark, R.string.taskbar_settings_background_dark),
+            TaskbarBackgroundOption(android.R.color.background_light, R.string.taskbar_settings_background_light),
+            TaskbarBackgroundOption(android.R.color.transparent, R.string.taskbar_settings_background_transparent)
+        )
 
         fun createIntent(context: Context): Intent = Intent(context, TaskbarSettingsActivity::class.java)
     }
+
+    private data class TaskbarBackgroundOption(
+        val styleRes: Int,
+        val labelRes: Int
+    )
 }

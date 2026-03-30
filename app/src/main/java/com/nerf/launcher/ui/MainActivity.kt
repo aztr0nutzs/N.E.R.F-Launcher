@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     private var scanlineOpacityAnimator: ValueAnimator? = null
     private var isLockSurfaceVisible: Boolean = false
     private var lastObservedConfig: AppConfig? = null
+    private var animationSpeedMultiplier: Float = 1f
 
     private val batteryReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
@@ -197,7 +198,9 @@ class MainActivity : AppCompatActivity() {
                     previous?.glowIntensity != config.glowIntensity
             val gridChanged = previous?.gridSize != config.gridSize
             val taskbarSettingsChanged = previous?.taskbarSettings != config.taskbarSettings
+            val animationSpeedChanged = previous?.animationSpeedEnabled != config.animationSpeedEnabled
 
+            animationSpeedMultiplier = if (config.animationSpeedEnabled) 0.65f else 1f
             if (themeChanged || previous == null) {
                 ThemeManager.applyTheme(this)
                 applyStatusBarTheme(config)
@@ -216,6 +219,9 @@ class MainActivity : AppCompatActivity() {
             bindQuickControls(config)
             if (taskbarSettingsChanged || previous == null) {
                 updateSystemModules(config)
+            }
+            if (animationSpeedChanged || previous == null) {
+                setupScanlineSweep()
             }
             lastObservedConfig = config
         }
@@ -306,7 +312,7 @@ class MainActivity : AppCompatActivity() {
                 .alpha(1f)
                 .translationY(0f)
                 .setStartDelay((index * 56L) + 48L)
-                .setDuration(310L)
+                .setDuration(scaledDuration(310L))
                 .setInterpolator(FastOutSlowInInterpolator())
                 .start()
         }
@@ -319,7 +325,7 @@ class MainActivity : AppCompatActivity() {
             .translationY(0f)
             .translationX(0f)
             .setStartDelay(185L)
-            .setDuration(330L)
+            .setDuration(scaledDuration(330L))
             .setInterpolator(LinearOutSlowInInterpolator())
             .start()
     }
@@ -335,7 +341,7 @@ class MainActivity : AppCompatActivity() {
                 -binding.scanlineOverlay.height.toFloat(),
                 binding.scanlineOverlay.height.toFloat()
             ).apply {
-                duration = 8_400L
+                duration = scaledDuration(8_400L)
                 repeatCount = ValueAnimator.INFINITE
                 repeatMode = ValueAnimator.RESTART
                 interpolator = LinearInterpolator()
@@ -346,7 +352,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             scanlineOpacityAnimator = ValueAnimator.ofFloat(0.11f, 0.17f).apply {
-                duration = 4_800L
+                duration = scaledDuration(4_800L)
                 repeatCount = ValueAnimator.INFINITE
                 repeatMode = ValueAnimator.REVERSE
                 interpolator = FastOutLinearInInterpolator()
@@ -664,6 +670,10 @@ class MainActivity : AppCompatActivity() {
         ).primary
         val isLightTheme = com.nerf.launcher.util.ColorUtils.isColorLight(primaryColor)
         StatusBarManager.applyStatusBarTheme(this, primaryColor, isLightTheme)
+    }
+
+    private fun scaledDuration(baseDurationMs: Long): Long {
+        return (baseDurationMs * animationSpeedMultiplier).toLong().coerceAtLeast(1L)
     }
 
 
