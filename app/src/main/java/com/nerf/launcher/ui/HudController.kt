@@ -16,6 +16,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
 import com.nerf.launcher.util.ConfigRepository
+import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.ThemeManager
 import java.util.Calendar
 import java.util.Locale
@@ -53,6 +54,7 @@ class HudController(
 
     private val handler = Handler(Looper.getMainLooper())
     private var hudBreathingAnimator: ValueAnimator? = null
+    private var lastObservedConfig: AppConfig? = null
 
     private val timeUpdater = object : Runnable {
         override fun run() {
@@ -138,12 +140,21 @@ class HudController(
 
     private fun setupConfigObservers() {
         ConfigRepository.get().config.observe(lifecycleOwner) { config ->
+            val previous = lastObservedConfig
+            val themeChanged = previous == null ||
+                previous.themeName != config.themeName ||
+                previous.glowIntensity != config.glowIntensity
+            if (!themeChanged) {
+                lastObservedConfig = config
+                return@observe
+            }
             val finalTheme = ThemeManager.resolveActiveTheme(
                 context = activity,
                 themeName = config.themeName,
                 glowIntensity = config.glowIntensity
             )
             ThemeManager.applyHudTheme(activity, finalTheme)
+            lastObservedConfig = config
         }
     }
 
