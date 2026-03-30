@@ -9,7 +9,7 @@ import com.nerf.launcher.databinding.ItemSettingBinding
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.SettingItem
 import com.nerf.launcher.util.SettingsType
-import com.nerf.launcher.util.PreferencesManager
+import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.ThemeRepository
 
 /**
@@ -43,7 +43,8 @@ class SettingsAdapter(
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinner.adapter = adapter
                     // Set current selection
-                    val current = PreferencesManager.getSelectedTheme(binderContext) ?: ThemeRepository.CLASSIC_NERF.name
+                    val current = ConfigRepository.get().config.value?.themeName
+                        ?: ThemeRepository.CLASSIC_NERF.name
                     val currentIndex = adapter.getPosition(current)
                     if (currentIndex >= 0) {
                         spinner.setSelection(currentIndex)
@@ -140,7 +141,7 @@ class SettingsAdapter(
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinner.adapter = adapter
                     // Set current selection
-                    val current = PreferencesManager.getGridSize(binderContext)
+                    val current = ConfigRepository.get().config.value?.gridSize ?: 4
                     spinner.setSelection(adapter.getPosition(current))
                     spinner.onItemSelectedListener = object :
                         AdapterView.OnItemSelectedListener {
