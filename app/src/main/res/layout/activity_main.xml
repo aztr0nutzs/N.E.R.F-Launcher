@@ -263,7 +263,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
                         android:max="100"
-                        android:progressDrawable="@drawable/quick_slider_progress"
+                        android:progressDrawable="@drawable/quickslider_progress_cool"
                         android:thumbTint="@color/nerf_hud_cyan" />
 
                     <TextView
@@ -279,7 +279,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:max="4"
-                        android:progressDrawable="@drawable/quick_slider_progress_warm"
+                        android:progressDrawable="@drawable/quickslider_progress_cool"
                         android:thumbTint="@color/nerf_hud_orange" />
                 </LinearLayout>
 
@@ -360,8 +360,7 @@
                     android:alpha="0.36"
                     android:contentDescription="@string/nerf_brand_mark_cd"
                     android:importantForAccessibility="no"
-                    android:src="@drawable/ic_launcher_monochrome"
-                    app:tint="@color/nerf_hud_orange"
+                    android:src="@drawable/ic_brand_mark_main"
                     app:layout_constraintBottom_toBottomOf="@id/reactor_mode_label"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@id/reactor_mode_label" />
@@ -397,19 +396,10 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:background="@drawable/module_stat_card"
+                    android:background="@drawable/panel_background"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:alpha="0.17"
-                        android:contentDescription="@null"
-                        android:importantForAccessibility="no"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/reactor_panel_mock" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -519,17 +509,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
+                    android:background="@drawable/panel_background"
                     android:clickable="true"
                     android:focusable="true">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:alpha="0.16"
-                        android:contentDescription="@null"
-                        android:importantForAccessibility="no"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/reactor_panel_alt_mock" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -572,6 +554,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="4dp"
+                        android:background="@drawable/module_stat_card2"
                         android:layout_weight="1"
                         android:clickable="true"
                         android:focusable="true"
@@ -670,15 +653,6 @@
                         android:layout_marginStart="4dp"
                         android:layout_weight="1">
 
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:alpha="0.18"
-                            android:contentDescription="@null"
-                            android:importantForAccessibility="no"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/reactor_panel_alt_mock" />
-
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -758,7 +732,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:background="@drawable/drawer_header_panel"
+                        android:background="@drawable/drawer_shell_background"
                         android:orientation="vertical"
                         android:padding="8dp">
 
@@ -781,8 +755,7 @@
                                 android:layout_height="16dp"
                                 android:alpha="0.86"
                                 android:contentDescription="@string/drawer_brand_mark_cd"
-                                android:src="@drawable/ic_launcher_monochrome"
-                                app:tint="@color/nerf_hud_magenta" />
+                                android:src="@drawable/ic_brand_mark_main" />
                         </LinearLayout>
 
                         <TextView
@@ -816,7 +789,7 @@
                         android:layout_height="0dp"
                         android:layout_marginTop="6dp"
                         android:layout_weight="1"
-                        android:background="@drawable/drawer_header_panel"
+                        android:background="@drawable/drawer_shell_background"
                         android:clipToPadding="false"
                         android:paddingStart="4dp"
                         android:paddingTop="6dp"

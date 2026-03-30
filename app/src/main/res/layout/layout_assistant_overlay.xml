@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="122dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/drawer_header_panel">
+            android:background="@drawable/drawer_shell_background">
 
             <ImageView
                 android:layout_width="match_parent"
@@ -125,7 +125,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:background="@drawable/drawer_header_panel"
+            android:background="@drawable/drawer_shell_background"
             android:padding="10dp"
             android:text="@string/assistant_overlay_response_idle"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"

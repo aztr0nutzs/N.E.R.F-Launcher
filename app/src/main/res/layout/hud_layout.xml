@@ -74,8 +74,7 @@
             android:layout_height="18dp"
             android:alpha="0.82"
             android:contentDescription="@string/nerf_brand_mark_cd"
-            android:src="@drawable/ic_launcher_monochrome"
-            app:tint="@color/nerf_hud_cyan" />
+            android:src="@drawable/ic_brand_mark_main" />
 
         <TextView
             android:layout_width="wrap_content"

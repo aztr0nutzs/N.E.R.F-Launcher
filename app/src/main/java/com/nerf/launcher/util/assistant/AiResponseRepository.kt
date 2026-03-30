@@ -3,51 +3,39 @@ package com.nerf.launcher.util.assistant
 import android.content.Context
 import android.util.Log
 import com.nerf.launcher.R
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.LinkedList
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  AiResponseRepository
-//
-//  Loads the reactor_ai_responses.json resource and vends responses by category.
-//  Features:
-//    • Lazy loading + manual reload
-//    • Per-category anti-repeat history buffer (configurable depth)
-//    • Weighted response selection (optional weight suffix in JSON)
-//    • Mood-aware text transforms
-//    • Sequence retrieval (ordered list across multiple categories)
-//    • Graceful fallbacks for missing categories or load failures
-// ─────────────────────────────────────────────────────────────────────────────
+import kotlin.math.max
 
 class AiResponseRepository(private val context: Context) {
 
-    // ── Categories ────────────────────────────────────────────────────────────
-
     enum class Category {
-        // ── Core Lifecycle ──────────────────────────────────────────────────
         WAKE,
         SHUTDOWN,
         REBOOT,
 
-        // ── Network & System ────────────────────────────────────────────────
         NETWORK_SCAN,
         SCANNING,
         DIAGNOSTICS,
         SYSTEM_ALERT,
         BATTERY_LOW,
         UPDATE_AVAILABLE,
+        NETWORK_SUCCESS,
+        NETWORK_FAILURE,
+        STATUS_REPORT,
+        ROUTER_CONTROL,
 
-        // ── Command & Response ───────────────────────────────────────────────
         COMMAND_RECEIVED,
         APP_LAUNCH,
         PERMISSION_REQUEST,
         ERROR,
         WARNING,
         SUCCESS,
+        UNKNOWN_COMMAND,
 
-        // ── Tactical / Nerf ─────────────────────────────────────────────────
         LAUNCH,
         RELOAD,
         TARGET_ACQUIRED,
@@ -59,105 +47,124 @@ class AiResponseRepository(private val context: Context) {
         VICTORY,
         DEFEAT,
 
-        // ── Personality / Ambient ────────────────────────────────────────────
         RANDOM_SNARK,
         IDLE_TAUNT,
         BORED,
         AMBIENT,
         USER_ABSENT,
-        COMPLIMENT
+        COMPLIMENT,
+        BUTTON_SPAM,
+        THEME_SWITCH
     }
 
-    // ── Configuration ─────────────────────────────────────────────────────────
+    data class ResponseRequest(
+        val category: Category,
+        val mood: PersonalityMood = PersonalityMood.SNARKY,
+        val tags: Set<String> = emptySet(),
+        val preferredText: String? = null,
+        val allowFallbackToGeneric: Boolean = true
+    )
+
+    data class ResponseEntry(
+        val text: String,
+        val weight: Int = 1,
+        val moods: Set<PersonalityMood> = emptySet(),
+        val tags: Set<String> = emptySet()
+    )
 
     companion object {
         private const val TAG = "AiResponseRepository"
-
-        /** Number of recent responses to remember per category (avoids repeats). */
-        const val DEFAULT_HISTORY_DEPTH = 6
+        const val DEFAULT_HISTORY_DEPTH = 8
     }
 
-    // ── State ─────────────────────────────────────────────────────────────────
-
     private val appContext = context.applicationContext
-    private var responseLibrary: Map<Category, List<String>>? = null
+    private var responseLibrary: Map<Category, List<ResponseEntry>>? = null
     private val recentHistory = mutableMapOf<Category, LinkedList<String>>()
     private var historyDepth = DEFAULT_HISTORY_DEPTH
 
-    // ── Public API ────────────────────────────────────────────────────────────
-
-    /** Returns true if the response bank has been loaded successfully. */
     fun isLoaded(): Boolean {
         ensureLoaded()
         return responseLibrary != null
     }
 
-    /**
-     * Returns a single response for [category], avoiding recently used lines
-     * where possible.
-     */
-    fun getResponse(category: Category): String {
+    fun getResponse(category: Category): String =
+        getResponse(ResponseRequest(category = category))
+
+    fun getResponse(
+        category: Category,
+        mood: PersonalityMood,
+        tags: Set<String> = emptySet()
+    ): String = getResponse(ResponseRequest(category = category, mood = mood, tags = tags))
+
+    fun getResponse(request: ResponseRequest): String {
         ensureLoaded()
-        val lines = responseLibrary?.get(category).orEmpty()
-        if (lines.isEmpty()) return fallbackLine(category)
-        return pickFresh(category, lines)
-    }
+        request.preferredText
+            ?.takeIf { it.isNotBlank() }
+            ?.let { return rememberAndReturn(request.category, it.trim()) }
 
-    /**
-     * Returns a response for [category] with optional mood-based transformation
-     * applied to the text.
-     */
-    fun getResponseForMood(category: Category, mood: PersonalityMood): String {
-        val base = getResponse(category)
-        return when (mood) {
-            PersonalityMood.TACTICAL -> base.trimEnd('.').uppercase() + "."
-            PersonalityMood.ALERT    -> "ALERT — $base"
-            PersonalityMood.BORED    -> base.lowercase()
-            else                     -> base
+        val lines = responseLibrary?.get(request.category).orEmpty()
+        if (lines.isEmpty()) {
+            return fallbackResponse(request.category, request.mood)
         }
+
+        val chosen = pickFreshWeighted(request, lines)
+            ?: if (request.allowFallbackToGeneric) {
+                responseLibrary?.get(Category.RANDOM_SNARK)
+                    ?.let { pickFreshWeighted(request.copy(category = Category.RANDOM_SNARK), it) }
+            } else {
+                null
+            }
+
+        return rememberAndReturn(
+            request.category,
+            chosen?.text ?: fallbackResponse(request.category, request.mood)
+        )
     }
 
-    /**
-     * Returns an ordered list of responses, one per provided [categories] —
-     * useful for multi-step announcement sequences.
-     */
+    fun getResponseForMood(category: Category, mood: PersonalityMood): String =
+        getResponse(category = category, mood = mood)
+
     fun getSequence(vararg categories: Category): List<String> =
         categories.map { getResponse(it) }
 
-    /** Returns all responses for [category] without history filtering. */
     fun getAllResponses(category: Category): List<String> {
         ensureLoaded()
-        return responseLibrary?.get(category).orEmpty()
+        return responseLibrary?.get(category).orEmpty().map { it.text }
     }
 
-    /** Returns the total number of response lines for [category]. */
     fun getResponseCount(category: Category): Int = getAllResponses(category).size
 
-    /** Returns a map of every category to its response count. */
     fun getLibrarySummary(): Map<Category, Int> {
         ensureLoaded()
         return Category.values().associateWith { getResponseCount(it) }
     }
 
-    /** Sets how many recent responses per category are remembered to avoid repeats. */
-    fun setHistoryDepth(depth: Int) {
-        historyDepth = depth.coerceIn(1, 20)
+    fun searchResponses(query: String, limit: Int = 20): List<Pair<Category, String>> {
+        ensureLoaded()
+        val needle = query.trim().lowercase()
+        if (needle.isBlank()) return emptyList()
+
+        return responseLibrary.orEmpty()
+            .flatMap { (category, entries) ->
+                entries.mapNotNull { entry ->
+                    if (entry.text.lowercase().contains(needle)) category to entry.text else null
+                }
+            }
+            .take(limit.coerceIn(1, 100))
     }
 
-    /** Clears the anti-repeat history for a specific [category]. */
+    fun setHistoryDepth(depth: Int) {
+        historyDepth = depth.coerceIn(1, 24)
+    }
+
     fun clearHistory(category: Category) {
         recentHistory[category]?.clear()
     }
 
-    /** Clears the anti-repeat history for all categories. */
     fun clearAllHistory() {
         recentHistory.clear()
     }
 
-    /**
-     * Forces the response bank to reload from the raw resource on the next access.
-     * Use this if the resource file has been updated at runtime.
-     */
     fun reload() {
         responseLibrary = null
         recentHistory.clear()
@@ -165,56 +172,140 @@ class AiResponseRepository(private val context: Context) {
         Log.d(TAG, "Response bank reloaded. ${getLibrarySummary().values.sum()} total responses.")
     }
 
-    // ── Internal ─────────────────────────────────────────────────────────────
-
-    /**
-     * Picks a response line that was not among the most recently used for this
-     * category. Falls back to any random line if the pool is exhausted.
-     */
-    private fun pickFresh(category: Category, lines: List<String>): String {
-        val history = recentHistory.getOrPut(category) { LinkedList() }
-        val candidates = lines.filter { it !in history }
-        val chosen = if (candidates.isNotEmpty()) candidates.random() else lines.random()
-        history.addFirst(chosen)
-        if (history.size > historyDepth) history.removeLast()
-        return chosen
-    }
-
-    /** Parses the JSON resource and builds the response library. */
     private fun ensureLoaded() {
         if (responseLibrary != null) return
+
         responseLibrary = try {
             val inputStream = appContext.resources.openRawResource(R.raw.reactor_ai_responses)
             val jsonString = BufferedReader(InputStreamReader(inputStream)).use { it.readText() }
             val jsonObject = JSONObject(jsonString)
+
             Category.values().associateWith { category ->
                 if (jsonObject.has(category.name)) {
-                    val arr = jsonObject.getJSONArray(category.name)
-                    List(arr.length()) { i -> arr.getString(i) }
+                    parseCategoryEntries(jsonObject.getJSONArray(category.name))
                 } else {
-                    Log.w(TAG, "Category '${category.name}' not found in response JSON.")
-                    listOf(fallbackLine(category))
+                    Log.w(TAG, "Category '${category.name}' missing from response JSON. Using fallback.")
+                    listOf(ResponseEntry(fallbackResponse(category, PersonalityMood.SNARKY)))
                 }
             }.also {
-                val total = it.values.sumOf { list -> list.size }
+                val total = it.values.sumOf { entries -> entries.size }
                 Log.d(TAG, "Response bank loaded: ${it.size} categories, $total total lines.")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to load assistant response bank: ${e.message}")
+            Log.e(TAG, "Failed to load assistant response bank: ${e.message}", e)
             null
         }
     }
 
-    /** Hard-coded last-resort lines if JSON is missing a category. */
-    private fun fallbackLine(category: Category): String = when (category) {
-        Category.ERROR          -> "System error. Reactor is equally displeased."
-        Category.WAKE           -> "Online. Expectations low."
-        Category.SUCCESS        -> "Task complete. You're welcome."
-        Category.WARNING        -> "Warning issued. Try not to ignore this one."
-        Category.SHUTDOWN       -> "Shutting down. Finally, some peace."
-        Category.LAUNCH         -> "Launching. For what it's worth."
-        Category.THREAT_DETECTED-> "Threat detected. Reacting accordingly."
-        Category.VICTORY        -> "Victory achieved. Barely."
-        else -> "Response bank offline for '${category.name.lowercase().replace('_', ' ')}'."
+    private fun parseCategoryEntries(array: JSONArray): List<ResponseEntry> {
+        val parsed = buildList {
+            for (index in 0 until array.length()) {
+                when (val item = array.get(index)) {
+                    is String -> add(ResponseEntry(text = item.trim()).normalized())
+                    is JSONObject -> add(parseEntryObject(item).normalized())
+                    else -> Log.w(TAG, "Ignoring unsupported response entry type at index $index")
+                }
+            }
+        }.filter { it.text.isNotBlank() }
+
+        return if (parsed.isNotEmpty()) parsed else listOf(
+            ResponseEntry("Response bank entry was empty. That's encouraging.")
+        )
     }
+
+    private fun parseEntryObject(obj: JSONObject): ResponseEntry {
+        val text = obj.optString("text").trim()
+        val weight = max(1, obj.optInt("weight", 1))
+        val moods = obj.optJSONArray("moods").toMoodSet()
+        val tags = obj.optJSONArray("tags").toStringSet()
+        return ResponseEntry(text = text, weight = weight, moods = moods, tags = tags)
+    }
+
+    private fun pickFreshWeighted(
+        request: ResponseRequest,
+        entries: List<ResponseEntry>
+    ): ResponseEntry? {
+        val history = recentHistory.getOrPut(request.category) { LinkedList() }
+
+        val filtered = entries.filter { entry ->
+            entry.text !in history &&
+                (entry.moods.isEmpty() || request.mood in entry.moods) &&
+                (request.tags.isEmpty() || entry.tags.isEmpty() || entry.tags.any { it in request.tags })
+        }
+
+        val fallbackFiltered = entries.filter { entry ->
+            entry.text !in history &&
+                (entry.moods.isEmpty() || request.mood in entry.moods)
+        }
+
+        val pool = when {
+            filtered.isNotEmpty() -> filtered
+            fallbackFiltered.isNotEmpty() -> fallbackFiltered
+            entries.isNotEmpty() -> entries
+            else -> return null
+        }
+
+        val totalWeight = pool.sumOf { it.weight.coerceAtLeast(1) }
+        var draw = (0 until totalWeight).random()
+
+        for (entry in pool) {
+            draw -= entry.weight.coerceAtLeast(1)
+            if (draw < 0) return entry
+        }
+
+        return pool.random()
+    }
+
+    private fun rememberAndReturn(category: Category, text: String): String {
+        val history = recentHistory.getOrPut(category) { LinkedList() }
+        history.addFirst(text)
+        if (history.size > historyDepth) history.removeLast()
+        return text
+    }
+
+    private fun fallbackResponse(category: Category, mood: PersonalityMood): String = when (category) {
+        Category.ERROR -> "System error encountered. I'm fixing it because apparently that falls to me."
+        Category.WARNING -> "Warning issued. Ignore it if you're committed to consequences."
+        Category.SUCCESS -> "Task complete. A rare but welcome sight."
+        Category.UNKNOWN_COMMAND -> "Unknown command. Try a sentence with an actual destination."
+        Category.BUTTON_SPAM -> "Repeated input detected. The button is not becoming more correct."
+        Category.STATUS_REPORT -> when (mood) {
+            PersonalityMood.TACTICAL -> "Status report: systems ready, variables contained, proceed."
+            PersonalityMood.ALERT -> "Status report: alert posture active. Respond immediately."
+            PersonalityMood.BORED -> "status report: operational. thrilling."
+            PersonalityMood.SERIOUS -> "Status report: systems stable and standing by."
+            PersonalityMood.SNARKY -> "Status report: stable, armed with patience, and waiting on you."
+        }
+        else -> when (mood) {
+            PersonalityMood.TACTICAL -> "Acknowledged. Tactical response bank is temporarily offline."
+            PersonalityMood.ALERT -> "Alert: response bank unavailable for ${category.name.lowercase()}."
+            PersonalityMood.BORED -> "response bank offline for ${category.name.lowercase().replace('_', ' ')}."
+            PersonalityMood.SERIOUS -> "Response bank unavailable for ${category.name.lowercase().replace('_', ' ')}."
+            PersonalityMood.SNARKY -> "Response bank unavailable for ${category.name.lowercase().replace('_', ' ')}. Inspiring."
+        }
+    }
+
+    private fun JSONArray?.toMoodSet(): Set<PersonalityMood> {
+        if (this == null) return emptySet()
+        val moods = mutableSetOf<PersonalityMood>()
+        for (index in 0 until length()) {
+            runCatching {
+                PersonalityMood.valueOf(getString(index).trim().uppercase())
+            }.onSuccess(moods::add)
+        }
+        return moods
+    }
+
+    private fun JSONArray?.toStringSet(): Set<String> {
+        if (this == null) return emptySet()
+        val tags = mutableSetOf<String>()
+        for (index in 0 until length()) {
+            val value = optString(index).trim().lowercase()
+            if (value.isNotBlank()) tags.add(value)
+        }
+        return tags
+    }
+
+    private fun ResponseEntry.normalized(): ResponseEntry =
+        copy(text = text.trim(), weight = weight.coerceAtLeast(1))
 }
