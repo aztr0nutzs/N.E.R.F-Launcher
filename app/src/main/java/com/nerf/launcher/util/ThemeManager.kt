@@ -90,7 +90,7 @@ object ThemeManager {
         addWidgetBtn?.setTextColor(theme.hudSuccessColor)
 
         applyHudPanelGlow(root, theme)
-        root.findViewById<ReactorModuleView>(R.id.reactor_module_view)?.updateTheme(theme)
+        root.findViewById<ReactorModuleView>(R.id.reactor_core)?.updateTheme(theme)
     }
 
     fun applyHudPanelGlow(root: View, theme: NerfTheme) {
