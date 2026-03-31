@@ -1,0 +1,7 @@
+PLACEHOLDER ONLY
+
+This file replaces the previously committed binary icon:
+- com.nerf.launcher.png
+
+Add real icon-pack asset files during release packaging:
+app/src/assets/icon_packs/minimal/<package_name>.png

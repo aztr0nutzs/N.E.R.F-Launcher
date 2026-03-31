@@ -15,6 +15,7 @@ object AppUtils {
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
         val resolveInfos: List<ResolveInfo> = pm.queryIntentActivities(mainIntent, 0)
+            .distinctBy { "${it.activityInfo.packageName}/${it.activityInfo.name}" }
         val apps = mutableListOf<AppInfo>()
         for (info in resolveInfos.sortedWith(ResolveInfo.DisplayNameComparator(pm))) {
             val activityInfo = info.activityInfo

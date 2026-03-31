@@ -9,6 +9,7 @@ import java.io.IOException
 object IconPackManager {
     const val DEFAULT_PACK = "system"
     private const val ICON_PACK_ASSET_ROOT = "icon_packs"
+    private val iconExtensions = listOf(".png", ".webp", ".jpg", ".jpeg")
 
     /** Returns the list of available icon pack identifiers. */
     fun getAvailablePacks(context: Context): List<String> {
@@ -18,6 +19,7 @@ object IconPackManager {
                 ?.asSequence()
                 ?.map { it.trim() }
                 ?.filter { it.isNotEmpty() }
+                ?.filter { packName -> packName == DEFAULT_PACK || hasIcons(context, packName) }
                 ?.sorted()
                 ?.toList()
                 .orEmpty()
@@ -45,6 +47,18 @@ object IconPackManager {
     fun setCurrentPack(context: Context, packName: String) {
         if (getAvailablePacks(context).contains(packName)) {
             ConfigRepository.get().updateIconPack(packName)
+        }
+    }
+
+    private fun hasIcons(context: Context, packName: String): Boolean {
+        val files = try {
+            context.assets.list("$ICON_PACK_ASSET_ROOT/$packName").orEmpty()
+        } catch (_: IOException) {
+            return false
+        }
+        return files.any { fileName ->
+            val normalized = fileName.lowercase()
+            iconExtensions.any { normalized.endsWith(it) }
         }
     }
 }

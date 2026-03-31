@@ -24,6 +24,10 @@ class AppAdapter(
 ) : ListAdapter<AppInfo, AppAdapter.AppViewHolder>(DIFF_CALLBACK) {
     private val iconOnlyPayload = Any()
 
+    init {
+        setHasStableIds(true)
+    }
+
     inner class AppViewHolder(val binding: ItemAppBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(app: AppInfo) {
@@ -82,6 +86,11 @@ class AppAdapter(
     override fun onBindViewHolder(holder: AppViewHolder, position: Int) {
         val app = getItem(position) ?: return
         holder.bind(app)
+    }
+
+    override fun getItemId(position: Int): Long {
+        val item = getItem(position)
+        return "${item.packageName}/${item.className}".hashCode().toLong()
     }
 
     override fun onBindViewHolder(
