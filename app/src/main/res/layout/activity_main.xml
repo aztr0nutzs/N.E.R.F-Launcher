@@ -4,7 +4,7 @@
     android:id="@+id/root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/theme_shared_window_background">
+    android:background="?android:colorBackground">
 
     <View
         android:id="@+id/scanline_overlay"
@@ -164,7 +164,6 @@
                             app:iconPadding="4dp"
                             app:iconSize="18dp"
                             android:text="@string/quick_theme_label"
-                            android:textColor="@color/nerf_hud_cyan"
                             android:textSize="10sp" />
 
                         <com.google.android.material.button.MaterialButton
@@ -181,7 +180,6 @@
                             app:iconPadding="4dp"
                             app:iconSize="18dp"
                             android:text="@string/quick_icon_pack_label"
-                            android:textColor="@color/nerf_hud_lime"
                             android:textSize="10sp" />
                     </LinearLayout>
 
@@ -217,7 +215,6 @@
                             app:iconPadding="4dp"
                             app:iconSize="18dp"
                             android:text="@string/quick_animation_label"
-                            android:textColor="@color/nerf_hud_orange"
                             android:textSize="10sp" />
 
                         <com.google.android.material.button.MaterialButton
@@ -234,7 +231,6 @@
                             app:iconPadding="4dp"
                             app:iconSize="18dp"
                             android:text="@string/quick_taskbar_label"
-                            android:textColor="@color/nerf_hud_magenta"
                             android:textSize="10sp" />
                     </LinearLayout>
 
@@ -254,8 +250,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                        android:textColor="@color/nerf_hud_cyan" />
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel" />
 
                     <SeekBar
                         android:id="@+id/quick_glow_seekbar"
@@ -263,24 +258,21 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
                         android:max="100"
-                        android:progressDrawable="@drawable/quickslider_progress_cool"
-                        android:thumbTint="@color/nerf_hud_cyan" />
+                        android:progressDrawable="@drawable/quickslider_progress_cool" />
 
                     <TextView
                         android:id="@+id/quick_grid_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                        android:textColor="@color/nerf_hud_orange" />
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel" />
 
                     <SeekBar
                         android:id="@+id/quick_grid_seekbar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:max="4"
-                        android:progressDrawable="@drawable/quickslider_progress_cool"
-                        android:thumbTint="@color/nerf_hud_orange" />
+                        android:progressDrawable="@drawable/quickslider_progress_cool" />
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
@@ -290,7 +282,6 @@
                     android:layout_height="@dimen/nerf_hud_button_height"
                     android:layout_marginTop="10dp"
                     android:text="SETTINGS"
-                    android:textColor="@color/nerf_hud_cyan"
                     android:textSize="12sp"
                     app:icon="@drawable/ic_settings"
                     app:iconGravity="textStart"
@@ -304,7 +295,6 @@
                     android:layout_height="@dimen/nerf_hud_button_height"
                     android:layout_marginTop="6dp"
                     android:text="SCAN APPS"
-                    android:textColor="@color/nerf_hud_orange"
                     android:textSize="12sp"
                     app:icon="@drawable/ic_network"
                     app:iconGravity="textStart"
@@ -319,7 +309,6 @@
                     android:layout_marginTop="6dp"
                     android:contentDescription="@string/lock_surface_action_cd"
                     android:text="@string/lock_surface_action"
-                    android:textColor="@color/nerf_hud_magenta"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -801,8 +790,7 @@
                             android:maxLines="1"
                             android:paddingStart="10dp"
                             android:paddingEnd="10dp"
-                            android:textColor="@color/nerf_hud_panel_text_primary"
-                            android:textColorHint="@color/nerf_hud_panel_text_secondary" />
+                            />
                     </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
@@ -841,7 +829,7 @@
         android:id="@+id/lock_surface_root"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/theme_shared_lock_surface_scrim"
+        android:background="@android:color/transparent"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center"
@@ -899,7 +887,6 @@
                 android:layout_marginTop="12dp"
                 android:contentDescription="@string/lock_surface_unlock"
                 android:text="@string/lock_surface_unlock"
-                android:textColor="@color/nerf_hud_lime"
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>

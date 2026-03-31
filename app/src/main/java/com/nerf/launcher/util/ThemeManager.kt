@@ -44,9 +44,9 @@ object ThemeManager {
 
     fun resolveTaskbarIconTint(context: Context, theme: NerfTheme): Int {
         return if (ColorUtils.isColorLight(theme.primary)) {
-            context.getColor(R.color.nerf_on_secondary)
+            Color.BLACK
         } else {
-            context.getColor(R.color.nerf_on_background)
+            theme.hudPanelTextPrimary
         }
     }
 
@@ -78,7 +78,11 @@ object ThemeManager {
         root.setBackgroundColor(theme.windowBackground)
         root.findViewById<View>(R.id.lock_surface_root)?.setBackgroundColor(theme.lockSurfaceScrim)
         root.findViewById<View>(R.id.scanline_overlay)?.background = createScanlineOverlayDrawable(theme)
-        root.findViewById<EditText>(R.id.drawerSearchInput)?.background = createDrawerSearchFieldBackground(root.context, theme)
+        root.findViewById<EditText>(R.id.drawerSearchInput)?.let { drawerSearchInput ->
+            drawerSearchInput.background = createDrawerSearchFieldBackground(root.context, theme)
+            drawerSearchInput.setTextColor(theme.hudPanelTextPrimary)
+            drawerSearchInput.setHintTextColor(theme.hudPanelTextSecondary)
+        }
         applyButtonBackground(root, R.id.quickThemeBtn, createQuickToggleOrbDrawable(root.context, theme))
         applyButtonBackground(root, R.id.quickIconPackBtn, createQuickToggleOrbDrawable(root.context, theme))
         applyButtonBackground(root, R.id.quickAnimationBtn, createQuickToggleOrbDrawable(root.context, theme))
@@ -88,6 +92,18 @@ object ThemeManager {
         applyButtonBackground(root, R.id.lockSurfaceTile, createHudActionTileDrawable(root.context, theme))
         applyButtonBackground(root, R.id.lockSurfaceUnlockButton, createHudActionTileDrawable(root.context, theme))
         applyButtonBackground(root, R.id.openTaskbarSettingsButton, createHudActionTileDrawable(root.context, theme))
+        applyTextColor(root, R.id.quickThemeBtn, theme.hudInfoColor)
+        applyTextColor(root, R.id.quickIconPackBtn, theme.hudSuccessColor)
+        applyTextColor(root, R.id.quickAnimationBtn, theme.hudWarningColor)
+        applyTextColor(root, R.id.quickTaskbarBtn, theme.hudAccentColor)
+        applyTextColor(root, R.id.quickGlowValue, theme.hudInfoColor)
+        applyTextColor(root, R.id.quickGridValue, theme.hudWarningColor)
+        applyTextColor(root, R.id.openSettingsTile, theme.hudInfoColor)
+        applyTextColor(root, R.id.reloadTile, theme.hudWarningColor)
+        applyTextColor(root, R.id.lockSurfaceTile, theme.hudAccentColor)
+        applyTextColor(root, R.id.lockSurfaceUnlockButton, theme.hudSuccessColor)
+        applySeekBarTint(root, R.id.quickGlowSeekbar, theme.hudInfoColor, theme.hudPanelTextSecondary)
+        applySeekBarTint(root, R.id.quickGridSeekbar, theme.hudWarningColor, theme.hudPanelTextSecondary)
         applyThemeToCustomViews(root, theme)
     }
 
@@ -470,6 +486,20 @@ object ThemeManager {
 
     private fun applyButtonBackground(root: View, viewId: Int, drawable: Drawable) {
         root.findViewById<MaterialButton>(viewId)?.background = drawable.constantState?.newDrawable()?.mutate() ?: drawable
+    }
+
+    private fun applyTextColor(root: View, viewId: Int, color: Int) {
+        root.findViewById<TextView>(viewId)?.setTextColor(color)
+    }
+
+    private fun applySeekBarTint(root: View, viewId: Int, activeColor: Int, inactiveColor: Int) {
+        root.findViewById<SeekBar>(viewId)?.let { seekBar ->
+            seekBar.thumbTintList = ColorStateList.valueOf(activeColor)
+            seekBar.progressTintList = ColorStateList.valueOf(activeColor)
+            seekBar.progressBackgroundTintList = ColorStateList.valueOf(
+                ColorUtils.setAlphaComponent(inactiveColor, 0x66)
+            )
+        }
     }
 
     private fun applyTextColorRecursively(root: View, color: Int) {

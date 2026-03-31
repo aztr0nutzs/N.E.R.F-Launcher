@@ -9,9 +9,7 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
-import androidx.core.content.ContextCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import com.nerf.launcher.R
 import com.nerf.launcher.util.ThemeManager
 import kotlin.math.max
 
@@ -23,20 +21,21 @@ class SegmentedBarView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
+    private val defaultTheme = ThemeManager.resolveActiveTheme(context)
 
     private val activePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = ThemeManager.resolveActiveTheme(context).hudInfoColor
+        color = defaultTheme.hudInfoColor
     }
 
     private val inactivePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = ContextCompat.getColor(context, R.color.nerf_segmented_bar_inactive)
+        color = defaultTheme.hudInactiveMeterColor
     }
 
     private val rect = RectF()
     private var activeGradient: LinearGradient? = null
-    private var activeGradientHighlightColor: Int = ContextCompat.getColor(context, R.color.nerf_hud_panel_text_primary)
+    private var activeGradientHighlightColor: Int = defaultTheme.hudPanelTextPrimary
     private var cachedWidth = -1
     private var cachedHeight = -1
     private var animatedProgress: Float = 0f

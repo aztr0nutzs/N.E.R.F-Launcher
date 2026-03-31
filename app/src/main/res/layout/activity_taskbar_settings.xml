@@ -5,7 +5,7 @@
     android:id="@+id/taskbar_settings_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/nerf_shell_background">
+    android:background="?android:colorBackground">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -16,7 +16,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/nerf_primary"
+            android:background="@android:color/transparent"
             app:popupTheme="@style/Theme.NerfLauncher.PopupOverlay" />
     </com.google.android.material.appbar.AppBarLayout>
 
