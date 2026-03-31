@@ -83,7 +83,7 @@
         <item name="android:background">@drawable/drawer_search_field_background</item>
         <item name="android:textSize">12sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:textColor">?attr/colorOnBackground</item>
     </style>
     <style name="TextAppearance.NerfLauncher.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
         <item name="android:textColor">?attr/colorOnBackground</item>
