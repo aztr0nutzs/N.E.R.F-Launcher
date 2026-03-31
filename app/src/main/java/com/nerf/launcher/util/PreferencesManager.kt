@@ -15,7 +15,7 @@ object PreferencesManager {
     const val KEY_GRID_SIZE = "grid_size"
     const val KEY_ANIMATION_SPEED = "animation_speed"
     const val KEY_GLOW_INTENSITY = "glow_intensity"
-    const val KEY_PINNED_APPS = "pinned_apps"
+    private const val KEY_PINNED_APPS_LEGACY_SET = "pinned_apps"
     const val KEY_PINNED_APPS_ORDERED = "pinned_apps_ordered"
     const val KEY_TASKBAR_ICON_SIZE = "taskbar_icon_size"
     const val KEY_TASKBAR_BACKGROUND_STYLE = "taskbar_background_style"
@@ -68,7 +68,7 @@ object PreferencesManager {
             .distinct()
         getPrefs(context).edit()
             .putString(KEY_PINNED_APPS_ORDERED, sanitized.joinToString(","))
-            .putStringSet(KEY_PINNED_APPS, sanitized.toSet())
+            .remove(KEY_PINNED_APPS_LEGACY_SET)
             .apply()
     }
 
@@ -82,11 +82,20 @@ object PreferencesManager {
                 .filter { it.isNotEmpty() }
                 .distinct()
         }
-        return prefs.getStringSet(KEY_PINNED_APPS, emptySet())
+        val legacyPinned = prefs.getStringSet(KEY_PINNED_APPS_LEGACY_SET, emptySet())
             ?.map { it.trim() }
             ?.filter { it.isNotEmpty() }
             ?.distinct()
-            ?: emptyList()
+            .orEmpty()
+
+        if (legacyPinned.isNotEmpty()) {
+            prefs.edit()
+                .putString(KEY_PINNED_APPS_ORDERED, legacyPinned.joinToString(","))
+                .remove(KEY_PINNED_APPS_LEGACY_SET)
+                .apply()
+        }
+
+        return legacyPinned
     }
 
     fun saveTaskbarIconSize(context: Context, size: Int) {
