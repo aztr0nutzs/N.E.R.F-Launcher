@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-        android:textColor="@color/nerf_hud_cyan"
+        android:textColor="@color/theme_shared_hud_cyan"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -99,7 +99,7 @@
             android:layout_marginEnd="8dp"
             android:layout_gravity="center_vertical"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-            android:textColor="@color/nerf_hud_lime"/>
+            android:textColor="@color/theme_shared_hud_lime"/>
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/animationSwitch"

@@ -5,7 +5,7 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="@color/nerf_shell_background">
 
     <View
         android:id="@+id/scanline_overlay"
@@ -54,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/settings_surface_title"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                android:textColor="@color/nerf_hud_cyan" />
+                android:textColor="@color/theme_shared_hud_cyan" />
 
             <TextView
                 android:id="@+id/settingsHeaderSubtitle"
@@ -63,7 +63,7 @@
                 android:layout_marginTop="4dp"
                 android:text="@string/settings_surface_subtitle"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                android:textColor="@color/nerf_hud_orange" />
+                android:textColor="@color/theme_shared_hud_orange" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/openTaskbarSettingsButton"
@@ -72,7 +72,7 @@
                 android:layout_height="44dp"
                 android:layout_marginTop="10dp"
                 android:text="@string/settings_taskbar_cta"
-                android:textColor="@color/nerf_hud_magenta" />
+                android:textColor="@color/theme_shared_hud_magenta" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

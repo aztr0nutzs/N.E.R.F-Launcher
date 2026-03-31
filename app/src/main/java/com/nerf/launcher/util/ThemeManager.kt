@@ -83,8 +83,11 @@ object ThemeManager {
         val dateDisplay = root.findViewById<TextView>(R.id.date_display)
         dateDisplay?.setTextColor(theme.hudPanelTextSecondary)
 
+        root.findViewById<TextView>(R.id.battery_label)?.setTextColor(theme.hudWarningColor)
+        root.findViewById<TextView>(R.id.brand_signature)?.setTextColor(theme.hudPanelTextSecondary)
+
         val addWidgetBtn = root.findViewById<MaterialButton>(R.id.add_widget_btn)
-        addWidgetBtn?.setTextColor(theme.accent)
+        addWidgetBtn?.setTextColor(theme.hudSuccessColor)
 
         applyHudPanelGlow(root, theme)
         root.findViewById<ReactorModuleView>(R.id.reactor_module_view)?.updateTheme(theme)

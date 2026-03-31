@@ -16,12 +16,12 @@
     <color name="nerf_primary_dark">#C85400</color>
 
     <!-- NERF home-shell visual language tokens -->
-    <color name="nerf_hud_cyan">#00E9FF</color>
-    <color name="nerf_hud_orange">#FF8A00</color>
-    <color name="nerf_hud_magenta">#FF39B5</color>
-    <color name="nerf_hud_lime">#9CFF00</color>
-    <color name="nerf_hud_panel_text_primary">#FFFFFF</color>
-    <color name="nerf_hud_panel_text_secondary">#66FFFFFF</color>
+    <color name="nerf_hud_cyan">@color/theme_shared_hud_cyan</color>
+    <color name="nerf_hud_orange">@color/theme_shared_hud_orange</color>
+    <color name="nerf_hud_magenta">@color/theme_shared_hud_magenta</color>
+    <color name="nerf_hud_lime">@color/theme_shared_hud_lime</color>
+    <color name="nerf_hud_panel_text_primary">@color/theme_shared_hud_panel_text_primary</color>
+    <color name="nerf_hud_panel_text_secondary">@color/theme_shared_hud_panel_text_secondary</color>
     <color name="nerf_hud_app_label">#E6FFFFFF</color>
     <color name="nerf_drawer_border">#6600E9FF</color>
 
@@ -61,8 +61,12 @@
     <color name="theme_shared_hud_inactive_meter">#50FFFFFF</color>
     <color name="theme_shared_hud_panel_text_primary">#FFFFFF</color>
     <color name="theme_shared_hud_panel_text_secondary">#66FFFFFF</color>
-    <color name="theme_shared_hud_energy_high">#FF8A00</color>
-    <color name="theme_shared_hud_energy_low">#FF39B5</color>
+    <color name="theme_shared_hud_cyan">#00E9FF</color>
+    <color name="theme_shared_hud_orange">#FF8A00</color>
+    <color name="theme_shared_hud_magenta">#FF39B5</color>
+    <color name="theme_shared_hud_lime">#9CFF00</color>
+    <color name="theme_shared_hud_energy_high">@color/theme_shared_hud_orange</color>
+    <color name="theme_shared_hud_energy_low">@color/theme_shared_hud_magenta</color>
     <color name="theme_shared_reactor_armor_dark">#293039</color>
     <color name="theme_shared_reactor_armor_mid">#58626B</color>
     <color name="theme_shared_reactor_interior_dark">#05070A</color>
@@ -73,6 +77,6 @@
 
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
-    <color name="nerf_shell_background">#000000</color>
-    <color name="nerf_lock_surface_scrim">#F0000000</color>
+    <color name="nerf_shell_background">@color/theme_shared_window_background</color>
+    <color name="nerf_lock_surface_scrim">@color/theme_shared_lock_surface_scrim</color>
 </resources>
