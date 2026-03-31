@@ -5,11 +5,11 @@
             <corners android:radius="@dimen/nerf_tile_radius_small" />
             <gradient
                 android:angle="270"
-                android:startColor="#B90A0D12"
-                android:endColor="#D006070A" />
+                android:startColor="@color/theme_shared_app_socket_outer_start"
+                android:endColor="@color/theme_shared_app_socket_outer_end" />
             <stroke
                 android:width="1dp"
-                android:color="#7F7E8797" />
+                android:color="@color/theme_shared_app_socket_outer_stroke" />
         </shape>
     </item>
 
@@ -22,11 +22,11 @@
             <corners android:radius="@dimen/nerf_tile_radius_small" />
             <gradient
                 android:angle="270"
-                android:startColor="#261D2632"
-                android:endColor="#120A0E14" />
+                android:startColor="@color/theme_shared_app_socket_middle_start"
+                android:endColor="@color/theme_shared_app_socket_middle_end" />
             <stroke
                 android:width="1dp"
-                android:color="#66444E61" />
+                android:color="@color/theme_shared_app_socket_middle_stroke" />
         </shape>
     </item>
 
@@ -37,10 +37,10 @@
         android:bottom="3dp">
         <shape android:shape="rectangle">
             <corners android:radius="@dimen/nerf_tile_radius_small" />
-            <solid android:color="#17000000" />
+            <solid android:color="@color/theme_shared_app_socket_inner_fill" />
             <stroke
                 android:width="1dp"
-                android:color="#7734DFFF" />
+                android:color="@color/theme_shared_app_socket_inner_stroke" />
         </shape>
     </item>
 
@@ -54,8 +54,8 @@
             <size android:height="2dp" />
             <gradient
                 android:angle="0"
-                android:startColor="#7A00E9FF"
-                android:endColor="#0C00E9FF" />
+                android:startColor="@color/theme_shared_app_socket_strip_start"
+                android:endColor="@color/theme_shared_app_socket_strip_end" />
         </shape>
     </item>
 </layer-list>

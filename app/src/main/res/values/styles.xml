@@ -13,7 +13,7 @@
         <item name="colorOnSecondary">@color/nerf_on_secondary</item>
 
         <!-- Background & surface. -->
-        <item name="android:colorBackground">@color/nerf_background</item>
+        <item name="android:colorBackground">@color/nerf_shell_background</item>
         <item name="colorSurface">@color/nerf_surface</item>
         <item name="colorOnBackground">@color/nerf_on_background</item>
         <item name="colorOnSurface">@color/nerf_on_surface</item>
@@ -31,7 +31,7 @@
         <item name="textAppearanceCaption">@style/TextAppearance.NerfLauncher.Caption</item>
 
         <!-- Window background. -->
-        <item name="android:windowBackground">@color/nerf_background</item>
+        <item name="android:windowBackground">@color/nerf_shell_background</item>
     </style>
 
     <style name="Theme.NerfLauncher.PopupOverlay" parent="ThemeOverlay.MaterialComponents" />
@@ -83,7 +83,7 @@
         <item name="android:background">@drawable/drawer_search_field_background</item>
         <item name="android:textSize">12sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:textColor">@color/nerf_hud_panel_text_primary</item>
     </style>
     <style name="TextAppearance.NerfLauncher.Headline5" parent="TextAppearance.MaterialComponents.Headline5">
         <item name="android:textColor">@color/nerf_on_background</item>
@@ -111,28 +111,28 @@
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">15sp</item>
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:textColor">@color/nerf_hud_panel_text_primary</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.ValueMedium" parent="TextAppearance.MaterialComponents.Body2">
         <item name="android:textSize">13sp</item>
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:textColor">@color/nerf_hud_panel_text_primary</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.Time" parent="TextAppearance.MaterialComponents.Headline6">
-        <item name="android:textColor">@color/theme_shared_hud_cyan</item>
+        <item name="android:textColor">@color/nerf_hud_cyan</item>
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">20sp</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.Date" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_secondary</item>
+        <item name="android:textColor">@color/nerf_hud_panel_text_secondary</item>
         <item name="android:textSize">11sp</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.BatteryPercent" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:textColor">@color/nerf_hud_panel_text_primary</item>
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">12sp</item>

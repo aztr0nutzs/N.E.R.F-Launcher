@@ -3,7 +3,7 @@
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="@dimen/nerf_tile_radius_medium" />
-            <solid android:color="#EC06070A" />
+            <solid android:color="@color/theme_shared_drawer_header_outer_fill" />
             <stroke
                 android:width="1dp"
                 android:color="@color/nerf_drawer_border" />
@@ -19,11 +19,11 @@
             <corners android:radius="@dimen/nerf_tile_radius_medium" />
             <gradient
                 android:angle="270"
-                android:startColor="#D112151B"
-                android:endColor="#D0090A0D" />
+                android:startColor="@color/theme_shared_drawer_header_inner_start"
+                android:endColor="@color/theme_shared_drawer_header_inner_end" />
             <stroke
                 android:width="1dp"
-                android:color="#66A0A8B6" />
+                android:color="@color/theme_shared_drawer_header_inner_stroke" />
         </shape>
     </item>
 
@@ -34,10 +34,10 @@
         android:bottom="4dp">
         <shape android:shape="rectangle">
             <corners android:radius="8dp" />
-            <solid android:color="#A613151A" />
+            <solid android:color="@color/theme_shared_drawer_header_panel_fill" />
             <stroke
                 android:width="1dp"
-                android:color="#44282C34" />
+                android:color="@color/theme_shared_drawer_header_panel_stroke" />
         </shape>
     </item>
 
@@ -54,7 +54,7 @@
                 android:bottomLeftRadius="0dp"
                 android:bottomRightRadius="0dp" />
             <size android:height="2dp" />
-            <solid android:color="#7300E9FF" />
+            <solid android:color="@color/theme_shared_drawer_header_accent" />
         </shape>
     </item>
 </layer-list>

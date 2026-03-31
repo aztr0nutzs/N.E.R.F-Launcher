@@ -30,7 +30,7 @@
     <color name="nerf_reactor_accent_ring">@color/theme_shared_reactor_accent_ring</color>
     <color name="nerf_reactor_core_glow">@color/theme_shared_reactor_core_glow</color>
 
-    <color name="nerf_segmented_bar_inactive">#302A2A2A</color>
+    <color name="nerf_segmented_bar_inactive">@color/theme_shared_segmented_bar_inactive</color>
 
 
     <!-- Centralized launcher theme palette entries used by ThemeRepository -->
@@ -68,6 +68,8 @@
     <color name="theme_shared_hud_app_label">#E6FFFFFF</color>
     <color name="theme_shared_drawer_border">#6600E9FF</color>
     <color name="theme_shared_scanline_glow">#0400E9FF</color>
+    <color name="theme_shared_scanline_edge">#11000000</color>
+    <color name="theme_shared_segmented_bar_inactive">#302A2A2A</color>
     <color name="theme_shared_hud_energy_high">@color/theme_shared_hud_orange</color>
     <color name="theme_shared_hud_energy_low">@color/theme_shared_hud_magenta</color>
     <color name="theme_shared_reactor_mid_a">#6BFFD6</color>
@@ -81,6 +83,69 @@
     <color name="theme_shared_reactor_frame_shadow">#020304</color>
     <color name="theme_shared_assistant_muted">#9E9E9E</color>
     <color name="theme_shared_assistant_error">#FF5252</color>
+
+    <color name="theme_shared_drawer_search_fill_focused">#22000000</color>
+    <color name="theme_shared_drawer_search_fill_idle">#12000000</color>
+
+    <color name="theme_shared_app_socket_outer_start">#B90A0D12</color>
+    <color name="theme_shared_app_socket_outer_end">#D006070A</color>
+    <color name="theme_shared_app_socket_outer_stroke">#7F7E8797</color>
+    <color name="theme_shared_app_socket_middle_start">#261D2632</color>
+    <color name="theme_shared_app_socket_middle_end">#120A0E14</color>
+    <color name="theme_shared_app_socket_middle_stroke">#66444E61</color>
+    <color name="theme_shared_app_socket_inner_fill">#17000000</color>
+    <color name="theme_shared_app_socket_inner_stroke">#7734DFFF</color>
+    <color name="theme_shared_app_socket_strip_start">#7A00E9FF</color>
+    <color name="theme_shared_app_socket_strip_end">#0C00E9FF</color>
+
+    <color name="theme_shared_hud_action_pressed_outer_fill">#E307090C</color>
+    <color name="theme_shared_hud_action_pressed_outer_stroke">#FF18E8FF</color>
+    <color name="theme_shared_hud_action_pressed_inner_start">#D82B323A</color>
+    <color name="theme_shared_hud_action_pressed_inner_end">#DA12151B</color>
+    <color name="theme_shared_hud_action_pressed_inner_stroke">#AA6DD9E5</color>
+    <color name="theme_shared_hud_action_pressed_accent">#A018E8FF</color>
+    <color name="theme_shared_hud_action_idle_outer_fill">#D707080B</color>
+    <color name="theme_shared_hud_action_idle_outer_stroke">#66FF7B00</color>
+    <color name="theme_shared_hud_action_idle_inner_fill">#D2101217</color>
+    <color name="theme_shared_hud_action_idle_inner_stroke">#666E7480</color>
+    <color name="theme_shared_hud_action_idle_accent">#80FF7B00</color>
+
+    <color name="theme_shared_quick_toggle_pressed_outer_fill">#402B3745</color>
+    <color name="theme_shared_quick_toggle_pressed_outer_stroke">#BF00E9FF</color>
+    <color name="theme_shared_quick_toggle_pressed_inner_fill">#55FFFFFF</color>
+    <color name="theme_shared_quick_toggle_pressed_inner_stroke">#99FFFFFF</color>
+    <color name="theme_shared_quick_toggle_idle_outer_start">#2B1D2630</color>
+    <color name="theme_shared_quick_toggle_idle_outer_end">#16202632</color>
+    <color name="theme_shared_quick_toggle_idle_outer_stroke">#7A00E9FF</color>
+    <color name="theme_shared_quick_toggle_idle_middle_fill">#1F061015</color>
+    <color name="theme_shared_quick_toggle_idle_middle_stroke">#6D6D8296</color>
+    <color name="theme_shared_quick_toggle_idle_inner_start">#6622F0FF</color>
+    <color name="theme_shared_quick_toggle_idle_inner_end">#1511C4D2</color>
+    <color name="theme_shared_quick_toggle_idle_inner_stroke">#CC00E9FF</color>
+
+    <color name="theme_shared_quick_slider_cool_bg_start">#2B07090D</color>
+    <color name="theme_shared_quick_slider_cool_bg_end">#3D141921</color>
+    <color name="theme_shared_quick_slider_cool_bg_stroke">#66404D5F</color>
+    <color name="theme_shared_quick_slider_cool_secondary_fill">#335B6A80</color>
+    <color name="theme_shared_quick_slider_cool_progress_start">#00E9FF</color>
+    <color name="theme_shared_quick_slider_cool_progress_center">#5AFFD8</color>
+    <color name="theme_shared_quick_slider_cool_progress_end">#FF39B5</color>
+
+    <color name="theme_shared_quick_slider_warm_bg_start">#2B090603</color>
+    <color name="theme_shared_quick_slider_warm_bg_end">#4022170D</color>
+    <color name="theme_shared_quick_slider_warm_bg_stroke">#665A4631</color>
+    <color name="theme_shared_quick_slider_warm_secondary_fill">#335A452F</color>
+    <color name="theme_shared_quick_slider_warm_progress_start">#FF8A00</color>
+    <color name="theme_shared_quick_slider_warm_progress_center">#FFE100</color>
+    <color name="theme_shared_quick_slider_warm_progress_end">#FF4D00</color>
+
+    <color name="theme_shared_drawer_header_outer_fill">#EC06070A</color>
+    <color name="theme_shared_drawer_header_inner_start">#D112151B</color>
+    <color name="theme_shared_drawer_header_inner_end">#D0090A0D</color>
+    <color name="theme_shared_drawer_header_inner_stroke">#66A0A8B6</color>
+    <color name="theme_shared_drawer_header_panel_fill">#A613151A</color>
+    <color name="theme_shared_drawer_header_panel_stroke">#44282C34</color>
+    <color name="theme_shared_drawer_header_accent">#7300E9FF</color>
 
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>

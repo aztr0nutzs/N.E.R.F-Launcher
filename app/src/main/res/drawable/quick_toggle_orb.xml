@@ -5,14 +5,14 @@
             <item>
                 <shape android:shape="oval">
                     <size android:width="44dp" android:height="44dp" />
-                    <solid android:color="#402B3745" />
-                    <stroke android:width="1dp" android:color="#BF00E9FF" />
+                    <solid android:color="@color/theme_shared_quick_toggle_pressed_outer_fill" />
+                    <stroke android:width="1dp" android:color="@color/theme_shared_quick_toggle_pressed_outer_stroke" />
                 </shape>
             </item>
             <item android:left="8dp" android:top="8dp" android:right="8dp" android:bottom="8dp">
                 <shape android:shape="oval">
-                    <solid android:color="#55FFFFFF" />
-                    <stroke android:width="1dp" android:color="#99FFFFFF" />
+                    <solid android:color="@color/theme_shared_quick_toggle_pressed_inner_fill" />
+                    <stroke android:width="1dp" android:color="@color/theme_shared_quick_toggle_pressed_inner_stroke" />
                 </shape>
             </item>
         </layer-list>
@@ -25,24 +25,24 @@
                     <size android:width="44dp" android:height="44dp" />
                     <gradient
                         android:angle="270"
-                        android:startColor="#2B1D2630"
-                        android:endColor="#16202632" />
-                    <stroke android:width="1dp" android:color="#7A00E9FF" />
+                        android:startColor="@color/theme_shared_quick_toggle_idle_outer_start"
+                        android:endColor="@color/theme_shared_quick_toggle_idle_outer_end" />
+                    <stroke android:width="1dp" android:color="@color/theme_shared_quick_toggle_idle_outer_stroke" />
                 </shape>
             </item>
             <item android:left="3dp" android:top="3dp" android:right="3dp" android:bottom="3dp">
                 <shape android:shape="oval">
-                    <solid android:color="#1F061015" />
-                    <stroke android:width="1dp" android:color="#6D6D8296" />
+                    <solid android:color="@color/theme_shared_quick_toggle_idle_middle_fill" />
+                    <stroke android:width="1dp" android:color="@color/theme_shared_quick_toggle_idle_middle_stroke" />
                 </shape>
             </item>
             <item android:left="11dp" android:top="11dp" android:right="11dp" android:bottom="11dp">
                 <shape android:shape="oval">
                     <gradient
                         android:angle="270"
-                        android:startColor="#6622F0FF"
-                        android:endColor="#1511C4D2" />
-                    <stroke android:width="1dp" android:color="#CC00E9FF" />
+                        android:startColor="@color/theme_shared_quick_toggle_idle_inner_start"
+                        android:endColor="@color/theme_shared_quick_toggle_idle_inner_end" />
+                    <stroke android:width="1dp" android:color="@color/theme_shared_quick_toggle_idle_inner_stroke" />
                 </shape>
             </item>
         </layer-list>

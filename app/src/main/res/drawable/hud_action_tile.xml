@@ -5,10 +5,10 @@
             <item>
                 <shape android:shape="rectangle">
                     <corners android:radius="2dp" />
-                    <solid android:color="#E307090C" />
+                    <solid android:color="@color/theme_shared_hud_action_pressed_outer_fill" />
                     <stroke
                         android:width="1dp"
-                        android:color="#FF18E8FF" />
+                        android:color="@color/theme_shared_hud_action_pressed_outer_stroke" />
                 </shape>
             </item>
             <item
@@ -20,11 +20,11 @@
                     <corners android:radius="1dp" />
                     <gradient
                         android:angle="270"
-                        android:startColor="#D82B323A"
-                        android:endColor="#DA12151B" />
+                        android:startColor="@color/theme_shared_hud_action_pressed_inner_start"
+                        android:endColor="@color/theme_shared_hud_action_pressed_inner_end" />
                     <stroke
                         android:width="1dp"
-                        android:color="#AA6DD9E5" />
+                        android:color="@color/theme_shared_hud_action_pressed_inner_stroke" />
                 </shape>
             </item>
             <item
@@ -35,7 +35,7 @@
                 android:gravity="top|start">
                 <shape android:shape="rectangle">
                     <size android:height="2dp" />
-                    <solid android:color="#A018E8FF" />
+                    <solid android:color="@color/theme_shared_hud_action_pressed_accent" />
                 </shape>
             </item>
         </layer-list>
@@ -46,10 +46,10 @@
             <item>
                 <shape android:shape="rectangle">
                     <corners android:radius="2dp" />
-                    <solid android:color="#D707080B" />
+                    <solid android:color="@color/theme_shared_hud_action_idle_outer_fill" />
                     <stroke
                         android:width="1dp"
-                        android:color="#66FF7B00" />
+                        android:color="@color/theme_shared_hud_action_idle_outer_stroke" />
                 </shape>
             </item>
             <item
@@ -59,10 +59,10 @@
                 android:bottom="1dp">
                 <shape android:shape="rectangle">
                     <corners android:radius="1dp" />
-                    <solid android:color="#D2101217" />
+                    <solid android:color="@color/theme_shared_hud_action_idle_inner_fill" />
                     <stroke
                         android:width="1dp"
-                        android:color="#666E7480" />
+                        android:color="@color/theme_shared_hud_action_idle_inner_stroke" />
                 </shape>
             </item>
             <item
@@ -73,7 +73,7 @@
                 android:gravity="bottom|end">
                 <shape android:shape="rectangle">
                     <size android:height="1dp" />
-                    <solid android:color="#80FF7B00" />
+                    <solid android:color="@color/theme_shared_hud_action_idle_accent" />
                 </shape>
             </item>
         </layer-list>
