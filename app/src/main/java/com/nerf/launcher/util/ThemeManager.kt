@@ -297,10 +297,15 @@ object ThemeManager {
         val accentInset = px(context, 2f)
         val pressedAccentHeight = px(context, 2f)
         val defaultAccentHeight = px(context, 1f)
+        val surfaceShadowColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorOnSecondary,
+            theme.hudPanelTextPrimary
+        )
         val pressedOuter = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = outerRadius
-            setColor(ColorUtils.setAlphaComponent(ColorUtils.blendARGB(theme.windowBackground, Color.BLACK, 0.45f), 0xE3))
+            setColor(ColorUtils.setAlphaComponent(ColorUtils.blendARGB(theme.windowBackground, surfaceShadowColor, 0.45f), 0xE3))
             setStroke(stroke, ColorUtils.setAlphaComponent(theme.hudInfoColor, 0xFF))
         }
         val pressedInner = GradientDrawable(
@@ -322,7 +327,7 @@ object ThemeManager {
         val defaultOuter = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = outerRadius
-            setColor(ColorUtils.setAlphaComponent(ColorUtils.blendARGB(theme.windowBackground, Color.BLACK, 0.52f), 0xD7))
+            setColor(ColorUtils.setAlphaComponent(ColorUtils.blendARGB(theme.windowBackground, surfaceShadowColor, 0.52f), 0xD7))
             setStroke(stroke, ColorUtils.setAlphaComponent(theme.hudWarningColor, 0x66))
         }
         val defaultInner = GradientDrawable().apply {
@@ -378,6 +383,11 @@ object ThemeManager {
         val stripInset = px(context, 4f)
         val stripBottomInset = px(context, 4f)
         val stripHeight = px(context, 2f)
+        val socketInnerFillColor = MaterialColors.getColor(
+            context,
+            com.google.android.material.R.attr.colorOnSecondary,
+            theme.hudPanelTextPrimary
+        )
         val outer = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(
@@ -403,7 +413,7 @@ object ThemeManager {
         val inner = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = radius
-            setColor(ColorUtils.setAlphaComponent(Color.BLACK, 0x17))
+            setColor(ColorUtils.setAlphaComponent(socketInnerFillColor, 0x17))
             setStroke(stroke, ColorUtils.setAlphaComponent(theme.hudInfoColor, 0x77))
         }
         val topStrip = GradientDrawable(
