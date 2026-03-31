@@ -1,7 +1,3 @@
-PLACEHOLDER ONLY
-
-This file replaces the previously committed binary icon:
-- com.nerf.launcher.png
-
-Add real icon-pack asset files during release packaging:
-app/src/assets/icon_packs/nerf/<package_name>.png
+Placeholder for icon-pack asset.
+Expected runtime filename: PACKAGE_NAME.png
+Replace this file with a real PNG asset named exactly after the package.
