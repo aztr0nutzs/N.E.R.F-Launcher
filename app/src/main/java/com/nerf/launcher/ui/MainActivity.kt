@@ -694,10 +694,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        hudController.start()
         systemModuleController.start()
     }
 
     override fun onStop() {
+        hudController.stop()
         systemModuleController.stop()
         super.onStop()
     }
