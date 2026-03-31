@@ -37,9 +37,8 @@ android {
     sourceSets {
         getByName("main") {
             assets.srcDirs(
-                "src/main/assets",
                 "src/assets",
-                "src/assets/icon_packs"
+                "src/main/assets"
             )
         }
     }

@@ -34,7 +34,6 @@ class IconProvider(
     private val iconCache: IconCache
 ) {
     companion object {
-        private const val ICON_PACK_ASSET_ROOT = "icon_packs"
         private const val CUSTOM_ICON_DIR = "custom_icons"
         private val SUPPORTED_IMAGE_EXTENSIONS = listOf("png", "webp", "jpg", "jpeg")
     }
@@ -138,7 +137,7 @@ class IconProvider(
         }
 
         for (extension in SUPPORTED_IMAGE_EXTENSIONS) {
-            val assetPath = "$ICON_PACK_ASSET_ROOT/$selectedPack/$packageName.$extension"
+            val assetPath = "${IconPackManager.ICON_PACK_ASSET_ROOT}/$selectedPack/$packageName.$extension"
             val drawable = try {
                 assets.open(assetPath).use { stream ->
                     Drawable.createFromStream(stream, null)

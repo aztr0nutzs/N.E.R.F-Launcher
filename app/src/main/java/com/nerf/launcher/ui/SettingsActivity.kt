@@ -103,7 +103,7 @@ class SettingsActivity : AppCompatActivity() {
             SettingsType.ICON_PACK -> {
                 val packName = setting.payload as String
                 if (current.iconPack != packName) {
-                    repo.updateIconPack(packName)
+                    IconPackManager.setCurrentPack(this, packName)
                 }
             }
             SettingsType.GLOW_INTENSITY -> {
