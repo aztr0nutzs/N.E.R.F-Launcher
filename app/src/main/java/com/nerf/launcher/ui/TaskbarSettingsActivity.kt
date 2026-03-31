@@ -24,18 +24,22 @@ class TaskbarSettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val initialTheme = ThemeManager.resolveActiveTheme(this)
+        ThemeManager.applyWindowTheme(this, initialTheme)
+
         binding = ActivityTaskbarSettingsBinding.inflate(layoutInflater)
+        ThemeManager.applyTaskbarSettingsTheme(this, binding.root, initialTheme)
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setTitle(R.string.taskbar_settings_title)
 
-        setupControls()
+        setupControls(initialTheme)
         observeConfig()
     }
 
-    private fun setupControls() {
+    private fun setupControls(initialTheme: NerfTheme) {
         binding.taskbarEnabledSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isBindingState) return@setOnCheckedChangeListener
             updateTaskbarSettings { copy(enabled = isChecked) }
@@ -61,7 +65,8 @@ class TaskbarSettingsActivity : AppCompatActivity() {
 
         backgroundStyleAdapter = ThemedSpinnerAdapter(
             this,
-            TASKBAR_BACKGROUND_OPTIONS.map { getString(it.labelRes) }
+            TASKBAR_BACKGROUND_OPTIONS.map { getString(it.labelRes) },
+            initialTheme
         )
         binding.taskbarBackgroundStyleSpinner.adapter = backgroundStyleAdapter
         binding.taskbarBackgroundStyleSpinner.onItemSelectedListener =
@@ -182,9 +187,10 @@ class TaskbarSettingsActivity : AppCompatActivity() {
 
     private class ThemedSpinnerAdapter(
         context: Context,
-        items: List<String>
+        items: List<String>,
+        initialTheme: NerfTheme
     ) : ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, items) {
-        private var theme: NerfTheme = ThemeManager.resolveActiveTheme(context)
+        private var theme: NerfTheme = initialTheme
 
         init {
             setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
