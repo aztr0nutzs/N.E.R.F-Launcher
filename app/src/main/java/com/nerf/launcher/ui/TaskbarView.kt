@@ -21,6 +21,7 @@ import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.LifecycleOwnerAware
 import com.nerf.launcher.util.NerfTheme
+import com.nerf.launcher.util.TaskbarBackgroundStyle
 import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ThemeManager
 import kotlin.math.roundToInt
@@ -46,7 +47,7 @@ class TaskbarView @JvmOverloads constructor(
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         setPadding(8, 6, 8, 6)
-        applyShellBackground(android.R.color.background_dark, 1f, null)
+        applyShellBackground(TaskbarBackgroundStyle.DARK, 1f, null)
         setOnLongClickListener {
             openTaskbarCustomization()
             true
@@ -101,7 +102,7 @@ class TaskbarView @JvmOverloads constructor(
 
     fun setTransparency(alpha: Float) {
         val config = lastObservedConfig
-        val styleRes = config?.taskbarSettings?.backgroundStyle ?: android.R.color.background_dark
+        val style = config?.taskbarSettings?.backgroundStyle ?: TaskbarBackgroundStyle.default
         val theme = config?.let {
             ThemeManager.resolveActiveTheme(
                 context = context,
@@ -109,7 +110,7 @@ class TaskbarView @JvmOverloads constructor(
                 glowIntensity = it.glowIntensity
             )
         }
-        applyShellBackground(styleRes, alpha, theme)
+        applyShellBackground(style, alpha, theme)
     }
 
     private fun setupConfigObservers() {
@@ -250,7 +251,11 @@ class TaskbarView @JvmOverloads constructor(
         view.layoutParams = params
     }
 
-    private fun applyShellBackground(backgroundStyle: Int, alpha: Float, theme: NerfTheme?) {
+    private fun applyShellBackground(
+        backgroundStyle: TaskbarBackgroundStyle,
+        alpha: Float,
+        theme: NerfTheme?
+    ) {
         val shellDrawable = ContextCompat.getDrawable(context, R.drawable.hud_frame_panel)?.mutate() ?: return
         val wrapped = DrawableCompat.wrap(shellDrawable)
         val resolvedTheme = theme ?: ThemeManager.resolveActiveTheme(context)

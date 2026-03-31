@@ -40,11 +40,11 @@ object ThemeManager {
         }
     }
 
-    fun resolveTaskbarBackgroundColor(theme: NerfTheme, backgroundStyle: Int): Int {
+    fun resolveTaskbarBackgroundColor(theme: NerfTheme, backgroundStyle: TaskbarBackgroundStyle): Int {
         return when (backgroundStyle) {
-            android.R.color.background_light -> theme.taskbarLightBackground
-            android.R.color.transparent -> Color.TRANSPARENT
-            else -> theme.taskbarDarkBackground
+            TaskbarBackgroundStyle.LIGHT -> theme.taskbarLightBackground
+            TaskbarBackgroundStyle.TRANSPARENT -> Color.TRANSPARENT
+            TaskbarBackgroundStyle.DARK -> theme.taskbarDarkBackground
         }
     }
 

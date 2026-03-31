@@ -7,8 +7,9 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityTaskbarSettingsBinding
-import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ConfigRepository
+import com.nerf.launcher.util.TaskbarBackgroundStyle
+import com.nerf.launcher.util.TaskbarSettings
 
 class TaskbarSettingsActivity : AppCompatActivity() {
 
@@ -70,7 +71,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
                 ) {
                     if (isBindingState) return
                     val selected = TASKBAR_BACKGROUND_OPTIONS[position]
-                    updateTaskbarSettings { copy(backgroundStyle = selected.styleRes) }
+                    updateTaskbarSettings { copy(backgroundStyle = selected.style) }
                 }
 
                 override fun onNothingSelected(parent: android.widget.AdapterView<*>?) = Unit
@@ -105,7 +106,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             transparencyPercent
         )
         val selectedBackgroundIndex = TASKBAR_BACKGROUND_OPTIONS
-            .indexOfFirst { it.styleRes == settings.backgroundStyle }
+            .indexOfFirst { it.style == settings.backgroundStyle }
             .takeIf { it >= 0 }
             ?: 0
         binding.taskbarBackgroundStyleSpinner.setSelection(selectedBackgroundIndex, false)
@@ -148,20 +149,20 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         private const val MIN_ICON_SIZE_DP = 24
         private const val MAX_ICON_SIZE_DP = 72
         private val BACKGROUND_LABELS = mapOf(
-            android.R.color.background_dark to R.string.taskbar_settings_background_dark,
-            android.R.color.background_light to R.string.taskbar_settings_background_light,
-            android.R.color.transparent to R.string.taskbar_settings_background_transparent
+            TaskbarBackgroundStyle.DARK to R.string.taskbar_settings_background_dark,
+            TaskbarBackgroundStyle.LIGHT to R.string.taskbar_settings_background_light,
+            TaskbarBackgroundStyle.TRANSPARENT to R.string.taskbar_settings_background_transparent
         )
         private val TASKBAR_BACKGROUND_OPTIONS = listOf(
-            android.R.color.background_dark,
-            android.R.color.background_light,
-            android.R.color.transparent
+            TaskbarBackgroundStyle.DARK,
+            TaskbarBackgroundStyle.LIGHT,
+            TaskbarBackgroundStyle.TRANSPARENT
         )
             .filter { it in TaskbarSettings.supportedBackgroundStyles }
-            .map { styleRes ->
+            .map { style ->
                 TaskbarBackgroundOption(
-                    styleRes = styleRes,
-                    labelRes = BACKGROUND_LABELS.getValue(styleRes)
+                    style = style,
+                    labelRes = BACKGROUND_LABELS.getValue(style)
                 )
             }
 
@@ -169,7 +170,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     }
 
     private data class TaskbarBackgroundOption(
-        val styleRes: Int,
+        val style: TaskbarBackgroundStyle,
         val labelRes: Int
     )
 }

@@ -105,12 +105,22 @@ object PreferencesManager {
     fun getTaskbarIconSize(context: Context): Int =
         getPrefs(context).getInt(KEY_TASKBAR_ICON_SIZE, 48)
 
-    fun saveTaskbarBackgroundStyle(context: Context, styleResId: Int) {
-        getPrefs(context).edit().putInt(KEY_TASKBAR_BACKGROUND_STYLE, styleResId).apply()
+    fun saveTaskbarBackgroundStyle(context: Context, style: TaskbarBackgroundStyle) {
+        getPrefs(context).edit().putInt(KEY_TASKBAR_BACKGROUND_STYLE, style.persistedValue).apply()
     }
 
-    fun getTaskbarBackgroundStyle(context: Context): Int =
-        getPrefs(context).getInt(KEY_TASKBAR_BACKGROUND_STYLE, android.R.color.background_dark)
+    fun getTaskbarBackgroundStyle(context: Context): TaskbarBackgroundStyle =
+        getPrefs(context).run {
+            val rawValue = getInt(
+                KEY_TASKBAR_BACKGROUND_STYLE,
+                TaskbarBackgroundStyle.default.persistedValue
+            )
+            val resolvedStyle = TaskbarBackgroundStyle.fromPersistedValue(rawValue)
+            if (rawValue != resolvedStyle.persistedValue) {
+                edit().putInt(KEY_TASKBAR_BACKGROUND_STYLE, resolvedStyle.persistedValue).apply()
+            }
+            resolvedStyle
+        }
 
     fun saveTaskbarHeight(context: Context, heightDp: Int) {
         getPrefs(context).edit().putInt(KEY_TASKBAR_HEIGHT, heightDp).apply()

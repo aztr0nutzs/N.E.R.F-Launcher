@@ -116,7 +116,7 @@ class ConfigRepository(private val context: Context) {
         val sanitizedBackground = if (settings.backgroundStyle in TaskbarSettings.supportedBackgroundStyles) {
             settings.backgroundStyle
         } else {
-            android.R.color.background_dark
+            TaskbarBackgroundStyle.default
         }
         return settings.copy(
             height = settings.height.coerceIn(40, 96),
