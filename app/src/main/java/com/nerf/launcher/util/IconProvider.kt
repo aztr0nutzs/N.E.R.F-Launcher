@@ -36,6 +36,7 @@ class IconProvider(
     companion object {
         private const val ICON_PACK_ASSET_ROOT = "icon_packs"
         private const val CUSTOM_ICON_DIR = "custom_icons"
+        private val SUPPORTED_IMAGE_EXTENSIONS = listOf("png", "webp", "jpg", "jpeg")
     }
 
     private val packageManager: PackageManager = context.packageManager
@@ -113,18 +114,21 @@ class IconProvider(
     }
 
     private fun loadCustomIcon(packageName: String): Drawable? {
-        val customIconFile = File(context.filesDir, "$CUSTOM_ICON_DIR/$packageName.png")
-        if (!customIconFile.exists() || !customIconFile.isFile) {
-            return null
-        }
-
-        return try {
-            customIconFile.inputStream().use { stream ->
-                Drawable.createFromStream(stream, null)
+        for (extension in SUPPORTED_IMAGE_EXTENSIONS) {
+            val customIconFile = File(context.filesDir, "$CUSTOM_ICON_DIR/$packageName.$extension")
+            if (!customIconFile.exists() || !customIconFile.isFile) {
+                continue
             }
-        } catch (e: IOException) {
-            null
+            val drawable = try {
+                customIconFile.inputStream().use { stream ->
+                    Drawable.createFromStream(stream, null)
+                }
+            } catch (_: IOException) {
+                null
+            }
+            if (drawable != null) return drawable
         }
+        return null
     }
 
     /** Attempts to load an icon from the currently selected icon pack assets. */
@@ -133,14 +137,18 @@ class IconProvider(
             return null
         }
 
-        val assetPath = "$ICON_PACK_ASSET_ROOT/$selectedPack/$packageName.png"
-        return try {
-            assets.open(assetPath).use { stream ->
-                Drawable.createFromStream(stream, null)
+        for (extension in SUPPORTED_IMAGE_EXTENSIONS) {
+            val assetPath = "$ICON_PACK_ASSET_ROOT/$selectedPack/$packageName.$extension"
+            val drawable = try {
+                assets.open(assetPath).use { stream ->
+                    Drawable.createFromStream(stream, null)
+                }
+            } catch (_: IOException) {
+                null
             }
-        } catch (_: IOException) {
-            null
+            if (drawable != null) return drawable
         }
+        return null
     }
 
     /** Retrieves the default system icon for a package, with an ultimate fallback. */
@@ -167,6 +175,7 @@ class IconProvider(
     }
 
     fun clearInFlightLoads() {
+        scope.coroutineContext.cancelChildren()
         inFlightLoads.clear()
     }
 

@@ -29,6 +29,17 @@ class IconCache(private val maxSize: Int) {
         }
     }
 
+    /** Remove cached entries for one package across all packs. */
+    fun evictPackage(packageName: String) {
+        val snapshot = cache.snapshot().keys
+        val suffix = ":$packageName"
+        snapshot.forEach { key ->
+            if (key.endsWith(suffix)) {
+                cache.remove(key)
+            }
+        }
+    }
+
     /** Remove all cached entries. */
     fun evictAll() {
         cache.evictAll()
