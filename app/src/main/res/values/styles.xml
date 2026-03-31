@@ -11,6 +11,7 @@
         <item name="colorSecondary">@color/theme_classic_secondary</item>
         <item name="colorSecondaryVariant">@color/theme_classic_secondary</item>
         <item name="colorOnSecondary">@color/black</item>
+        <item name="colorTertiary">@color/theme_classic_accent</item>
 
         <!-- Background & surface. -->
         <item name="android:colorBackground">@color/theme_shared_window_background</item>

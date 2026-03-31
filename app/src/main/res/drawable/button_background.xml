@@ -7,7 +7,7 @@
             <corners android:radius="8dp" />
             <stroke
                 android:width="2dp"
-                android:color="@color/theme_classic_accent" />
+                android:color="?attr/colorTertiary" />
         </shape>
     </item>
 </ripple>
