@@ -58,7 +58,7 @@ class SettingsAdapter(
                     }
                     spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
-                            val selected = parent?.getItemAtPosition(pos) as String
+                            val selected = item.options.getOrNull(pos) ?: return
                             if (selected != currentConfig?.themeName) {
                                 onSettingChanged(SettingChange.Theme(selected))
                             }
@@ -90,7 +90,7 @@ class SettingsAdapter(
                     }
                     spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
-                            val selected = parent?.getItemAtPosition(pos) as String
+                            val selected = item.options.getOrNull(pos) ?: return
                             if (selected != currentConfig?.iconPack) {
                                 onSettingChanged(SettingChange.IconPack(selected))
                             }
@@ -164,7 +164,7 @@ class SettingsAdapter(
                     spinner.setSelection(adapter.getPosition(current))
                     spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
-                            val selected = parent?.getItemAtPosition(pos) as Int
+                            val selected = options.getOrNull(pos) ?: return
                             if (selected != currentConfig?.gridSize) {
                                 onSettingChanged(SettingChange.GridSize(selected))
                             }
