@@ -56,8 +56,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="APP GRID"
-                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                    android:textColor="@color/nerf_hud_cyan" />
+                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
 
                 <TextView
                     android:id="@+id/module_app_count"
@@ -72,8 +71,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="LOAD"
-                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                    android:textColor="@color/nerf_hud_orange" />
+                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
 
                 <com.nerf.launcher.ui.SegmentedBarView
                     android:id="@+id/apps_load_bar"
@@ -86,8 +84,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:text="CONFIG"
-                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                    android:textColor="@color/nerf_hud_lime" />
+                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
 
                 <TextView
                     android:id="@+id/module_grid_value"
@@ -121,16 +118,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/quick_panel_title"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                        android:textColor="@color/nerf_hud_magenta" />
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Magenta" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="@string/quick_panel_subtitle"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                        android:textColor="@color/nerf_hud_cyan" />
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -140,8 +135,7 @@
                         android:paddingHorizontal="6dp"
                         android:paddingVertical="3dp"
                         android:text="@string/quick_row_palette"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                        android:textColor="@color/nerf_hud_cyan" />
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -191,8 +185,7 @@
                         android:paddingHorizontal="6dp"
                         android:paddingVertical="3dp"
                         android:text="@string/quick_row_runtime"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                        android:textColor="@color/nerf_hud_orange" />
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -242,8 +235,7 @@
                         android:paddingHorizontal="6dp"
                         android:paddingVertical="3dp"
                         android:text="@string/quick_row_calibration"
-                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                        android:textColor="@color/nerf_hud_lime" />
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
 
                     <TextView
                         android:id="@+id/quick_glow_value"
@@ -344,8 +336,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="@string/reactor_home_title"
-                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                    android:textColor="@color/nerf_hud_orange"
+                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange"
                     app:layout_constraintEnd_toStartOf="@+id/reactor_brand_mark"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -368,8 +359,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="@string/reactor_home_status_ready"
-                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
-                    android:textColor="@color/nerf_hud_cyan"
+                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium.Cyan"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/reactor_mode_label" />
@@ -409,8 +399,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/reactor_home_sync_default"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
-                            android:textColor="@color/nerf_hud_panel_text_primary" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge" />
 
                         <TextView
                             android:id="@+id/reactor_hint_text"
@@ -418,16 +407,14 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="@string/reactor_home_hint"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_panel_text_secondary" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:text="@string/reactor_home_active_rails"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_orange" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -442,8 +429,7 @@
                                 android:drawablePadding="6dp"
                                 android:drawableStart="@drawable/ic_node_hunter"
                                 android:text="@string/reactor_home_action_top"
-                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                                android:textColor="@color/nerf_hud_cyan" />
+                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
 
                             <TextView
                                 android:layout_width="0dp"
@@ -453,8 +439,7 @@
                                 android:drawableEnd="@drawable/ic_assistant"
                                 android:gravity="end"
                                 android:text="@string/reactor_home_action_right"
-                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                                android:textColor="@color/nerf_hud_orange" />
+                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
                         </LinearLayout>
 
                         <LinearLayout
@@ -470,8 +455,7 @@
                                 android:drawablePadding="6dp"
                                 android:drawableStart="@drawable/ic_settings"
                                 android:text="@string/reactor_home_action_left"
-                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                                android:textColor="@color/nerf_hud_lime" />
+                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
 
                             <TextView
                                 android:layout_width="0dp"
@@ -481,8 +465,7 @@
                                 android:drawableEnd="@drawable/ic_network"
                                 android:gravity="end"
                                 android:text="@string/reactor_home_action_bottom"
-                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                                android:textColor="@color/nerf_hud_magenta" />
+                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Magenta" />
                         </LinearLayout>
                     </LinearLayout>
                 </FrameLayout>
@@ -505,8 +488,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/modules_system_title"
-                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                    android:textColor="@color/nerf_hud_lime" />
+                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
 
                 <FrameLayout
                     android:id="@+id/module_energy_card"
@@ -529,8 +511,7 @@
                             android:drawablePadding="6dp"
                             android:drawableStart="@drawable/ic_power_up"
                             android:text="@string/modules_energy_label"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_orange" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
 
                         <TextView
                             android:id="@+id/module_energy_value"
@@ -538,8 +519,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="--%"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
-                            android:textColor="@color/nerf_hud_orange" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge.Orange" />
 
                         <com.nerf.launcher.ui.SegmentedBarView
                             android:id="@+id/module_energy_bar"
@@ -573,8 +553,7 @@
                             android:drawablePadding="6dp"
                             android:drawableStart="@drawable/ic_module"
                             android:text="@string/modules_storage_label"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_cyan" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
 
                         <TextView
                             android:id="@+id/module_storage_value"
@@ -582,8 +561,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="N/A"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
-                            android:textColor="@color/nerf_hud_panel_text_primary" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
 
                         <com.nerf.launcher.ui.SegmentedBarView
                             android:id="@+id/module_storage_bar"
@@ -607,8 +585,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/modules_runtime_label"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_magenta" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Magenta" />
 
                         <TextView
                             android:id="@+id/module_runtime_value"
@@ -616,8 +593,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="0h 0m"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
-                            android:textColor="@color/nerf_hud_panel_text_primary" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -644,8 +620,7 @@
                             android:drawablePadding="6dp"
                             android:drawableStart="@drawable/ic_settings"
                             android:text="@string/modules_state_label"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_lime" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
 
                         <TextView
                             android:id="@+id/module_state_value"
@@ -653,8 +628,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="ACTIVE"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
-                            android:textColor="@color/nerf_hud_lime" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium.Lime" />
                     </LinearLayout>
 
                     <FrameLayout
@@ -689,8 +663,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="@string/modules_reactor_label"
-                                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                                    android:textColor="@color/nerf_hud_orange" />
+                                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
 
                                 <TextView
                                     android:id="@+id/module_reactor_value"
@@ -699,8 +672,7 @@
                                     android:layout_marginTop="2dp"
                                     android:gravity="end"
                                     android:text="SYNC 0%"
-                                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
-                                    android:textColor="@color/nerf_hud_panel_text_primary" />
+                                    android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge" />
                             </LinearLayout>
                         </LinearLayout>
                     </FrameLayout>
@@ -727,15 +699,13 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/drawer_shell_title"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_magenta" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Magenta" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/drawer_shell_subtitle"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                            android:textColor="@color/nerf_hud_panel_text_secondary" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -758,8 +728,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="@string/drawer_header_label"
-                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                                android:textColor="@color/nerf_hud_magenta" />
+                                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Magenta" />
 
                             <ImageView
                                 android:layout_width="16dp"
@@ -775,8 +744,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:text="0 VISIBLE"
-                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
-                            android:textColor="@color/nerf_hud_cyan" />
+                            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium.Cyan" />
 
                         <EditText
                             android:id="@+id/drawerSearchInput"
@@ -850,16 +818,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/lock_surface_title"
-                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                android:textColor="@color/nerf_hud_magenta" />
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Magenta" />
 
             <TextView
                 android:id="@+id/lock_surface_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge"
-                android:textColor="@color/nerf_hud_cyan"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge.Cyan"
                 android:textStyle="bold" />
 
             <TextView
@@ -867,8 +833,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
-                android:textColor="@color/nerf_hud_panel_text_primary" />
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
 
             <TextView
                 android:id="@+id/lock_surface_scope_note"
@@ -876,8 +841,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:text="@string/lock_surface_scope_note"
-                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
-                android:textColor="@color/nerf_hud_panel_text_secondary" />
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/lock_surface_unlock_button"

@@ -108,6 +108,30 @@
         <item name="android:textSize">11sp</item>
     </style>
 
+    <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
+        <item name="android:textColor">@color/theme_shared_hud_cyan</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
+        <item name="android:textColor">@color/theme_shared_hud_orange</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
+        <item name="android:textColor">@color/theme_shared_hud_lime</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Magenta" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
+        <item name="android:textColor">@color/theme_shared_hud_magenta</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Primary" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
+        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
+        <item name="android:textColor">@color/theme_shared_hud_panel_text_secondary</item>
+    </style>
+
     <style name="TextAppearance.NerfLauncher.Hud.ValueLarge" parent="TextAppearance.MaterialComponents.Body1">
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:textStyle">bold</item>
@@ -115,9 +139,25 @@
         <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
     </style>
 
+    <style name="TextAppearance.NerfLauncher.Hud.ValueLarge.Cyan" parent="TextAppearance.NerfLauncher.Hud.ValueLarge">
+        <item name="android:textColor">@color/theme_shared_hud_cyan</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Hud.ValueLarge.Orange" parent="TextAppearance.NerfLauncher.Hud.ValueLarge">
+        <item name="android:textColor">@color/theme_shared_hud_orange</item>
+    </style>
+
     <style name="TextAppearance.NerfLauncher.Hud.ValueMedium" parent="TextAppearance.MaterialComponents.Body2">
         <item name="android:textSize">13sp</item>
         <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Hud.ValueMedium.Cyan" parent="TextAppearance.NerfLauncher.Hud.ValueMedium">
+        <item name="android:textColor">@color/theme_shared_hud_cyan</item>
+    </style>
+
+    <style name="TextAppearance.NerfLauncher.Hud.ValueMedium.Lime" parent="TextAppearance.NerfLauncher.Hud.ValueMedium">
+        <item name="android:textColor">@color/theme_shared_hud_lime</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.Time" parent="TextAppearance.MaterialComponents.Headline6">
