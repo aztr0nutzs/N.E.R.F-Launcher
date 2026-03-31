@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="nerfPrimaryVariantColor" format="color" />
+    <attr name="nerfSurfaceColor" format="color" />
+    <attr name="nerfWindowBackgroundColor" format="color" />
+    <attr name="nerfHudPanelTextPrimaryColor" format="color" />
+    <attr name="nerfHudPanelTextSecondaryColor" format="color" />
+    <attr name="nerfHudInfoColor" format="color" />
+    <attr name="nerfHudWarningColor" format="color" />
+    <attr name="nerfHudSuccessColor" format="color" />
+    <attr name="nerfHudAccentColor" format="color" />
+    <attr name="nerfHudAppLabelColor" format="color" />
+</resources>

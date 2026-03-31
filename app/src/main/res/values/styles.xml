@@ -2,10 +2,21 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Theme.NerfLauncher" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="nerfPrimaryVariantColor">@color/nerf_primary_dark</item>
+        <item name="nerfSurfaceColor">@color/nerf_surface</item>
+        <item name="nerfWindowBackgroundColor">@color/theme_shared_window_background</item>
+        <item name="nerfHudPanelTextPrimaryColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="nerfHudPanelTextSecondaryColor">@color/theme_shared_hud_panel_text_secondary</item>
+        <item name="nerfHudInfoColor">@color/theme_shared_hud_cyan</item>
+        <item name="nerfHudWarningColor">@color/theme_shared_hud_orange</item>
+        <item name="nerfHudSuccessColor">@color/theme_shared_hud_lime</item>
+        <item name="nerfHudAccentColor">@color/theme_shared_hud_magenta</item>
+        <item name="nerfHudAppLabelColor">@color/theme_shared_hud_app_label</item>
+
         <!-- Primary brand colors. -->
         <item name="colorPrimary">@color/theme_classic_primary</item>
-        <item name="colorPrimaryVariant">@color/nerf_primary_dark</item>
-        <item name="colorOnPrimary">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="colorPrimaryVariant">?attr/nerfPrimaryVariantColor</item>
+        <item name="colorOnPrimary">?attr/nerfHudPanelTextPrimaryColor</item>
 
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/theme_classic_secondary</item>
@@ -14,10 +25,10 @@
         <item name="colorTertiary">@color/theme_classic_accent</item>
 
         <!-- Background & surface. -->
-        <item name="android:colorBackground">@color/theme_shared_window_background</item>
-        <item name="colorSurface">@color/nerf_surface</item>
-        <item name="colorOnBackground">@color/theme_shared_hud_panel_text_primary</item>
-        <item name="colorOnSurface">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:colorBackground">?attr/nerfWindowBackgroundColor</item>
+        <item name="colorSurface">?attr/nerfSurfaceColor</item>
+        <item name="colorOnBackground">?attr/nerfHudPanelTextPrimaryColor</item>
+        <item name="colorOnSurface">?attr/nerfHudPanelTextPrimaryColor</item>
 
         <!-- Status bar. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
@@ -32,7 +43,7 @@
         <item name="textAppearanceCaption">@style/TextAppearance.NerfLauncher.Caption</item>
 
         <!-- Window background. -->
-        <item name="android:windowBackground">@color/theme_shared_window_background</item>
+        <item name="android:windowBackground">?attr/nerfWindowBackgroundColor</item>
     </style>
 
     <style name="Theme.NerfLauncher.PopupOverlay" parent="ThemeOverlay.MaterialComponents" />
@@ -109,78 +120,78 @@
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
-        <item name="android:textColor">@color/theme_shared_hud_cyan</item>
+        <item name="android:textColor">?attr/nerfHudInfoColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
-        <item name="android:textColor">@color/theme_shared_hud_orange</item>
+        <item name="android:textColor">?attr/nerfHudWarningColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
-        <item name="android:textColor">@color/theme_shared_hud_lime</item>
+        <item name="android:textColor">?attr/nerfHudSuccessColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Magenta" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
-        <item name="android:textColor">@color/theme_shared_hud_magenta</item>
+        <item name="android:textColor">?attr/nerfHudAccentColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Primary" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:textColor">?attr/nerfHudPanelTextPrimaryColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary" parent="TextAppearance.NerfLauncher.Hud.SectionLabel">
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_secondary</item>
+        <item name="android:textColor">?attr/nerfHudPanelTextSecondaryColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.ValueLarge" parent="TextAppearance.MaterialComponents.Body1">
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">15sp</item>
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:textColor">?attr/nerfHudPanelTextPrimaryColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.ValueLarge.Cyan" parent="TextAppearance.NerfLauncher.Hud.ValueLarge">
-        <item name="android:textColor">@color/theme_shared_hud_cyan</item>
+        <item name="android:textColor">?attr/nerfHudInfoColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.ValueLarge.Orange" parent="TextAppearance.NerfLauncher.Hud.ValueLarge">
-        <item name="android:textColor">@color/theme_shared_hud_orange</item>
+        <item name="android:textColor">?attr/nerfHudWarningColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.ValueMedium" parent="TextAppearance.MaterialComponents.Body2">
         <item name="android:textSize">13sp</item>
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:textColor">?attr/nerfHudPanelTextPrimaryColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.ValueMedium.Cyan" parent="TextAppearance.NerfLauncher.Hud.ValueMedium">
-        <item name="android:textColor">@color/theme_shared_hud_cyan</item>
+        <item name="android:textColor">?attr/nerfHudInfoColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.ValueMedium.Lime" parent="TextAppearance.NerfLauncher.Hud.ValueMedium">
-        <item name="android:textColor">@color/theme_shared_hud_lime</item>
+        <item name="android:textColor">?attr/nerfHudSuccessColor</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.Time" parent="TextAppearance.MaterialComponents.Headline6">
-        <item name="android:textColor">@color/theme_shared_hud_cyan</item>
+        <item name="android:textColor">?attr/nerfHudInfoColor</item>
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">20sp</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.Date" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_secondary</item>
+        <item name="android:textColor">?attr/nerfHudPanelTextSecondaryColor</item>
         <item name="android:textSize">11sp</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.BatteryPercent" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textColor">@color/theme_shared_hud_panel_text_primary</item>
+        <item name="android:textColor">?attr/nerfHudPanelTextPrimaryColor</item>
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">12sp</item>
     </style>
 
     <style name="TextAppearance.NerfLauncher.Hud.AppTileLabel" parent="TextAppearance.NerfLauncher.Caption">
-        <item name="android:textColor">@color/theme_shared_hud_app_label</item>
+        <item name="android:textColor">?attr/nerfHudAppLabelColor</item>
         <item name="android:textSize">10sp</item>
     </style>
 </resources>
