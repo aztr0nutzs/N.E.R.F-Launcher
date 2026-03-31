@@ -2,14 +2,9 @@ package com.nerf.launcher.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.IntentFilter
-import android.os.BatteryManager
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.Looper
-import android.os.PowerManager
-import android.os.StatFs
 import android.os.SystemClock
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
@@ -38,6 +33,8 @@ import com.nerf.launcher.util.IconCache
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.StatusBarManager
+import com.nerf.launcher.util.SystemModuleController
+import com.nerf.launcher.util.SystemModuleSnapshot
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.util.assistant.AssistantController
@@ -62,43 +59,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var reactorCoordinator: ReactorCoordinator
     private lateinit var assistantController: AssistantController
     private lateinit var assistantOverlayController: AssistantOverlayController
+    private lateinit var systemModuleController: SystemModuleController
     private var allApps: List<AppInfo> = emptyList()
     private var filteredAppCount: Int = 0
-    private var batteryPercent: Int? = null
-    private var isCharging: Boolean = false
     private val themeNames by lazy { ThemeRepository.allThemeNames }
     private val iconPackNames by lazy { IconPackManager.getAvailablePacks(this) }
-    private val moduleRefreshHandler = Handler(Looper.getMainLooper())
     private val lockSurfaceClockHandler = Handler(Looper.getMainLooper())
-    private val powerManager by lazy { getSystemService(PowerManager::class.java) }
     private var scanlineSweepAnimator: ObjectAnimator? = null
     private var scanlineOpacityAnimator: ValueAnimator? = null
     private var isLockSurfaceVisible: Boolean = false
     private var lastObservedConfig: AppConfig? = null
     private var animationSpeedMultiplier: Float = 1f
-
-    private val batteryReceiver = object : android.content.BroadcastReceiver() {
-        override fun onReceive(context: android.content.Context?, intent: Intent?) {
-            val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-            val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
-            batteryPercent = if (level >= 0 && scale > 0) {
-                (level * 100 / scale).coerceIn(0, 100)
-            } else {
-                null
-            }
-            val status = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
-            isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                    status == BatteryManager.BATTERY_STATUS_FULL
-            updateSystemModules()
-        }
-    }
-
-    private val moduleRefreshTick = object : Runnable {
-        override fun run() {
-            updateSystemModules()
-            moduleRefreshHandler.postDelayed(this, 60_000L)
-        }
-    }
 
     private val lockSurfaceClockTick = object : Runnable {
         override fun run() {
@@ -113,6 +84,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         iconProvider = IconProvider(applicationContext, IconCache(50))
+        systemModuleController = SystemModuleController(applicationContext) { snapshot ->
+            renderSystemModules(snapshot)
+        }
         setupAssistantOverlay()
         setupReactorCoordinator()
         bindAssistantStateSync()
@@ -189,7 +163,7 @@ class MainActivity : AppCompatActivity() {
         adapter.submitList(filtered)
         filteredAppCount = filtered.size
         binding.drawerResultCount.text = getString(com.nerf.launcher.R.string.drawer_result_count, filtered.size)
-        updateSystemModules()
+        systemModuleController.setInputs(ConfigRepository.get().config.value, filteredAppCount, allApps.size)
     }
 
     private fun setupConfigObservers() {
@@ -198,12 +172,10 @@ class MainActivity : AppCompatActivity() {
             val themeChanged = previous?.themeName != config.themeName ||
                     previous?.glowIntensity != config.glowIntensity
             val gridChanged = previous?.gridSize != config.gridSize
-            val taskbarSettingsChanged = previous?.taskbarSettings != config.taskbarSettings
             val animationSpeedChanged = previous?.animationSpeedEnabled != config.animationSpeedEnabled
             val iconPackChanged = previous?.iconPack != null && previous.iconPack != config.iconPack
 
             animationSpeedMultiplier = if (config.animationSpeedEnabled) 0.65f else 1f
-            var shouldRefreshSystemModules = false
             if (themeChanged || previous == null) {
                 val activeTheme = ThemeManager.resolveActiveTheme(
                     context = this,
@@ -212,7 +184,6 @@ class MainActivity : AppCompatActivity() {
                 )
                 ThemeManager.applyTheme(this, binding.rootContainer, activeTheme)
                 applyStatusBarTheme(config)
-                shouldRefreshSystemModules = true
             }
             if (gridChanged || previous == null) {
                 (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount =
@@ -226,9 +197,6 @@ class MainActivity : AppCompatActivity() {
             )
 
             bindQuickControls(config)
-            if (taskbarSettingsChanged || previous == null) {
-                shouldRefreshSystemModules = true
-            }
             if (animationSpeedChanged || previous == null) {
                 setupScanlineSweep()
             }
@@ -236,9 +204,7 @@ class MainActivity : AppCompatActivity() {
                 iconProvider.evictCache(previous?.iconPack)
                 refreshVisibleAppIcons()
             }
-            if (shouldRefreshSystemModules) {
-                updateSystemModules(config)
-            }
+            systemModuleController.setInputs(config, filteredAppCount, allApps.size)
             lastObservedConfig = config
         }
     }
@@ -257,14 +223,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSystemModules() {
-        registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        moduleRefreshHandler.post(moduleRefreshTick)
         binding.moduleEnergyBar.segments = 18
         binding.moduleStorageBar.segments = 12
 
-        binding.moduleEnergyCard.setOnClickListener { updateSystemModules() }
-        binding.moduleStorageCard.setOnClickListener { updateSystemModules() }
-        binding.moduleRuntimeCard.setOnClickListener { updateSystemModules() }
+        binding.moduleEnergyCard.setOnClickListener { systemModuleController.refreshNow() }
+        binding.moduleStorageCard.setOnClickListener { systemModuleController.refreshNow() }
+        binding.moduleRuntimeCard.setOnClickListener { systemModuleController.refreshNow() }
         binding.moduleStateCard.setOnClickListener {
             val current = ConfigRepository.get().config.value ?: return@setOnClickListener
             val toggled = !current.taskbarSettings.enabled
@@ -291,7 +255,7 @@ class MainActivity : AppCompatActivity() {
             },
             onRefreshDiagnostics = {
                 viewModel.loadApps()
-                updateSystemModules()
+                systemModuleController.refreshNow()
             },
             onOpenAssistantOverlay = {
                 assistantOverlayController.showWakeOverlay()
@@ -374,7 +338,7 @@ class MainActivity : AppCompatActivity() {
                 repeatMode = ValueAnimator.RESTART
                 interpolator = LinearInterpolator()
                 if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) &&
-                    powerManager?.isPowerSaveMode != true
+                    !systemModuleController.isPowerSaveModeEnabled()
                 ) {
                     start()
                 }
@@ -388,7 +352,7 @@ class MainActivity : AppCompatActivity() {
                     binding.scanlineOverlay.alpha = animator.animatedValue as Float
                 }
                 if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) &&
-                    powerManager?.isPowerSaveMode != true
+                    !systemModuleController.isPowerSaveModeEnabled()
                 ) {
                     start()
                 }
@@ -519,23 +483,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateSystemModules(config: AppConfig? = ConfigRepository.get().config.value) {
-        val energy = batteryPercent
+    private fun renderSystemModules(snapshot: SystemModuleSnapshot) {
         val activeTheme = ThemeManager.resolveActiveTheme(this)
-        if (energy != null) {
-            val batteryStateTextRes = if (isCharging) {
+        if (snapshot.batteryPercent != null) {
+            val batteryStateTextRes = if (snapshot.isCharging) {
                 com.nerf.launcher.R.string.modules_battery_charging
             } else {
                 com.nerf.launcher.R.string.modules_battery_idle
             }
             binding.moduleEnergyValue.text = getString(
                 com.nerf.launcher.R.string.modules_energy_percent,
-                energy,
+                snapshot.batteryPercent,
                 getString(batteryStateTextRes)
             )
-            binding.moduleEnergyBar.progress = energy
+            binding.moduleEnergyBar.progress = snapshot.batteryPercent
             binding.moduleEnergyBar.setActiveColor(
-                if (energy < 20) activeTheme.hudEnergyLowColor
+                if (snapshot.batteryPercent < 20) activeTheme.hudEnergyLowColor
                 else activeTheme.hudEnergyHighColor
             )
         } else {
@@ -543,29 +506,29 @@ class MainActivity : AppCompatActivity() {
             binding.moduleEnergyBar.progress = 0
         }
 
-        val storageStats = readStorageUsagePercent()
-        if (storageStats != null) {
-            binding.moduleStorageValue.text = getString(com.nerf.launcher.R.string.modules_storage_percent, storageStats)
-            binding.moduleStorageBar.progress = storageStats
+        if (snapshot.storageUsagePercent != null) {
+            binding.moduleStorageValue.text = getString(
+                com.nerf.launcher.R.string.modules_storage_percent,
+                snapshot.storageUsagePercent
+            )
+            binding.moduleStorageBar.progress = snapshot.storageUsagePercent
         } else {
             binding.moduleStorageValue.text = getString(com.nerf.launcher.R.string.modules_storage_unavailable)
             binding.moduleStorageBar.progress = 0
         }
 
-        val uptimeDays = (SystemClock.elapsedRealtime() / (24 * 60 * 60 * 1000L)).toInt()
-        val uptimeHours = ((SystemClock.elapsedRealtime() / (60 * 60 * 1000L)) % 24).toInt()
         binding.moduleRuntimeValue.text = getString(
             com.nerf.launcher.R.string.modules_runtime_value,
-            uptimeDays,
-            uptimeHours
+            snapshot.uptimeDays,
+            snapshot.uptimeHours
         )
 
-        val interactiveState = if (powerManager?.isInteractive == true) {
+        val interactiveState = if (snapshot.isInteractive) {
             getString(com.nerf.launcher.R.string.modules_state_active)
         } else {
             getString(com.nerf.launcher.R.string.modules_state_idle)
         }
-        val powerMode = if (powerManager?.isPowerSaveMode == true) {
+        val powerMode = if (snapshot.isPowerSaveMode) {
             getString(com.nerf.launcher.R.string.modules_state_eco)
         } else {
             getString(com.nerf.launcher.R.string.modules_state_nominal)
@@ -575,24 +538,11 @@ class MainActivity : AppCompatActivity() {
             interactiveState,
             powerMode
         )
-
-        val appPopulation = if (allApps.isEmpty()) 0 else (filteredAppCount * 100 / allApps.size)
-        val batteryScore = energy ?: 0
-        val storageScore = storageStats?.let { 100 - it } ?: 0
-        val taskbarScore = if (config?.taskbarSettings?.enabled == true) 100 else 70
-        val reactorSync = ((appPopulation + batteryScore + storageScore + taskbarScore) / 4).coerceIn(0, 100)
-        binding.moduleReactorValue.text = getString(com.nerf.launcher.R.string.modules_reactor_sync, reactorSync)
-        reactorCoordinator.updateSyncPreview(reactorSync)
-    }
-
-    private fun readStorageUsagePercent(): Int? {
-        val dataPath = Environment.getDataDirectory().absolutePath
-        val stats = StatFs(dataPath)
-        val totalBytes = stats.totalBytes
-        val availableBytes = stats.availableBytes
-        if (totalBytes <= 0L) return null
-        val usedBytes = (totalBytes - availableBytes).coerceAtLeast(0L)
-        return ((usedBytes * 100L) / totalBytes).toInt().coerceIn(0, 100)
+        binding.moduleReactorValue.text = getString(
+            com.nerf.launcher.R.string.modules_reactor_sync,
+            snapshot.reactorSync
+        )
+        reactorCoordinator.updateSyncPreview(snapshot.reactorSync)
     }
 
     private fun setupQuickControls() {
@@ -729,7 +679,7 @@ class MainActivity : AppCompatActivity() {
         if (isLockSurfaceVisible) {
             lockSurfaceClockHandler.post(lockSurfaceClockTick)
         }
-        if (powerManager?.isPowerSaveMode == true) return
+        if (systemModuleController.isPowerSaveModeEnabled()) return
         scanlineSweepAnimator?.start()
         scanlineOpacityAnimator?.start()
     }
@@ -741,15 +691,23 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
     }
 
+    override fun onStart() {
+        super.onStart()
+        systemModuleController.start()
+    }
+
+    override fun onStop() {
+        systemModuleController.stop()
+        super.onStop()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         scanlineSweepAnimator?.cancel()
         scanlineOpacityAnimator?.cancel()
         scanlineSweepAnimator = null
         scanlineOpacityAnimator = null
-        moduleRefreshHandler.removeCallbacks(moduleRefreshTick)
         lockSurfaceClockHandler.removeCallbacks(lockSurfaceClockTick)
-        unregisterReceiver(batteryReceiver)
         assistantOverlayController.release()
         hudController.release()
         iconProvider.release()
