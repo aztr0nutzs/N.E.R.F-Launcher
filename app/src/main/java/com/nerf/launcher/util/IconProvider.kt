@@ -26,7 +26,7 @@ import kotlinx.coroutines.sync.withLock
  *   1. Custom icon file override (if exists)
  *   2. Selected icon pack asset (if exists)
  *   3. System default icon via PackageManager
- *   4. Ultimate placeholder (gray square)
+ *   4. Generic module fallback drawable (with a gray square as the final safeguard)
  * Results are cached in IconCache to avoid repeated lookups during scrolling.
  */
 class IconProvider(

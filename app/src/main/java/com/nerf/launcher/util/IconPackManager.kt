@@ -10,7 +10,6 @@ object IconPackManager {
     const val DEFAULT_PACK = "system"
     const val ICON_PACK_ASSET_ROOT = "icon_packs"
     private val ICON_EXTENSIONS = listOf(".png", ".webp", ".jpg", ".jpeg")
-    private const val ICON_PLACEHOLDER_SUFFIX = ".placeholder.txt"
 
     /** Returns the list of available icon pack identifiers. */
     fun getAvailablePacks(context: Context): List<String> {
@@ -59,8 +58,7 @@ object IconPackManager {
         }
         return files.any { fileName ->
             val normalized = fileName.lowercase()
-            ICON_EXTENSIONS.any { normalized.endsWith(it) } ||
-                normalized.endsWith(ICON_PLACEHOLDER_SUFFIX)
+            ICON_EXTENSIONS.any { normalized.endsWith(it) }
         }
     }
 }

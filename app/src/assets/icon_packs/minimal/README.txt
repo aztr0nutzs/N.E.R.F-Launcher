@@ -5,13 +5,14 @@ Contract:
 - Format: <package_name>.png (png/webp/jpg/jpeg supported by runtime).
 - Runtime resolution path: icon_packs/<pack_name>/<package_name>.<ext>
 
-Included sample mappings:
+Shipped package coverage:
 - com.nerf.launcher.png
 - com.android.settings.png
 - com.android.camera2.png
 - com.android.chrome.png
 - com.google.android.googlequicksearchbox.png
 
-Repository note:
-- Binary icon files are intentionally replaced with `*.placeholder.txt` files for PR portability.
-- Replace each placeholder with a real image file named exactly as listed above before shipping.
+Runtime behavior:
+- These entries are real renderable bitmap assets.
+- Only package names with a matching image file are overridden by this pack.
+- All other apps fall back to the system icon chain.

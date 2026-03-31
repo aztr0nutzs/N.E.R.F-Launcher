@@ -1,3 +1,0 @@
-Placeholder for icon-pack asset.
-Expected runtime filename: PACKAGE_NAME.png
-Replace this file with a real PNG asset named exactly after the package.
