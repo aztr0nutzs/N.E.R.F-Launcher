@@ -1,6 +1,7 @@
 package com.nerf.launcher.util
 
 import android.app.Activity
+import android.content.res.ColorStateList
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -14,7 +15,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.EditText
+import android.widget.SeekBar
 import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
+import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.ColorUtils
 import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
@@ -110,6 +114,64 @@ object ThemeManager {
 
         applyHudPanelGlow(root, theme)
         root.findViewById<ReactorModuleView>(R.id.reactor_core)?.updateTheme(theme)
+    }
+
+    fun applyTaskbarSettingsTheme(activity: Activity, root: View?, theme: NerfTheme) {
+        root ?: return
+        root.setBackgroundColor(theme.windowBackground)
+
+        root.findViewById<Toolbar>(R.id.toolbar)?.let { toolbar ->
+            toolbar.setBackgroundColor(theme.primary)
+            toolbar.setTitleTextColor(theme.hudPanelTextPrimary)
+            toolbar.navigationIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
+            toolbar.overflowIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
+        }
+
+        applyTextColorRecursively(root, theme.hudPanelTextPrimary)
+
+        root.findViewById<MaterialButton>(R.id.clearPinnedAppsButton)?.let { button ->
+            val fill = ColorStateList(
+                arrayOf(
+                    intArrayOf(android.R.attr.state_enabled),
+                    intArrayOf()
+                ),
+                intArrayOf(
+                    theme.primary,
+                    ColorUtils.setAlphaComponent(theme.primary, 0x61)
+                )
+            )
+            val text = ColorStateList(
+                arrayOf(
+                    intArrayOf(android.R.attr.state_enabled),
+                    intArrayOf()
+                ),
+                intArrayOf(
+                    theme.hudPanelTextPrimary,
+                    ColorUtils.setAlphaComponent(theme.hudPanelTextPrimary, 0x61)
+                )
+            )
+            button.backgroundTintList = fill
+            button.setTextColor(text)
+        }
+
+        root.findViewById<SwitchCompat>(R.id.taskbarEnabledSwitch)?.let { switchView ->
+            switchView.thumbTintList = createSwitchThumbTint(theme)
+            switchView.trackTintList = createSwitchTrackTint(theme)
+        }
+
+        listOf(
+            R.id.taskbarHeightSeekbar,
+            R.id.taskbarIconSizeSeekbar,
+            R.id.taskbarTransparencySeekbar
+        ).forEach { viewId ->
+            root.findViewById<SeekBar>(viewId)?.let { seekBar ->
+                seekBar.thumbTintList = ColorStateList.valueOf(theme.primary)
+                seekBar.progressTintList = ColorStateList.valueOf(theme.primary)
+                seekBar.progressBackgroundTintList = ColorStateList.valueOf(
+                    ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
+                )
+            }
+        }
     }
 
     fun createScanlineOverlayDrawable(theme: NerfTheme): Drawable {
@@ -410,6 +472,17 @@ object ThemeManager {
         root.findViewById<MaterialButton>(viewId)?.background = drawable.constantState?.newDrawable()?.mutate() ?: drawable
     }
 
+    private fun applyTextColorRecursively(root: View, color: Int) {
+        when (root) {
+            is TextView -> root.setTextColor(color)
+            is ViewGroup -> {
+                for (index in 0 until root.childCount) {
+                    applyTextColorRecursively(root.getChildAt(index), color)
+                }
+            }
+        }
+    }
+
     private fun applyThemeToCustomViews(root: View, theme: NerfTheme) {
         when (root) {
             is SegmentedBarView -> {
@@ -425,6 +498,32 @@ object ThemeManager {
                 applyThemeToCustomViews(root.getChildAt(index), theme)
             }
         }
+    }
+
+    private fun createSwitchThumbTint(theme: NerfTheme): ColorStateList {
+        return ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf()
+            ),
+            intArrayOf(
+                theme.primary,
+                ColorUtils.setAlphaComponent(theme.hudPanelTextPrimary, 0xB3)
+            )
+        )
+    }
+
+    private fun createSwitchTrackTint(theme: NerfTheme): ColorStateList {
+        return ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf()
+            ),
+            intArrayOf(
+                ColorUtils.setAlphaComponent(theme.primary, 0x80),
+                ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x4D)
+            )
+        )
     }
 
     private fun px(context: Context, dp: Float): Int {

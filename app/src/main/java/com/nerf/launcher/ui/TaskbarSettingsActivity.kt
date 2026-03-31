@@ -3,17 +3,23 @@ package com.nerf.launcher.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityTaskbarSettingsBinding
 import com.nerf.launcher.util.ConfigRepository
+import com.nerf.launcher.util.NerfTheme
 import com.nerf.launcher.util.TaskbarBackgroundStyle
 import com.nerf.launcher.util.TaskbarSettings
+import com.nerf.launcher.util.ThemeManager
 
 class TaskbarSettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTaskbarSettingsBinding
+    private lateinit var backgroundStyleAdapter: ThemedSpinnerAdapter
     private var isBindingState = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,13 +59,10 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             updateTaskbarSettings { copy(transparency = progress / 100f) }
         })
 
-        val backgroundStyleAdapter = ArrayAdapter(
+        backgroundStyleAdapter = ThemedSpinnerAdapter(
             this,
-            android.R.layout.simple_spinner_item,
             TASKBAR_BACKGROUND_OPTIONS.map { getString(it.labelRes) }
-        ).also {
-            it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
+        )
         binding.taskbarBackgroundStyleSpinner.adapter = backgroundStyleAdapter
         binding.taskbarBackgroundStyleSpinner.onItemSelectedListener =
             object : android.widget.AdapterView.OnItemSelectedListener {
@@ -82,6 +85,14 @@ class TaskbarSettingsActivity : AppCompatActivity() {
 
     private fun observeConfig() {
         ConfigRepository.get().config.observe(this) { config ->
+            val theme = ThemeManager.resolveActiveTheme(
+                context = this,
+                themeName = config.themeName,
+                glowIntensity = config.glowIntensity
+            )
+            ThemeManager.applyWindowTheme(this, theme)
+            ThemeManager.applyTaskbarSettingsTheme(this, binding.root, theme)
+            backgroundStyleAdapter.updateTheme(theme)
             bindTaskbarSettings(config.taskbarSettings)
         }
     }
@@ -167,6 +178,36 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             }
 
         fun createIntent(context: Context): Intent = Intent(context, TaskbarSettingsActivity::class.java)
+    }
+
+    private class ThemedSpinnerAdapter(
+        context: Context,
+        items: List<String>
+    ) : ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, items) {
+        private var theme: NerfTheme = ThemeManager.resolveActiveTheme(context)
+
+        init {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+        fun updateTheme(theme: NerfTheme) {
+            this.theme = theme
+            notifyDataSetChanged()
+        }
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            return super.getView(position, convertView, parent).also(::bindView)
+        }
+
+        override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+            return super.getDropDownView(position, convertView, parent).also(::bindView)
+        }
+
+        private fun bindView(view: View) {
+            val textView = view as? TextView ?: return
+            textView.setTextColor(theme.hudPanelTextPrimary)
+            textView.setBackgroundColor(theme.windowBackground)
+        }
     }
 
     private data class TaskbarBackgroundOption(
