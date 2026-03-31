@@ -10,6 +10,7 @@ import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.SettingItem
 import com.nerf.launcher.util.SettingsType
+import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 
 class SettingsActivity : AppCompatActivity() {
@@ -45,6 +46,16 @@ class SettingsActivity : AppCompatActivity() {
 
         ConfigRepository.get().config.observe(this) { config ->
             if (lastObservedConfig == config) return@observe
+            val theme = ThemeManager.resolveActiveTheme(
+                context = this,
+                themeName = config.themeName,
+                glowIntensity = config.glowIntensity
+            )
+            ThemeManager.applyWindowTheme(this, theme)
+            ThemeManager.applyLauncherShellTheme(binding.root, theme)
+            binding.settingsHeaderTitle.setTextColor(theme.hudInfoColor)
+            binding.settingsHeaderSubtitle.setTextColor(theme.hudWarningColor)
+            binding.openTaskbarSettingsButton.setTextColor(theme.hudAccentColor)
             adapter.updateFromConfig(config)
             lastObservedConfig = config
         }

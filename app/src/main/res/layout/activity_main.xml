@@ -4,7 +4,7 @@
     android:id="@+id/root_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/nerf_shell_background">
+    android:background="@color/theme_shared_window_background">
 
     <View
         android:id="@+id/scanline_overlay"
@@ -841,7 +841,7 @@
         android:id="@+id/lock_surface_root"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/nerf_lock_surface_scrim"
+        android:background="@color/theme_shared_lock_surface_scrim"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center"
