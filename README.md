@@ -46,3 +46,39 @@ To run Android Gradle tasks that need the SDK, the local environment must provid
 Repo-side asset wiring is intentional:
 - Android assets are loaded from `app/src/assets` via `app/build.gradle`
 - Android resources remain under `app/src/main/res`
+
+## Release validation
+
+Repo-side Gradle and source-set wiring can be inspected without an SDK, but full Android validation still requires a real local Android environment.
+
+What is already repo-proven:
+- the Gradle wrapper runs
+- the project includes a single Android application module, `:app`
+- launcher assets, resources, and manifest declarations live in the expected Android source sets
+- shipped non-system icon packs are packaged from `app/src/assets/icon_packs`
+
+What still requires a real Android SDK environment:
+- resource compilation and merge
+- manifest merge for an actual build variant
+- Kotlin/Java compilation through Android tasks
+- dexing, packaging, signing, and APK generation
+- installation and runtime smoke testing on a device or emulator
+
+## Validation steps after SDK setup
+
+After creating a local `local.properties` with `sdk.dir=...` or opening the project in Android Studio with a configured SDK, run:
+- `.\gradlew.bat help`
+- `.\gradlew.bat :app:assembleDebug`
+- `.\gradlew.bat :app:installDebug`
+
+If release packaging needs to be checked as part of a release candidate, also run:
+- `.\gradlew.bat :app:assembleRelease`
+
+## Minimal smoke-test checklist
+
+After `:app:installDebug` succeeds on a device or emulator:
+- Launch the app and confirm the launcher opens as the Home activity without layout or navigation regressions.
+- Open icon-pack settings, select `nerf` and `minimal`, and confirm covered apps render pack icons while uncovered apps still fall back to system icons.
+- Change the taskbar background style, leave the screen, return, and confirm the selection persists and the visible taskbar output remains correct.
+- Change the launcher theme, confirm the shell updates live, then open Taskbar Settings and confirm it follows the same launcher theme flow.
+- Return to the main launcher and confirm the HUD, taskbar, app drawer, and icon labels still behave normally after those setting changes.
