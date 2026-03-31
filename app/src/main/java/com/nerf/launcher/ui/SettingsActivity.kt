@@ -8,8 +8,8 @@ import com.nerf.launcher.databinding.ActivitySettingsBinding
 import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconPackManager
+import com.nerf.launcher.util.SettingChange
 import com.nerf.launcher.util.SettingItem
-import com.nerf.launcher.util.SettingsType
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 
@@ -35,8 +35,8 @@ class SettingsActivity : AppCompatActivity() {
 
         // Build settings list
         val settings = buildSettingsList()
-        adapter = SettingsAdapter(settings) { setting ->
-            handleSettingChange(setting)
+        adapter = SettingsAdapter(settings) { settingChange ->
+            handleSettingChange(settingChange)
         }
         binding.settingsRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@SettingsActivity)
@@ -66,73 +66,62 @@ class SettingsActivity : AppCompatActivity() {
      */
     private fun buildSettingsList(): List<SettingItem> {
         val config = ConfigRepository.get().config.value
-        val list = mutableListOf<SettingItem>()
-        // Theme selector
-        list.add(SettingItem(
-            SettingsType.THEME,
-            getString(R.string.settings_theme),
-            ThemeRepository.allThemeNames.joinToString { it }
-        ))
-        // Icon pack selector
-        list.add(SettingItem(
-            SettingsType.ICON_PACK,
-            getString(R.string.settings_icon_pack),
-            IconPackManager.getAvailablePacks(this).joinToString { it }
-        ))
-        // Glow intensity slider
-        list.add(SettingItem(
-            SettingsType.GLOW_INTENSITY,
-            getString(R.string.settings_glow_intensity),
-            config?.glowIntensity ?: 0f
-        ))
-        // Animation speed toggle
-        list.add(SettingItem(
-            SettingsType.ANIMATION_SPEED,
-            getString(R.string.settings_animation_speed),
-            config?.animationSpeedEnabled ?: false
-        ))
-        // Grid size selector
-        list.add(SettingItem(
-            SettingsType.GRID_SIZE,
-            getString(R.string.settings_grid_size),
-            config?.gridSize ?: 4
-        ))
-        return list
+        return listOf(
+            SettingItem.Theme(
+                title = getString(R.string.settings_theme),
+                options = ThemeRepository.allThemeNames
+            ),
+            SettingItem.IconPack(
+                title = getString(R.string.settings_icon_pack),
+                options = IconPackManager.getAvailablePacks(this)
+            ),
+            SettingItem.GlowIntensity(
+                title = getString(R.string.settings_glow_intensity),
+                initialValue = config?.glowIntensity ?: 0f
+            ),
+            SettingItem.AnimationSpeed(
+                title = getString(R.string.settings_animation_speed),
+                initialValue = config?.animationSpeedEnabled ?: false
+            ),
+            SettingItem.GridSize(
+                title = getString(R.string.settings_grid_size),
+                initialValue = config?.gridSize ?: 4
+            )
+        )
     }
 
     /** React to a setting change from the adapter. */
-    private fun handleSettingChange(setting: SettingItem) {
+    private fun handleSettingChange(settingChange: SettingChange) {
         val repo = ConfigRepository.get()
         val current = repo.config.value ?: return
-        when (setting.type) {
-            SettingsType.THEME -> {
-                val themeName = setting.payload as String
-                if (current.themeName != themeName) {
-                    repo.updateTheme(themeName)
+        when (settingChange) {
+            is SettingChange.Theme -> {
+                if (current.themeName != settingChange.themeName) {
+                    repo.updateTheme(settingChange.themeName)
                 }
             }
-            SettingsType.ICON_PACK -> {
-                val packName = setting.payload as String
-                if (current.iconPack != packName) {
-                    IconPackManager.setCurrentPack(this, packName)
+
+            is SettingChange.IconPack -> {
+                if (current.iconPack != settingChange.packName) {
+                    IconPackManager.setCurrentPack(this, settingChange.packName)
                 }
             }
-            SettingsType.GLOW_INTENSITY -> {
-                val intensity = setting.payload as Float
-                if (current.glowIntensity != intensity) {
-                    repo.updateGlowIntensity(intensity)
+
+            is SettingChange.GlowIntensity -> {
+                if (current.glowIntensity != settingChange.intensity) {
+                    repo.updateGlowIntensity(settingChange.intensity)
                 }
             }
-            SettingsType.ANIMATION_SPEED -> {
-                val enabled = setting.payload as Boolean
-                if (current.animationSpeedEnabled != enabled) {
-                    repo.updateAnimationSpeed(enabled)
+
+            is SettingChange.AnimationSpeed -> {
+                if (current.animationSpeedEnabled != settingChange.enabled) {
+                    repo.updateAnimationSpeed(settingChange.enabled)
                 }
             }
-            SettingsType.GRID_SIZE -> {
-                val size = setting.payload as Int
-                if (current.gridSize != size) {
-                    repo.updateGridSize(size)
+
+            is SettingChange.GridSize -> {
+                if (current.gridSize != settingChange.size) {
+                    repo.updateGridSize(settingChange.size)
                 }
             }
         }
