@@ -10,8 +10,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.LinearInterpolator
-import androidx.core.content.ContextCompat
 import com.nerf.launcher.R
+import com.nerf.launcher.util.NerfTheme
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.min
@@ -26,17 +26,16 @@ class ReactorCoreView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private val neonCyan = ContextCompat.getColor(context, R.color.nerf_hud_cyan)
-    private val midRingA = ContextCompat.getColor(context, R.color.nerf_reactor_mid_a)
-    private val midRingB = ContextCompat.getColor(context, R.color.nerf_reactor_mid_b)
-    private val accentRing = ContextCompat.getColor(context, R.color.nerf_reactor_accent_ring)
-    private val coreGlow = ContextCompat.getColor(context, R.color.nerf_reactor_core_glow)
-    private val coreText = ContextCompat.getColor(context, R.color.nerf_accent)
-    private val hudOrange = ContextCompat.getColor(context, R.color.nerf_hud_orange)
-    private val hudMagenta = ContextCompat.getColor(context, R.color.nerf_hud_magenta)
-    private val hudLime = ContextCompat.getColor(context, R.color.nerf_hud_lime)
-
-    private val ringPalette = intArrayOf(neonCyan, hudOrange, hudMagenta, hudLime)
+    private var neonCyan = Color.CYAN
+    private var midRingA = Color.CYAN
+    private var midRingB = Color.CYAN
+    private var accentRing = Color.YELLOW
+    private var coreGlow = Color.YELLOW
+    private var coreText = Color.YELLOW
+    private var hudOrange = Color.YELLOW
+    private var hudMagenta = Color.MAGENTA
+    private var hudLime = Color.GREEN
+    private var ringPalette = intArrayOf(neonCyan, hudOrange, hudMagenta, hudLime)
 
     private val armorOuterRect = RectF()
     private val armorInnerRect = RectF()
@@ -107,6 +106,24 @@ class ReactorCoreView @JvmOverloads constructor(
     private var rotationPhase: Float = 0f
     private var pulse: Float = 1f
     private var tapPulseBoost: Float = 0f
+
+    init {
+        updateTheme(ThemeManager.resolveActiveTheme(context))
+    }
+
+    fun updateTheme(theme: NerfTheme) {
+        neonCyan = theme.hudInfoColor
+        midRingA = theme.reactorMidAColor
+        midRingB = theme.reactorMidBColor
+        accentRing = theme.reactorAccentRingColor
+        coreGlow = theme.reactorCoreGlowColor
+        coreText = theme.accent
+        hudOrange = theme.hudWarningColor
+        hudMagenta = theme.hudAccentColor
+        hudLime = theme.hudSuccessColor
+        ringPalette = intArrayOf(neonCyan, hudOrange, hudMagenta, hudLime)
+        invalidate()
+    }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()

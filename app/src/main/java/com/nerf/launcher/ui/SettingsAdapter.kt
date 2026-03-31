@@ -13,6 +13,7 @@ import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.SettingChange
 import com.nerf.launcher.util.SettingItem
 import com.nerf.launcher.util.SettingsType
+import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 
 /**
@@ -30,7 +31,10 @@ class SettingsAdapter(
     inner class ViewHolder(private val binding: ItemSettingBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: SettingItem) {
+            val theme = ThemeManager.resolveActiveTheme(binding.root.context)
             binding.title.text = item.title
+            binding.title.setTextColor(theme.hudInfoColor)
+            binding.animationLabel.setTextColor(theme.hudSuccessColor)
             when (item) {
                 is SettingItem.Theme -> {
                     binding.themeContainer.visibility = View.VISIBLE
@@ -195,6 +199,11 @@ class SettingsAdapter(
         val previous = currentConfig
         currentConfig = config
         if (previous == null) {
+            notifyDataSetChanged()
+            return
+        }
+
+        if (previous.themeName != config.themeName || previous.glowIntensity != config.glowIntensity) {
             notifyDataSetChanged()
             return
         }

@@ -22,13 +22,13 @@
     <color name="nerf_hud_lime">@color/theme_shared_hud_lime</color>
     <color name="nerf_hud_panel_text_primary">@color/theme_shared_hud_panel_text_primary</color>
     <color name="nerf_hud_panel_text_secondary">@color/theme_shared_hud_panel_text_secondary</color>
-    <color name="nerf_hud_app_label">#E6FFFFFF</color>
-    <color name="nerf_drawer_border">#6600E9FF</color>
+    <color name="nerf_hud_app_label">@color/theme_shared_hud_app_label</color>
+    <color name="nerf_drawer_border">@color/theme_shared_drawer_border</color>
 
-    <color name="nerf_reactor_mid_a">#6BFFD6</color>
-    <color name="nerf_reactor_mid_b">#3ED5FF</color>
-    <color name="nerf_reactor_accent_ring">#FFE66A</color>
-    <color name="nerf_reactor_core_glow">#FFB300</color>
+    <color name="nerf_reactor_mid_a">@color/theme_shared_reactor_mid_a</color>
+    <color name="nerf_reactor_mid_b">@color/theme_shared_reactor_mid_b</color>
+    <color name="nerf_reactor_accent_ring">@color/theme_shared_reactor_accent_ring</color>
+    <color name="nerf_reactor_core_glow">@color/theme_shared_reactor_core_glow</color>
 
     <color name="nerf_segmented_bar_inactive">#302A2A2A</color>
 
@@ -65,8 +65,15 @@
     <color name="theme_shared_hud_orange">#FF8A00</color>
     <color name="theme_shared_hud_magenta">#FF39B5</color>
     <color name="theme_shared_hud_lime">#9CFF00</color>
+    <color name="theme_shared_hud_app_label">#E6FFFFFF</color>
+    <color name="theme_shared_drawer_border">#6600E9FF</color>
+    <color name="theme_shared_scanline_glow">#0400E9FF</color>
     <color name="theme_shared_hud_energy_high">@color/theme_shared_hud_orange</color>
     <color name="theme_shared_hud_energy_low">@color/theme_shared_hud_magenta</color>
+    <color name="theme_shared_reactor_mid_a">#6BFFD6</color>
+    <color name="theme_shared_reactor_mid_b">#3ED5FF</color>
+    <color name="theme_shared_reactor_accent_ring">#FFE66A</color>
+    <color name="theme_shared_reactor_core_glow">#FFB300</color>
     <color name="theme_shared_reactor_armor_dark">#293039</color>
     <color name="theme_shared_reactor_armor_mid">#58626B</color>
     <color name="theme_shared_reactor_interior_dark">#05070A</color>

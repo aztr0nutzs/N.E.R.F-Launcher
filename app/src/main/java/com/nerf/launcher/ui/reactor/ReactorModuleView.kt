@@ -11,7 +11,6 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import com.nerf.launcher.R
 import com.nerf.launcher.util.NerfTheme
@@ -40,19 +39,19 @@ class ReactorModuleView @JvmOverloads constructor(
         LEFT(135f, 90f, "SETTINGS")
     }
 
-    private val hudCyan = ContextCompat.getColor(context, R.color.nerf_hud_cyan)
-    private val hudOrange = ContextCompat.getColor(context, R.color.nerf_hud_orange)
-    private val hudMagenta = ContextCompat.getColor(context, R.color.nerf_hud_magenta)
-    private val hudLime = ContextCompat.getColor(context, R.color.nerf_hud_lime)
-    private val reactorMidA = ContextCompat.getColor(context, R.color.nerf_reactor_mid_a)
-    private val reactorMidB = ContextCompat.getColor(context, R.color.nerf_reactor_mid_b)
-    private val reactorAccent = ContextCompat.getColor(context, R.color.nerf_reactor_accent_ring)
-    private val reactorCoreGlow = ContextCompat.getColor(context, R.color.nerf_reactor_core_glow)
-    private var armorDark = ContextCompat.getColor(context, R.color.theme_shared_reactor_armor_dark)
-    private var armorMid = ContextCompat.getColor(context, R.color.theme_shared_reactor_armor_mid)
-    private var interiorDark = ContextCompat.getColor(context, R.color.theme_shared_reactor_interior_dark)
-    private var interiorMid = ContextCompat.getColor(context, R.color.theme_shared_reactor_interior_mid)
-    private var frameShadow = ContextCompat.getColor(context, R.color.theme_shared_reactor_frame_shadow)
+    private var hudCyan = Color.CYAN
+    private var hudOrange = Color.YELLOW
+    private var hudMagenta = Color.MAGENTA
+    private var hudLime = Color.GREEN
+    private var reactorMidA = Color.CYAN
+    private var reactorMidB = Color.CYAN
+    private var reactorAccent = Color.YELLOW
+    private var reactorCoreGlow = Color.YELLOW
+    private var armorDark = Color.DKGRAY
+    private var armorMid = Color.LTGRAY
+    private var interiorDark = Color.BLACK
+    private var interiorMid = Color.DKGRAY
+    private var frameShadow = Color.BLACK
 
     private var rotationAngle = 0f
     private var counterRotationAngle = 0f
@@ -63,8 +62,8 @@ class ReactorModuleView @JvmOverloads constructor(
     private var assistantState = AssistantState.IDLE
     private var assistantSignalColor = hudOrange
     private var assistantSignalStrength = 0f
-    private var assistantMutedColor = ContextCompat.getColor(context, R.color.theme_shared_assistant_muted)
-    private var assistantErrorColor = ContextCompat.getColor(context, R.color.theme_shared_assistant_error)
+    private var assistantMutedColor = Color.GRAY
+    private var assistantErrorColor = Color.RED
 
     private var idleAnimator: ValueAnimator? = null
     private var highlightAnimator: ValueAnimator? = null
@@ -121,6 +120,14 @@ class ReactorModuleView @JvmOverloads constructor(
     }
 
     fun updateTheme(theme: NerfTheme) {
+        hudCyan = theme.hudInfoColor
+        hudOrange = theme.hudWarningColor
+        hudMagenta = theme.hudAccentColor
+        hudLime = theme.hudSuccessColor
+        reactorMidA = theme.reactorMidAColor
+        reactorMidB = theme.reactorMidBColor
+        reactorAccent = theme.reactorAccentRingColor
+        reactorCoreGlow = theme.reactorCoreGlowColor
         armorDark = theme.reactorArmorDarkColor
         armorMid = theme.reactorArmorMidColor
         interiorDark = theme.reactorInteriorDarkColor

@@ -184,6 +184,7 @@ class MainActivity : AppCompatActivity() {
                 )
                 ThemeManager.applyTheme(this, binding.rootContainer, activeTheme)
                 applyStatusBarTheme(config)
+                adapter.refreshTheme()
             }
             if (gridChanged || previous == null) {
                 (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount =

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.databinding.ItemAppBinding
 import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.util.IconProvider
+import com.nerf.launcher.util.ThemeManager
 
 /**
  * Adapter that binds a list of {@link AppInfo} to a RecyclerView using ViewBinding.
@@ -34,7 +35,10 @@ class AppAdapter(
             binding.root.scaleX = 1f
             binding.root.scaleY = 1f
             binding.root.alpha = 1f
+            val theme = ThemeManager.resolveActiveTheme(binding.root.context)
             binding.appName.text = app.appName
+            binding.appName.setTextColor(theme.hudAppLabelColor)
+            binding.iconSocket.background = ThemeManager.createAppIconSocketBackground(binding.root.context, theme)
             iconProvider.loadIconInto(app.packageName, binding.appIcon)
             binding.root.setOnClickListener {
                 onAppClicked(app)
@@ -126,6 +130,12 @@ class AppAdapter(
         val safeEnd = endInclusive.coerceAtMost(itemCount - 1)
         if (safeStart > safeEnd) return
         notifyItemRangeChanged(safeStart, safeEnd - safeStart + 1, iconOnlyPayload)
+    }
+
+    fun refreshTheme() {
+        if (itemCount > 0) {
+            notifyItemRangeChanged(0, itemCount)
+        }
     }
 
     companion object {

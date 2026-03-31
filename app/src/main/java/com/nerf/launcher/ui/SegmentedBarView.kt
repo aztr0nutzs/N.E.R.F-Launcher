@@ -12,6 +12,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.nerf.launcher.R
+import com.nerf.launcher.util.ThemeManager
 import kotlin.math.max
 
 /**
@@ -25,7 +26,7 @@ class SegmentedBarView @JvmOverloads constructor(
 
     private val activePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
-        color = ContextCompat.getColor(context, R.color.nerf_hud_cyan)
+        color = ThemeManager.resolveActiveTheme(context).hudInfoColor
     }
 
     private val inactivePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
