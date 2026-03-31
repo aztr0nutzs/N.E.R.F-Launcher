@@ -203,6 +203,7 @@ class MainActivity : AppCompatActivity() {
             val iconPackChanged = previous?.iconPack != null && previous.iconPack != config.iconPack
 
             animationSpeedMultiplier = if (config.animationSpeedEnabled) 0.65f else 1f
+            var shouldRefreshSystemModules = false
             if (themeChanged || previous == null) {
                 val activeTheme = ThemeManager.resolveActiveTheme(
                     context = this,
@@ -211,7 +212,7 @@ class MainActivity : AppCompatActivity() {
                 )
                 ThemeManager.applyTheme(this, binding.rootContainer, activeTheme)
                 applyStatusBarTheme(config)
-                updateSystemModules(config)
+                shouldRefreshSystemModules = true
             }
             if (gridChanged || previous == null) {
                 (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount =
@@ -226,17 +227,33 @@ class MainActivity : AppCompatActivity() {
 
             bindQuickControls(config)
             if (taskbarSettingsChanged || previous == null) {
-                updateSystemModules(config)
+                shouldRefreshSystemModules = true
             }
             if (animationSpeedChanged || previous == null) {
                 setupScanlineSweep()
             }
             if (iconPackChanged) {
                 iconProvider.evictCache(previous?.iconPack)
-                adapter.refreshIcons()
+                refreshVisibleAppIcons()
+            }
+            if (shouldRefreshSystemModules) {
+                updateSystemModules(config)
             }
             lastObservedConfig = config
         }
+    }
+
+    private fun refreshVisibleAppIcons() {
+        val layoutManager = binding.recyclerView.layoutManager as? GridLayoutManager ?: return
+        val firstVisible = layoutManager.findFirstVisibleItemPosition()
+        val lastVisible = layoutManager.findLastVisibleItemPosition()
+        if (firstVisible == androidx.recyclerview.widget.RecyclerView.NO_POSITION ||
+            lastVisible == androidx.recyclerview.widget.RecyclerView.NO_POSITION
+        ) {
+            adapter.refreshIcons()
+            return
+        }
+        adapter.refreshIconsInRange(firstVisible, lastVisible)
     }
 
     private fun setupSystemModules() {
