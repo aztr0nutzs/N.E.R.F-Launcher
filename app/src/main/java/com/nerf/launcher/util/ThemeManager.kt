@@ -20,6 +20,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.ColorUtils
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
 import com.nerf.launcher.ui.ReactorCoreView
@@ -44,7 +45,7 @@ object ThemeManager {
 
     fun resolveTaskbarIconTint(context: Context, theme: NerfTheme): Int {
         return if (ColorUtils.isColorLight(theme.primary)) {
-            Color.BLACK
+            MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSecondary, theme.hudPanelTextPrimary)
         } else {
             theme.hudPanelTextPrimary
         }
