@@ -2,11 +2,14 @@ package com.nerf.launcher.ui.assistant
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.PorterDuff
+import android.net.Uri
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.view.inputmethod.EditorInfo
 import androidx.core.content.ContextCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -30,6 +33,7 @@ class AssistantOverlayController(
     private var isSpeechRecognitionAvailable = false
     private var isListening = false
     private var pendingMicStartAfterPermission = false
+    private var currentState: AssistantState = AssistantState.IDLE
 
     fun bind() {
         binding.assistantOverlayCloseButton.setOnClickListener { hide() }
@@ -78,6 +82,8 @@ class AssistantOverlayController(
         assistantController.onTranscriptChanged = ::renderTranscript
         renderState(assistantController.currentSnapshot())
         renderVoiceAvailability()
+        configureVideoLoop()
+        startIdleVisualLoop()
     }
 
     fun showWakeOverlay() {
@@ -94,6 +100,7 @@ class AssistantOverlayController(
     }
 
     fun renderState(snapshot: AssistantStateSnapshot) {
+        currentState = snapshot.state
         binding.assistantOverlayBankState.text = bankStateLabel()
         binding.assistantOverlayMoodIndicator.text = binding.root.context.getString(
             R.string.assistant_overlay_mood_indicator_format,
@@ -110,12 +117,14 @@ class AssistantOverlayController(
                     binding.root.context.getString(R.string.assistant_overlay_response_idle)
             }
         }
+        renderVisualState(snapshot.state)
     }
 
     private fun hide(resetAssistantToIdle: Boolean) {
         if (!isVisible) return
         isVisible = false
         stopVoiceRecognition()
+        stopIdleVisualLoop()
         binding.assistantOverlayCard.animate()
             .alpha(0f)
             .translationY(-12f)
@@ -134,6 +143,11 @@ class AssistantOverlayController(
 
     fun release() {
         stopVoiceRecognition()
+        stopIdleVisualLoop()
+        binding.assistantOverlayVisualCore.animate().cancel()
+        binding.assistantOverlayListeningIndicator.animate().cancel()
+        binding.assistantOverlaySpeakingIndicator.animate().cancel()
+        binding.assistantOverlayVisualVideo.stopPlayback()
         speechRecognizer?.destroy()
         speechRecognizer = null
         assistantController.onTranscriptChanged = null
@@ -169,6 +183,7 @@ class AssistantOverlayController(
             .setDuration(180L)
             .setInterpolator(FastOutSlowInInterpolator())
             .start()
+        startIdleVisualLoop()
     }
 
     private fun handleAction(action: () -> Unit) {
@@ -334,6 +349,18 @@ class AssistantOverlayController(
 
     private fun renderVoiceAvailability() {
         binding.assistantOverlayMicButton.isEnabled = isSpeechRecognitionAvailable
+        binding.assistantOverlayModeIndicator.text = if (isSpeechRecognitionAvailable) {
+            binding.root.context.getString(R.string.assistant_overlay_mode_voice)
+        } else {
+            binding.root.context.getString(R.string.assistant_overlay_mode_text)
+        }
+        binding.assistantOverlayModeIndicator.setTextColor(
+            ContextCompat.getColor(
+                binding.root.context,
+                if (isSpeechRecognitionAvailable) R.color.nerf_hud_lime else R.color.nerf_hud_orange
+            )
+        )
+
         if (isSpeechRecognitionAvailable) return
         binding.assistantOverlayMicButton.text =
             binding.root.context.getString(R.string.assistant_overlay_voice_unavailable_button)
@@ -380,6 +407,7 @@ class AssistantOverlayController(
         }
         try {
             recognizer.startListening(recognizeIntent)
+            renderVisualState(AssistantState.LISTENING)
         } catch (_: ActivityNotFoundException) {
             binding.assistantOverlayStatus.text =
                 context.getString(R.string.assistant_overlay_status_error)
@@ -442,6 +470,117 @@ class AssistantOverlayController(
             AssistantState.MUTED,
             AssistantState.ERROR,
             AssistantState.SHUTTING_DOWN -> android.R.color.holo_red_light
+        }
+    }
+
+    private fun renderVisualState(state: AssistantState) {
+        val context = binding.root.context
+        val tintColor = ContextCompat.getColor(context, stateColor(state))
+        binding.assistantOverlayListeningIndicator.background.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN)
+        binding.assistantOverlaySpeakingIndicator.background.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN)
+
+        binding.assistantOverlayListeningIndicator.visibility = if (state == AssistantState.LISTENING || state == AssistantState.AWAITING_INPUT) View.VISIBLE else View.GONE
+        binding.assistantOverlaySpeakingIndicator.visibility = if (state == AssistantState.SPEAKING || state == AssistantState.RESPONDING) View.VISIBLE else View.GONE
+
+        binding.assistantOverlayListeningIndicator.animate().cancel()
+        binding.assistantOverlaySpeakingIndicator.animate().cancel()
+        binding.assistantOverlayVisualCore.animate().cancel()
+
+        when (state) {
+            AssistantState.LISTENING, AssistantState.AWAITING_INPUT -> {
+                binding.assistantOverlayListeningIndicator.alpha = 0.35f
+                binding.assistantOverlayListeningIndicator.animate()
+                    .alpha(1f)
+                    .setDuration(550L)
+                    .setInterpolator(LinearInterpolator())
+                    .withEndAction {
+                        if (currentState == AssistantState.LISTENING || currentState == AssistantState.AWAITING_INPUT) {
+                            renderVisualState(currentState)
+                        }
+                    }
+                    .start()
+                binding.assistantOverlayVisualCore.animate().rotationBy(14f).setDuration(650L).start()
+            }
+
+            AssistantState.SPEAKING, AssistantState.RESPONDING -> {
+                binding.assistantOverlaySpeakingIndicator.alpha = 0.2f
+                binding.assistantOverlaySpeakingIndicator.animate()
+                    .alpha(1f)
+                    .setDuration(320L)
+                    .setInterpolator(LinearInterpolator())
+                    .withEndAction {
+                        if (currentState == AssistantState.SPEAKING || currentState == AssistantState.RESPONDING) {
+                            renderVisualState(currentState)
+                        }
+                    }
+                    .start()
+                binding.assistantOverlayVisualCore.animate().scaleX(1.05f).scaleY(1.05f).setDuration(280L)
+                    .withEndAction {
+                        binding.assistantOverlayVisualCore.animate().scaleX(1f).scaleY(1f).setDuration(280L).start()
+                    }
+                    .start()
+            }
+
+            AssistantState.MUTED, AssistantState.ERROR, AssistantState.SHUTTING_DOWN -> {
+                binding.assistantOverlayVisualCore.alpha = 0.74f
+            }
+
+            else -> {
+                binding.assistantOverlayVisualCore.alpha = 0.96f
+                if (state == AssistantState.IDLE || state == AssistantState.WAKE || state == AssistantState.THINKING || state == AssistantState.PROCESSING) {
+                    startIdleVisualLoop()
+                }
+            }
+        }
+        updateVideoForState(state)
+    }
+
+    private fun startIdleVisualLoop() {
+        if (!isVisible) return
+        if (!(currentState == AssistantState.IDLE || currentState == AssistantState.WAKE || currentState == AssistantState.THINKING || currentState == AssistantState.PROCESSING)) {
+            return
+        }
+        binding.assistantOverlayVisualCore.animate().cancel()
+        binding.assistantOverlayVisualCore.animate()
+            .rotationBy(8f)
+            .setDuration(4000L)
+            .setInterpolator(LinearInterpolator())
+            .withEndAction {
+                startIdleVisualLoop()
+            }
+            .start()
+    }
+
+    private fun stopIdleVisualLoop() {
+        binding.assistantOverlayVisualCore.animate().cancel()
+    }
+
+    private fun configureVideoLoop() {
+        val context = binding.root.context
+        binding.assistantOverlayVisualVideo.setOnPreparedListener { mediaPlayer ->
+            mediaPlayer.isLooping = true
+            mediaPlayer.setVolume(0f, 0f)
+        }
+        binding.assistantOverlayVisualVideo.setOnErrorListener { _, _, _ ->
+            binding.assistantOverlayVisualVideo.visibility = View.GONE
+            true
+        }
+        val uri = Uri.parse("android.resource://${context.packageName}/${R.raw.nerf_assistant_intro}")
+        binding.assistantOverlayVisualVideo.setVideoURI(uri)
+    }
+
+    private fun updateVideoForState(state: AssistantState) {
+        val shouldShowVideo = state == AssistantState.WAKE ||
+            state == AssistantState.LISTENING ||
+            state == AssistantState.SPEAKING
+        if (!shouldShowVideo) {
+            binding.assistantOverlayVisualVideo.pause()
+            binding.assistantOverlayVisualVideo.visibility = View.GONE
+            return
+        }
+        binding.assistantOverlayVisualVideo.visibility = View.VISIBLE
+        if (!binding.assistantOverlayVisualVideo.isPlaying) {
+            binding.assistantOverlayVisualVideo.start()
         }
     }
 }
