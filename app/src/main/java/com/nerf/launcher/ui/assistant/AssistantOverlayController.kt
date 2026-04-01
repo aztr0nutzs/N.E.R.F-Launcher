@@ -50,6 +50,8 @@ class AssistantOverlayController(
             )
         }
         binding.assistantOverlaySubmitButton.setOnClickListener { submitTypedCommand() }
+        binding.assistantOverlayRepeatLastButton.setOnClickListener { submitRepeatLast() }
+        binding.assistantOverlayInterruptButton.setOnClickListener { interruptSpeaking() }
         binding.assistantOverlayCommandInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
                 submitTypedCommand()
@@ -59,6 +61,7 @@ class AssistantOverlayController(
             }
         }
         binding.assistantOverlayRoot.visibility = View.GONE
+        assistantController.onTranscriptChanged = ::renderTranscript
         renderState(assistantController.currentSnapshot())
     }
 
@@ -77,6 +80,10 @@ class AssistantOverlayController(
 
     fun renderState(snapshot: AssistantStateSnapshot) {
         binding.assistantOverlayBankState.text = bankStateLabel()
+        binding.assistantOverlayMoodIndicator.text = binding.root.context.getString(
+            R.string.assistant_overlay_mood_indicator_format,
+            snapshot.mood.label.uppercase()
+        )
         binding.assistantOverlayStatus.text = stateLabel(snapshot.state)
         binding.assistantOverlayStatus.setTextColor(
             ContextCompat.getColor(binding.root.context, stateColor(snapshot.state))
@@ -110,6 +117,7 @@ class AssistantOverlayController(
     fun isShowing(): Boolean = isVisible
 
     fun release() {
+        assistantController.onTranscriptChanged = null
         assistantController.shutdown()
     }
 
@@ -160,6 +168,39 @@ class AssistantOverlayController(
             binding.assistantOverlayResponse.text = response
         }
         binding.assistantOverlayCommandInput.text?.clear()
+    }
+
+    private fun submitRepeatLast() {
+        binding.assistantOverlayCommandInput.setText("repeat")
+        submitTypedCommand()
+    }
+
+    private fun interruptSpeaking() {
+        assistantController.interruptSpeaking()
+        binding.assistantOverlayStatus.text =
+            binding.root.context.getString(R.string.assistant_overlay_status_listening)
+        binding.assistantOverlayStatus.setTextColor(
+            ContextCompat.getColor(binding.root.context, R.color.nerf_hud_lime)
+        )
+    }
+
+    private fun renderTranscript(entries: List<AssistantController.TranscriptEntry>) {
+        if (entries.isEmpty()) {
+            binding.assistantOverlayTranscript.text =
+                binding.root.context.getString(R.string.assistant_overlay_transcript_empty)
+            return
+        }
+        val context = binding.root.context
+        binding.assistantOverlayTranscript.text = entries.asReversed().joinToString("\n") { entry ->
+            val prefix = when (entry.speaker) {
+                AssistantController.Speaker.USER -> context.getString(R.string.assistant_overlay_transcript_user_prefix)
+                AssistantController.Speaker.ASSISTANT -> context.getString(R.string.assistant_overlay_transcript_assistant_prefix)
+            }
+            "$prefix: ${entry.text}"
+        }
+        binding.assistantOverlayTranscriptContainer.post {
+            binding.assistantOverlayTranscriptContainer.fullScroll(View.FOCUS_DOWN)
+        }
     }
 
     private fun bankStateLabel(): String {

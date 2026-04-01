@@ -11,6 +11,16 @@ class AssistantController(
     private val responseRepository: AiResponseRepository = AiResponseRepository(context),
     private val personalityLayer: ReactorAssistant = ReactorAssistant(context)
 ) {
+    data class TranscriptEntry(
+        val speaker: Speaker,
+        val text: String,
+        val timestampMs: Long = System.currentTimeMillis()
+    )
+
+    enum class Speaker {
+        USER,
+        ASSISTANT
+    }
 
     companion object {
         private const val TAG = "AssistantController"
@@ -19,6 +29,7 @@ class AssistantController(
         private const val REBOOT_RETURN_DELAY = 2_200L
         private const val SHUTDOWN_TTS_DELAY = 3_000L
         private const val MAX_RESPONSE_HISTORY = 40
+        private const val MAX_TRANSCRIPT_HISTORY = 80
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -30,6 +41,7 @@ class AssistantController(
     private var pendingIdleTimeout: Runnable? = null
 
     private val responseHistory = LinkedList<String>()
+    private val transcriptHistory = LinkedList<TranscriptEntry>()
     private var lastCategory: AiResponseRepository.Category? = null
     private var _interactionCount = 0
 
@@ -50,6 +62,11 @@ class AssistantController(
 
     var onReadyStateChanged: ((isReady: Boolean) -> Unit)? = null
     var onLauncherAction: ((AssistantAction.LauncherCommand) -> AssistantActionResult.LauncherCommandHandled)? = null
+    var onTranscriptChanged: ((List<TranscriptEntry>) -> Unit)? = null
+        set(value) {
+            field = value
+            value?.invoke(transcriptHistory.toList())
+        }
 
     init {
         personalityLayer.onSpeechStarted = { text ->
@@ -81,6 +98,7 @@ class AssistantController(
     fun getLastResponse(): String? = responseHistory.peekFirst()
 
     fun getResponseHistory(): List<String> = responseHistory.toList()
+    fun getTranscriptHistory(): List<TranscriptEntry> = transcriptHistory.toList()
 
     fun getInteractionCount(): Int = _interactionCount
 
@@ -123,6 +141,13 @@ class AssistantController(
         clearAllPending()
         personalityLayer.stop()
         postState(AssistantStateSnapshot(AssistantState.IDLE, null, currentMood))
+    }
+
+    fun interruptSpeaking() {
+        if (!snapshot.state.canInterrupt) return
+        clearPendingListeningTransition()
+        personalityLayer.stop()
+        postState(snapshot.copy(state = AssistantState.AWAITING_INPUT))
     }
 
     fun speakCategory(category: AiResponseRepository.Category): String =
@@ -235,6 +260,7 @@ class AssistantController(
 
     fun respondToInput(input: String): String? {
         val intent = intentParser.parse(input) ?: return null
+        addTranscriptEntry(Speaker.USER, input.trim())
         memoryStore.rememberIntent(intent)
         val context = buildContextSnapshot()
         val isSpam = memoryStore.markInput(intent.normalizedInput, System.currentTimeMillis())
@@ -315,6 +341,14 @@ class AssistantController(
     private fun addToHistory(response: String) {
         responseHistory.addFirst(response)
         if (responseHistory.size > MAX_RESPONSE_HISTORY) responseHistory.removeLast()
+        addTranscriptEntry(Speaker.ASSISTANT, response)
+    }
+
+    private fun addTranscriptEntry(speaker: Speaker, text: String) {
+        if (text.isBlank()) return
+        transcriptHistory.addFirst(TranscriptEntry(speaker = speaker, text = text))
+        if (transcriptHistory.size > MAX_TRANSCRIPT_HISTORY) transcriptHistory.removeLast()
+        onTranscriptChanged?.invoke(transcriptHistory.toList())
     }
 
     private fun scheduleListening(response: String?) {
