@@ -446,9 +446,7 @@ class AssistantOverlayController(
             AssistantState.SPEAKING -> R.string.assistant_overlay_status_speaking
             AssistantState.MUTED -> R.string.assistant_overlay_status_muted
             AssistantState.ERROR -> R.string.assistant_overlay_status_error
-            AssistantState.PROCESSING -> R.string.assistant_overlay_status_thinking
             AssistantState.AWAITING_INPUT -> R.string.assistant_overlay_status_listening
-            AssistantState.COOLING_DOWN -> R.string.assistant_overlay_status_idle
             AssistantState.REBOOTING -> R.string.assistant_overlay_status_wake
             AssistantState.SHUTTING_DOWN -> R.string.assistant_overlay_status_muted
         }
@@ -463,9 +461,7 @@ class AssistantOverlayController(
             AssistantState.THINKING -> R.color.nerf_hud_orange
             AssistantState.RESPONDING -> R.color.nerf_hud_cyan
             AssistantState.SPEAKING -> R.color.nerf_hud_magenta
-            AssistantState.PROCESSING -> R.color.nerf_hud_orange
             AssistantState.AWAITING_INPUT -> R.color.nerf_hud_lime
-            AssistantState.COOLING_DOWN -> R.color.nerf_hud_cyan
             AssistantState.REBOOTING -> R.color.nerf_hud_orange
             AssistantState.MUTED,
             AssistantState.ERROR,
@@ -527,7 +523,7 @@ class AssistantOverlayController(
 
             else -> {
                 binding.assistantOverlayVisualCore.alpha = 0.96f
-                if (state == AssistantState.IDLE || state == AssistantState.WAKE || state == AssistantState.THINKING || state == AssistantState.PROCESSING) {
+                if (state == AssistantState.IDLE || state == AssistantState.WAKE || state == AssistantState.THINKING) {
                     startIdleVisualLoop()
                 }
             }
@@ -537,7 +533,7 @@ class AssistantOverlayController(
 
     private fun startIdleVisualLoop() {
         if (!isVisible) return
-        if (!(currentState == AssistantState.IDLE || currentState == AssistantState.WAKE || currentState == AssistantState.THINKING || currentState == AssistantState.PROCESSING)) {
+        if (!(currentState == AssistantState.IDLE || currentState == AssistantState.WAKE || currentState == AssistantState.THINKING)) {
             return
         }
         binding.assistantOverlayVisualCore.animate().cancel()

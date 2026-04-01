@@ -9,17 +9,15 @@ enum class AssistantState {
     SPEAKING,
     MUTED,
     ERROR,
-    PROCESSING,
     AWAITING_INPUT,
-    COOLING_DOWN,
     REBOOTING,
     SHUTTING_DOWN;
 
     val isActive: Boolean
-        get() = this != IDLE && this != MUTED && this != COOLING_DOWN && this != SHUTTING_DOWN
+        get() = this != IDLE && this != MUTED && this != SHUTTING_DOWN
 
     val isBusy: Boolean
-        get() = this == THINKING || this == RESPONDING || this == SPEAKING || this == PROCESSING
+        get() = this == THINKING || this == RESPONDING || this == SPEAKING
 
     val canInterrupt: Boolean
         get() = this != REBOOTING && this != SHUTTING_DOWN
