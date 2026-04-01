@@ -62,6 +62,7 @@ class AiResponseRepository(private val context: Context) {
         val mood: PersonalityMood = PersonalityMood.SNARKY,
         val tags: Set<String> = emptySet(),
         val preferredText: String? = null,
+        val templateValues: Map<String, String> = emptyMap(),
         val allowFallbackToGeneric: Boolean = true
     )
 
@@ -93,14 +94,25 @@ class AiResponseRepository(private val context: Context) {
     fun getResponse(
         category: Category,
         mood: PersonalityMood,
-        tags: Set<String> = emptySet()
-    ): String = getResponse(ResponseRequest(category = category, mood = mood, tags = tags))
+        tags: Set<String> = emptySet(),
+        templateValues: Map<String, String> = emptyMap()
+    ): String = getResponse(
+        ResponseRequest(
+            category = category,
+            mood = mood,
+            tags = tags,
+            templateValues = templateValues
+        )
+    )
 
     fun getResponse(request: ResponseRequest): String {
         ensureLoaded()
         request.preferredText
             ?.takeIf { it.isNotBlank() }
-            ?.let { return rememberAndReturn(request.category, it.trim()) }
+            ?.let {
+                val rendered = applyTemplate(it.trim(), request.templateValues)
+                return rememberAndReturn(request.category, rendered)
+            }
 
         val lines = responseLibrary?.get(request.category).orEmpty()
         if (lines.isEmpty()) {
@@ -115,10 +127,9 @@ class AiResponseRepository(private val context: Context) {
                 null
             }
 
-        return rememberAndReturn(
-            request.category,
-            chosen?.text ?: fallbackResponse(request.category, request.mood)
-        )
+        val rawText = chosen?.text ?: fallbackResponse(request.category, request.mood)
+        val renderedText = applyTemplate(rawText, request.templateValues)
+        return rememberAndReturn(request.category, renderedText)
     }
 
     fun getResponseForMood(category: Category, mood: PersonalityMood): String =
@@ -286,6 +297,20 @@ class AiResponseRepository(private val context: Context) {
             PersonalityMood.SNARKY -> "Response bank unavailable for ${category.name.lowercase().replace('_', ' ')}. Inspiring."
             PersonalityMood.PLAYFUL -> "Response bank unavailable for ${category.name.lowercase().replace('_', ' ')}. Improvisation mode is online."
             PersonalityMood.SAVAGE -> "Response bank unavailable for ${category.name.lowercase().replace('_', ' ')}. Even the fallback judged this request."
+        }
+    }
+
+
+    private fun applyTemplate(template: String, templateValues: Map<String, String>): String {
+        if (templateValues.isEmpty()) return template
+        val normalizedValues = templateValues
+            .mapKeys { it.key.trim().lowercase() }
+            .mapValues { it.value.trim() }
+
+        val pattern = Regex("\\{\\{([a-zA-Z0-9_\\-]+)}}")
+        return pattern.replace(template) { matchResult ->
+            val key = matchResult.groupValues.getOrNull(1)?.trim()?.lowercase().orEmpty()
+            normalizedValues[key]?.takeIf { it.isNotBlank() } ?: matchResult.value
         }
     }
 
