@@ -110,6 +110,15 @@
                         android:text="@string/assistant_overlay_visual_hint"
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
                         android:textColor="@color/nerf_hud_panel_text_primary" />
+
+                    <TextView
+                        android:id="@+id/assistant_overlay_mood_indicator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/assistant_overlay_mood_indicator_idle"
+                        android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+                        android:textColor="@color/nerf_hud_magenta" />
                 </LinearLayout>
             </LinearLayout>
         </FrameLayout>
@@ -133,6 +142,32 @@
             android:text="@string/assistant_overlay_response_idle"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
             android:textColor="@color/nerf_hud_panel_text_primary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/assistant_overlay_transcript_label"
+            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+            android:textColor="@color/nerf_hud_orange" />
+
+        <ScrollView
+            android:id="@+id/assistant_overlay_transcript_container"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/drawer_shell_background"
+            android:fillViewport="true"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/assistant_overlay_transcript"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/assistant_overlay_transcript_empty"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium"
+                android:textColor="@color/nerf_hud_panel_text_primary" />
+        </ScrollView>
 
         <LinearLayout
             android:id="@+id/assistant_overlay_input_row"
@@ -165,6 +200,36 @@
                 android:layout_marginStart="8dp"
                 android:text="@string/assistant_overlay_submit"
                 android:textColor="@color/nerf_hud_cyan"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/assistant_overlay_voice_controls_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/assistant_overlay_repeat_last_button"
+                style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="@string/assistant_overlay_repeat_last"
+                android:textColor="@color/nerf_hud_magenta"
+                android:textSize="10sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/assistant_overlay_interrupt_button"
+                style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="@string/assistant_overlay_interrupt"
+                android:textColor="@color/nerf_hud_orange"
                 android:textSize="10sp" />
         </LinearLayout>
 

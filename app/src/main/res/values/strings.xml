@@ -137,6 +137,14 @@
     <string name="assistant_overlay_bank_fallback">RESPONSE BANK FALLBACK</string>
     <string name="assistant_overlay_command_hint">Type assistant command</string>
     <string name="assistant_overlay_submit">SEND</string>
+    <string name="assistant_overlay_repeat_last">REPEAT LAST</string>
+    <string name="assistant_overlay_interrupt">STOP VOICE</string>
+    <string name="assistant_overlay_mood_indicator_idle">PROFILE SNARKY</string>
+    <string name="assistant_overlay_mood_indicator_format">PROFILE %1$s</string>
+    <string name="assistant_overlay_transcript_label">TRANSCRIPT</string>
+    <string name="assistant_overlay_transcript_empty">No conversation yet. Send a command to start transcript logging.</string>
+    <string name="assistant_overlay_transcript_user_prefix">YOU</string>
+    <string name="assistant_overlay_transcript_assistant_prefix">N.E.R.F.</string>
     <string name="assistant_overlay_response_empty_command">Command input is empty. Enter a launcher command to continue.</string>
     <string name="assistant_overlay_response_unknown_command">Command was not recognized. Try settings, diagnostics, node hunter, or lock surface.</string>
     <string name="assistant_overlay_action_settings_status">Routing to launcher settings.</string>
