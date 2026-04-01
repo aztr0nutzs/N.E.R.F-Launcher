@@ -560,9 +560,7 @@ class ReactorModuleView @JvmOverloads constructor(
             AssistantState.THINKING -> hudOrange
             AssistantState.RESPONDING -> ColorUtils.blendARGB(hudOrange, reactorAccent, 0.38f)
             AssistantState.SPEAKING -> hudMagenta
-            AssistantState.PROCESSING -> hudOrange
             AssistantState.AWAITING_INPUT -> hudCyan
-            AssistantState.COOLING_DOWN -> reactorCoreGlow
             AssistantState.REBOOTING -> reactorAccent
             AssistantState.MUTED -> assistantMutedColor
             AssistantState.ERROR,
@@ -578,9 +576,7 @@ class ReactorModuleView @JvmOverloads constructor(
             AssistantState.THINKING -> 0.74f
             AssistantState.RESPONDING -> 0.66f
             AssistantState.SPEAKING -> 0.88f
-            AssistantState.PROCESSING -> 0.74f
             AssistantState.AWAITING_INPUT -> 0.56f
-            AssistantState.COOLING_DOWN -> 0.18f
             AssistantState.REBOOTING -> 0.42f
             AssistantState.MUTED -> 0.3f
             AssistantState.ERROR,
