@@ -1,7 +1,9 @@
 package com.nerf.launcher.ui
 
 import android.annotation.SuppressLint
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,7 +14,9 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -82,6 +86,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var localNetworkScanner: LocalNetworkScanner
     private var isNetworkScanRunning: Boolean = false
     private var lastNetworkScanResult: List<NetworkNode>? = null
+    private val recordAudioPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        assistantOverlayController.onRecordAudioPermissionResult(granted)
+    }
 
     private val lockSurfaceClockTick = object : Runnable {
         override fun run() {
@@ -286,7 +295,16 @@ class MainActivity : AppCompatActivity() {
         }
         assistantOverlayController = AssistantOverlayController(
             binding = binding.assistantOverlay,
-            assistantController = assistantController
+            assistantController = assistantController,
+            hasRecordAudioPermission = {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.RECORD_AUDIO
+                ) == PackageManager.PERMISSION_GRANTED
+            },
+            requestRecordAudioPermission = {
+                recordAudioPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            }
         )
         assistantOverlayController.bind()
     }

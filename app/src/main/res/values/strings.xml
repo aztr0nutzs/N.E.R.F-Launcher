@@ -137,6 +137,8 @@
     <string name="assistant_overlay_bank_fallback">RESPONSE BANK FALLBACK</string>
     <string name="assistant_overlay_command_hint">Type assistant command</string>
     <string name="assistant_overlay_submit">SEND</string>
+    <string name="assistant_overlay_mic">MIC</string>
+    <string name="assistant_overlay_mic_cd">Start or stop voice input</string>
     <string name="assistant_overlay_repeat_last">REPEAT LAST</string>
     <string name="assistant_overlay_interrupt">STOP VOICE</string>
     <string name="assistant_overlay_mood_indicator_idle">PROFILE SNARKY</string>
@@ -147,6 +149,14 @@
     <string name="assistant_overlay_transcript_assistant_prefix">N.E.R.F.</string>
     <string name="assistant_overlay_response_empty_command">Command input is empty. Enter a launcher command to continue.</string>
     <string name="assistant_overlay_response_unknown_command">Command was not recognized. Try settings, diagnostics, node hunter, or lock surface.</string>
+    <string name="assistant_overlay_status_permission_denied">Microphone permission denied. Voice input is disabled.</string>
+    <string name="assistant_overlay_status_listening_stopped">Voice capture stopped. Text input remains available.</string>
+    <string name="assistant_overlay_voice_prompt_response">Listening… say a launcher command.</string>
+    <string name="assistant_overlay_voice_no_match_response">No clear voice command detected. Try again or use text input.</string>
+    <string name="assistant_overlay_voice_error_response">Voice capture failed. Use text input or retry microphone.</string>
+    <string name="assistant_overlay_voice_permission_denied_response">Microphone access was denied. Continue with text input.</string>
+    <string name="assistant_overlay_voice_unavailable_response">Speech recognition is unavailable on this device. Text input remains active.</string>
+    <string name="assistant_overlay_voice_unavailable_button">NO MIC</string>
     <string name="assistant_overlay_action_settings_status">Routing to launcher settings.</string>
     <string name="assistant_overlay_action_diagnostics_status">Opening Reactor Diagnostics.</string>
     <string name="assistant_overlay_action_node_hunter_status">Launching Node Hunter.</string>
