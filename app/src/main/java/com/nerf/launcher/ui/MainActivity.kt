@@ -40,6 +40,7 @@ import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.util.assistant.AssistantAction
 import com.nerf.launcher.util.assistant.AssistantActionResult
 import com.nerf.launcher.util.assistant.AssistantController
+import com.nerf.launcher.util.assistant.AssistantSessionManager
 import com.nerf.launcher.util.network.LocalNetworkScanner
 import com.nerf.launcher.util.network.NetworkNode
 import com.nerf.launcher.viewmodel.LauncherViewModel
@@ -278,7 +279,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAssistantOverlay() {
-        assistantController = AssistantController(this)
+        assistantController = AssistantSessionManager.acquire(this)
+        assistantController.setActiveSurface("main")
         assistantController.onLauncherAction = { command ->
             handleAssistantLauncherCommand(command)
         }
@@ -947,7 +949,10 @@ class MainActivity : AppCompatActivity() {
         scanlineSweepAnimator = null
         scanlineOpacityAnimator = null
         lockSurfaceClockHandler.removeCallbacks(lockSurfaceClockTick)
+        assistantController.onLauncherAction = null
+        assistantController.onStateChanged = null
         assistantOverlayController.release()
+        AssistantSessionManager.release(assistantController)
         hudController.release()
         iconProvider.release()
         StatusBarManager.resetStatusBar(this)
