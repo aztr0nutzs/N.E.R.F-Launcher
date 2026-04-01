@@ -8,6 +8,12 @@ sealed class AssistantActionResult {
         val category: Category
     ) : AssistantActionResult()
 
+    data class LauncherCommandHandled(
+        val command: AssistantAction.LauncherCommand,
+        val spokenText: String,
+        val performed: Boolean
+    ) : AssistantActionResult()
+
     data class Repeated(val text: String) : AssistantActionResult()
 
     data object Ignored : AssistantActionResult()

@@ -24,6 +24,8 @@ data class NetworkNode(
 
 class LocalNetworkScanner(private val context: Context) {
 
+    fun canScanLocalSubnet(): Boolean = getLocalIpAddress() != null
+
     /**
      * Scans the local /24 subnet for active devices using parallel coroutines
      * and attempts to resolve hardware MAC addresses via the ARP table.

@@ -37,9 +37,15 @@ import com.nerf.launcher.util.SystemModuleController
 import com.nerf.launcher.util.SystemModuleSnapshot
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
+import com.nerf.launcher.util.assistant.AssistantAction
+import com.nerf.launcher.util.assistant.AssistantActionResult
 import com.nerf.launcher.util.assistant.AssistantController
+import com.nerf.launcher.util.network.LocalNetworkScanner
+import com.nerf.launcher.util.network.NetworkNode
 import com.nerf.launcher.viewmodel.LauncherViewModel
 import android.view.animation.LinearInterpolator
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
 
@@ -70,6 +76,10 @@ class MainActivity : AppCompatActivity() {
     private var isLockSurfaceVisible: Boolean = false
     private var lastObservedConfig: AppConfig? = null
     private var animationSpeedMultiplier: Float = 1f
+    private var latestSystemSnapshot: SystemModuleSnapshot? = null
+    private lateinit var localNetworkScanner: LocalNetworkScanner
+    private var isNetworkScanRunning: Boolean = false
+    private var lastNetworkScanResult: List<NetworkNode>? = null
 
     private val lockSurfaceClockTick = object : Runnable {
         override fun run() {
@@ -84,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         iconProvider = IconProvider(applicationContext, IconCache(50))
+        localNetworkScanner = LocalNetworkScanner(applicationContext)
         systemModuleController = SystemModuleController(applicationContext) { snapshot ->
             renderSystemModules(snapshot)
         }
@@ -267,21 +278,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupAssistantOverlay() {
         assistantController = AssistantController(this)
+        assistantController.onLauncherAction = { command ->
+            handleAssistantLauncherCommand(command)
+        }
         assistantOverlayController = AssistantOverlayController(
             binding = binding.assistantOverlay,
-            assistantController = assistantController,
-            onOpenSettings = {
-                startActivity(Intent(this, SettingsActivity::class.java))
-            },
-            onOpenDiagnostics = {
-                startActivity(Intent(this, ReactorDiagnosticsActivity::class.java))
-            },
-            onOpenNodeHunter = {
-                openNodeHunterModule(NodeHunterModuleActivity.SOURCE_ASSISTANT)
-            },
-            onShowLockSurface = {
-                showLockSurface()
-            }
+            assistantController = assistantController
         )
         assistantOverlayController.bind()
     }
@@ -485,6 +487,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun renderSystemModules(snapshot: SystemModuleSnapshot) {
+        latestSystemSnapshot = snapshot
         val activeTheme = ThemeManager.resolveActiveTheme(this)
         if (snapshot.batteryPercent != null) {
             val batteryStateTextRes = if (snapshot.isCharging) {
@@ -544,6 +547,156 @@ class MainActivity : AppCompatActivity() {
             snapshot.reactorSync
         )
         reactorCoordinator.updateSyncPreview(snapshot.reactorSync)
+    }
+
+    private fun handleAssistantLauncherCommand(
+        command: AssistantAction.LauncherCommand
+    ): AssistantActionResult.LauncherCommandHandled {
+        return when (command) {
+            AssistantAction.LauncherCommand.OPEN_SETTINGS -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                AssistantActionResult.LauncherCommandHandled(
+                    command = command,
+                    spokenText = "Opening launcher settings now.",
+                    performed = true
+                )
+            }
+
+            AssistantAction.LauncherCommand.OPEN_DIAGNOSTICS -> {
+                startActivity(Intent(this, ReactorDiagnosticsActivity::class.java))
+                AssistantActionResult.LauncherCommandHandled(
+                    command = command,
+                    spokenText = "Opening reactor diagnostics.",
+                    performed = true
+                )
+            }
+
+            AssistantAction.LauncherCommand.OPEN_NODE_HUNTER -> {
+                openNodeHunterModule(NodeHunterModuleActivity.SOURCE_ASSISTANT)
+                AssistantActionResult.LauncherCommandHandled(
+                    command = command,
+                    spokenText = "Opening Node Hunter module.",
+                    performed = true
+                )
+            }
+
+            AssistantAction.LauncherCommand.SHOW_LOCK_SURFACE -> {
+                showLockSurface()
+                AssistantActionResult.LauncherCommandHandled(
+                    command = command,
+                    spokenText = "Lock surface is now active.",
+                    performed = true
+                )
+            }
+
+            AssistantAction.LauncherCommand.CYCLE_THEME -> {
+                val config = ConfigRepository.get().config.value
+                if (config == null || themeNames.isEmpty()) {
+                    AssistantActionResult.LauncherCommandHandled(
+                        command = command,
+                        spokenText = "Theme cycle is unavailable until launcher config is loaded.",
+                        performed = false
+                    )
+                } else {
+                    val currentIndex = themeNames.indexOf(config.themeName).takeIf { it >= 0 } ?: 0
+                    val nextTheme = themeNames[(currentIndex + 1) % themeNames.size]
+                    ConfigRepository.get().updateTheme(nextTheme)
+                    AssistantActionResult.LauncherCommandHandled(
+                        command = command,
+                        spokenText = "Theme cycled to $nextTheme.",
+                        performed = true
+                    )
+                }
+            }
+
+            AssistantAction.LauncherCommand.REPORT_CURRENT_THEME -> {
+                val activeTheme = ConfigRepository.get().config.value?.themeName
+                val spokenText = if (activeTheme.isNullOrBlank()) {
+                    "Current theme is unavailable because configuration is not ready."
+                } else {
+                    "Current launcher theme is $activeTheme."
+                }
+                AssistantActionResult.LauncherCommandHandled(
+                    command = command,
+                    spokenText = spokenText,
+                    performed = activeTheme != null
+                )
+            }
+
+            AssistantAction.LauncherCommand.REPORT_SYSTEM_STATE -> {
+                val snapshot = latestSystemSnapshot
+                val spokenText = if (snapshot == null) {
+                    "System telemetry is still initializing. Try again in a moment."
+                } else {
+                    val battery = snapshot.batteryPercent?.let { "$it percent" } ?: "unavailable"
+                    val storage = snapshot.storageUsagePercent?.let { "$it percent used" } ?: "unavailable"
+                    val powerSave = if (snapshot.isPowerSaveMode) "enabled" else "disabled"
+                    "Battery $battery, storage $storage, uptime ${snapshot.uptimeDays} days ${snapshot.uptimeHours} hours, power save $powerSave."
+                }
+                AssistantActionResult.LauncherCommandHandled(
+                    command = command,
+                    spokenText = spokenText,
+                    performed = snapshot != null
+                )
+            }
+
+            AssistantAction.LauncherCommand.REPORT_APP_FILTER_STATE -> {
+                AssistantActionResult.LauncherCommandHandled(
+                    command = command,
+                    spokenText = "App catalog has ${allApps.size} apps loaded with $filteredAppCount currently in filter scope.",
+                    performed = true
+                )
+            }
+
+            AssistantAction.LauncherCommand.START_LOCAL_NETWORK_SCAN -> {
+                if (!localNetworkScanner.canScanLocalSubnet()) {
+                    return AssistantActionResult.LauncherCommandHandled(
+                        command = command,
+                        spokenText = "Local network scan is unavailable because Wi-Fi subnet data is not accessible.",
+                        performed = false
+                    )
+                }
+                if (isNetworkScanRunning) {
+                    return AssistantActionResult.LauncherCommandHandled(
+                        command = command,
+                        spokenText = "A local network scan is already running.",
+                        performed = true
+                    )
+                }
+                isNetworkScanRunning = true
+                lastNetworkScanResult = null
+                lifecycleScope.launch {
+                    lastNetworkScanResult = localNetworkScanner.scanLocalSubnet()
+                    isNetworkScanRunning = false
+                }
+                AssistantActionResult.LauncherCommandHandled(
+                    command = command,
+                    spokenText = "Starting local network scan now.",
+                    performed = true
+                )
+            }
+
+            AssistantAction.LauncherCommand.SUMMARIZE_LOCAL_NETWORK_SCAN -> {
+                val spokenText = when {
+                    isNetworkScanRunning -> "Local network scan is in progress. Ask again when it finishes."
+                    lastNetworkScanResult == null -> "No completed local network scan is available yet."
+                    else -> {
+                        val nodes = lastNetworkScanResult.orEmpty()
+                        if (nodes.isEmpty()) {
+                            "Local network scan completed with zero reachable nodes."
+                        } else {
+                            val averagePing = nodes.map { it.pingMs }.average().toLong()
+                            "Local network scan found ${nodes.size} reachable nodes with average latency ${averagePing} milliseconds."
+                        }
+                    }
+                }
+                AssistantActionResult.LauncherCommandHandled(
+                    command = command,
+                    spokenText = spokenText,
+                    performed = lastNetworkScanResult != null || isNetworkScanRunning
+                )
+            }
+        }
     }
 
     private fun setupQuickControls() {
