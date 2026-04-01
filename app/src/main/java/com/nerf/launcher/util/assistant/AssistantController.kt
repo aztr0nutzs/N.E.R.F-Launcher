@@ -19,8 +19,6 @@ class AssistantController(
         private const val REBOOT_RETURN_DELAY = 2_200L
         private const val SHUTDOWN_TTS_DELAY = 3_000L
         private const val MAX_RESPONSE_HISTORY = 40
-        private const val BUTTON_SPAM_WINDOW_MS = 1_200L
-        private const val BUTTON_SPAM_THRESHOLD = 4
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -35,9 +33,10 @@ class AssistantController(
     private var lastCategory: AiResponseRepository.Category? = null
     private var _interactionCount = 0
 
-    private var lastInputSignature: String? = null
-    private var lastInputTimestampMs: Long = 0L
-    private var repeatedInputCount: Int = 0
+    private val intentParser = AssistantIntentParser()
+    private val commandRouter = AssistantCommandRouter()
+    private val responseComposer = AssistantResponseComposer()
+    private val memoryStore = AssistantMemoryStore()
 
     var onStateChanged: ((AssistantStateSnapshot) -> Unit)? = null
         set(value) {
@@ -234,64 +233,26 @@ class AssistantController(
     }
 
     fun respondToInput(input: String): String? {
-        val normalized = input.lowercase().trim()
-        if (normalized.isBlank()) return null
+        val intent = intentParser.parse(input) ?: return null
+        val context = buildContextSnapshot()
+        val isSpam = memoryStore.markInput(intent.normalizedInput, System.currentTimeMillis())
 
-        if (isLikelyButtonSpam(normalized)) {
-            return triggerButtonSpam()
+        val action = commandRouter.route(
+            intent = intent,
+            context = context,
+            isButtonSpam = isSpam
+        )
+
+        return when (val plan = responseComposer.compose(action, context)) {
+            is AssistantResponseComposer.ResponsePlan.CategoryRequest -> {
+                val response = speakRequest(plan.request)
+                memoryStore.rememberCategory(plan.request.category)
+                response
+            }
+
+            AssistantResponseComposer.ResponsePlan.RepeatLast -> repeatLast()
+            AssistantResponseComposer.ResponsePlan.NoOp -> null
         }
-
-        val response = when {
-            normalized.containsAny("scan", "network", "subnet", "ping", "wifi", "wi-fi", "lan") ->
-                speakCategory(AiResponseRepository.Category.NETWORK_SCAN)
-            normalized.containsAny("diagnos", "health", "status", "check", "report") ->
-                speakCategory(AiResponseRepository.Category.STATUS_REPORT)
-            normalized.containsAny("router", "gateway", "modem", "dhcp", "firewall", "qos") ->
-                speakCategory(AiResponseRepository.Category.ROUTER_CONTROL)
-            normalized.containsAny("fire", "shoot", "launch", "deploy", "blast") ->
-                speakCategory(AiResponseRepository.Category.LAUNCH)
-            normalized.containsAny("reload", "ammo", "refill", "restock", "mag") ->
-                speakCategory(AiResponseRepository.Category.RELOAD)
-            normalized.containsAny("target", "aim", "lock", "acquired", "track") ->
-                speakCategory(AiResponseRepository.Category.TARGET_ACQUIRED)
-            normalized.containsAny("stealth", "quiet", "silent", "hide") ->
-                speakCategory(AiResponseRepository.Category.STEALTH_MODE)
-            normalized.containsAny("mission", "brief", "objective", "orders", "plan") ->
-                speakCategory(AiResponseRepository.Category.MISSION_BRIEF)
-            normalized.containsAny("error", "crash", "broke", "broken", "bug", "failure") ->
-                speakCategory(AiResponseRepository.Category.ERROR)
-            normalized.containsAny("warn", "caution", "alert", "danger") ->
-                speakCategory(AiResponseRepository.Category.WARNING)
-            normalized.containsAny("win", "victory", "success", "done", "nailed it") ->
-                speakCategory(AiResponseRepository.Category.VICTORY)
-            normalized.containsAny("lose", "defeat", "lost", "we failed") ->
-                speakCategory(AiResponseRepository.Category.DEFEAT)
-            normalized.containsAny("threat", "enemy", "hostile", "bogey") ->
-                speakCategory(AiResponseRepository.Category.THREAT_DETECTED)
-            normalized.containsAny("tactical", "analyze", "analyse", "assess", "angle", "flank") ->
-                speakCategory(AiResponseRepository.Category.TACTICAL_ANALYSIS)
-            normalized.containsAny("battery", "power", "charge", "low battery") ->
-                speakCategory(AiResponseRepository.Category.BATTERY_LOW)
-            normalized.containsAny("update", "upgrade", "patch", "version", "new build") ->
-                speakCategory(AiResponseRepository.Category.UPDATE_AVAILABLE)
-            normalized.containsAny("countdown", "timer", "count", "launch sequence") ->
-                speakCategory(AiResponseRepository.Category.COUNTDOWN)
-            normalized.containsAny("snark", "joke", "funny", "sass", "sarcasm", "roast") ->
-                speakCategory(AiResponseRepository.Category.RANDOM_SNARK)
-            normalized.containsAny("theme", "skin", "palette", "look", "color", "colour") ->
-                speakCategory(AiResponseRepository.Category.THEME_SWITCH)
-            normalized.containsAny("open", "launch app", "start app", "module") ->
-                speakCategory(AiResponseRepository.Category.APP_LAUNCH)
-            normalized.containsAny("permission", "allow", "grant access") ->
-                speakCategory(AiResponseRepository.Category.PERMISSION_REQUEST)
-            normalized.containsAny("hello", "hey", "yo", "wake", "reactor", "assistant") ->
-                speakCategory(AiResponseRepository.Category.WAKE)
-            normalized.containsAny("good job", "nice", "thanks", "thank you") ->
-                speakCategory(AiResponseRepository.Category.COMPLIMENT)
-            else -> speakCategory(AiResponseRepository.Category.UNKNOWN_COMMAND)
-        }
-
-        return response
     }
 
     fun scheduleIdleTimeout(delayMs: Long = IDLE_TIMEOUT_MS) {
@@ -379,18 +340,13 @@ class AssistantController(
             PersonalityMood.SAVAGE -> ReactorAssistant.VoiceProfile.COMMANDER
         }
 
-    private fun isLikelyButtonSpam(signature: String): Boolean {
-        val now = System.currentTimeMillis()
-        if (signature == lastInputSignature && now - lastInputTimestampMs <= BUTTON_SPAM_WINDOW_MS) {
-            repeatedInputCount++
-        } else {
-            repeatedInputCount = 1
-        }
-        lastInputSignature = signature
-        lastInputTimestampMs = now
-        return repeatedInputCount >= BUTTON_SPAM_THRESHOLD
-    }
-
-    private fun String.containsAny(vararg tokens: String): Boolean =
-        tokens.any { token -> contains(token) }
+    private fun buildContextSnapshot(): AssistantContextSnapshot = AssistantContextSnapshot(
+        mood = currentMood,
+        interactionCount = _interactionCount,
+        state = snapshot.state,
+        lastCategory = lastCategory,
+        lastResponse = getLastResponse(),
+        timestampMs = System.currentTimeMillis(),
+        isSpeaking = personalityLayer.isSpeaking()
+    )
 }
