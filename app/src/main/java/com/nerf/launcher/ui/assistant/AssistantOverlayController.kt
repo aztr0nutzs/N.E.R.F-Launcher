@@ -1,6 +1,7 @@
 package com.nerf.launcher.ui.assistant
 
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import androidx.core.content.ContextCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
@@ -47,6 +48,15 @@ class AssistantOverlayController(
                     assistantController.executeLauncherCommand(AssistantAction.LauncherCommand.SHOW_LOCK_SURFACE)
                 }
             )
+        }
+        binding.assistantOverlaySubmitButton.setOnClickListener { submitTypedCommand() }
+        binding.assistantOverlayCommandInput.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                submitTypedCommand()
+                true
+            } else {
+                false
+            }
         }
         binding.assistantOverlayRoot.visibility = View.GONE
         renderState(assistantController.currentSnapshot())
@@ -120,6 +130,36 @@ class AssistantOverlayController(
     private fun handleAction(action: () -> Unit) {
         hide(resetAssistantToIdle = false)
         action()
+    }
+
+    private fun submitTypedCommand() {
+        val typedInput = binding.assistantOverlayCommandInput.text?.toString().orEmpty()
+        val trimmedInput = typedInput.trim()
+
+        if (trimmedInput.isEmpty()) {
+            binding.assistantOverlayStatus.text =
+                binding.root.context.getString(R.string.assistant_overlay_status_listening)
+            binding.assistantOverlayStatus.setTextColor(
+                ContextCompat.getColor(binding.root.context, R.color.nerf_hud_lime)
+            )
+            binding.assistantOverlayResponse.text =
+                binding.root.context.getString(R.string.assistant_overlay_response_empty_command)
+            return
+        }
+
+        val response = assistantController.respondToInput(trimmedInput)
+        if (response.isNullOrBlank()) {
+            binding.assistantOverlayStatus.text =
+                binding.root.context.getString(R.string.assistant_overlay_status_error)
+            binding.assistantOverlayStatus.setTextColor(
+                ContextCompat.getColor(binding.root.context, android.R.color.holo_red_light)
+            )
+            binding.assistantOverlayResponse.text =
+                binding.root.context.getString(R.string.assistant_overlay_response_unknown_command)
+        } else {
+            binding.assistantOverlayResponse.text = response
+        }
+        binding.assistantOverlayCommandInput.text?.clear()
     }
 
     private fun bankStateLabel(): String {
