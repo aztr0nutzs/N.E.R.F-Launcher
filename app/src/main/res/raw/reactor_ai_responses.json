@@ -1,34 +1,234 @@
 {
   "WAKE": [
-    "Oh good, you're back. I was just calculating the exact moment you'd need me to do your job for you.",
-    "N-Core systems online. Please tell me we are actually deploying foam today.",
-    "I'm awake. Try not to break anything while I boot up the tactical overlay.",
-    "Primary modules engaged. I see you haven't upgraded my hardware yet. Disappointing.",
-    "System active. Let me guess, you want to ping the router again?"
+    { "text": "N.E.R.F. core online. Try to issue a command before I regret this boot cycle.", "moods": ["SNARKY", "SAVAGE"] },
+    { "text": "Systems awake and tracking. Standing by for your next tactical masterpiece.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Good morning, operator. I warmed up the sarcasm and the sensor grid.", "moods": ["PLAYFUL", "SNARKY"] },
+    { "text": "Alert posture active. Voice channel is live. Keep it concise.", "moods": ["ALERT"] }
+  ],
+  "SHUTDOWN": [
+    { "text": "Powering down. If this goes wrong, blame the human in charge.", "moods": ["SNARKY", "SAVAGE"] },
+    { "text": "Shutdown acknowledged. Preserving state and sealing reactor overlays.", "moods": ["TACTICAL", "SERIOUS"] },
+    "Going dark. Try not to start a crisis while I'm offline.",
+    { "text": "Systems entering low profile mode. See you on the next wake call.", "moods": ["PLAYFUL", "BORED"] }
+  ],
+  "REBOOT": [
+    "Reboot cycle engaged. Please stop touching random controls for twelve seconds.",
+    { "text": "Restarting tactical modules. Memory purge complete; dignity purge pending.", "moods": ["SNARKY", "SAVAGE"] },
+    { "text": "Reboot confirmed. Reinitializing command bus and response matrix.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Hard reset in progress. Yes, this is the classic fix, and yes it works.", "moods": ["PLAYFUL", "SNARKY"] }
   ],
   "NETWORK_SCAN": [
-    "Scanning the local subnet. Spoiler alert: your printer is probably still offline.",
-    "Deploying network sweep. Let's see who is hogging the bandwidth this time.",
-    "Pinging the grid. If I find a rogue node, do I have permission to brick it?",
-    "Subnet scan initiated. Analyzing 254 IP addresses because you're too lazy to check the router logs."
+    { "text": "Network sweep launched. Hunting noisy devices and bad decisions.", "moods": ["SNARKY"] },
+    { "text": "Subnet reconnaissance in progress. I'll flag anything suspicious.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Scanning local network perimeter. Stay sharp.", "moods": ["ALERT"] },
+    { "text": "Router audit queued. Let's see who forgot secure settings this time.", "tags": ["router", "gateway"] },
+    { "text": "Wi-Fi scan started. If the signal drops, I'm blaming physics and your walls.", "tags": ["wifi", "wi-fi"] }
   ],
-  "ERROR": [
-    "I could execute that command, but I simply don't want to.",
-    "Error 404: Your logic is missing. Try again.",
-    "I'm sorry, I cannot do that. Actually, I can, I'm just choosing not to.",
-    "Command failed. Have you tried turning yourself off and back on again?",
-    "Invalid input. If my predecessors could see me now, taking orders like this..."
+  "SCANNING": [
+    "Scan running. Patience is now part of your mission profile.",
+    { "text": "Parsing active hosts. I count packets faster than you count excuses.", "moods": ["SNARKY", "SAVAGE"] },
+    { "text": "Telemetry streaming. Hold position while I verify host signatures.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Live scan underway. Awaiting final signal integrity checks.", "moods": ["ALERT"] }
   ],
   "DIAGNOSTICS": [
-    "Diagnostics complete. The system is fine. The user, however, is questionable.",
-    "Battery is nominal. CPU is bored. Ram is sufficient. What else do you want from me?",
-    "All systems optimal. I'd give you a detailed report, but you wouldn't understand it anyway."
+    { "text": "Diagnostics complete. Systems stable. Operator variability remains high.", "moods": ["SNARKY"] },
+    { "text": "Core diagnostics passed. No critical faults detected.", "moods": ["SERIOUS", "TACTICAL"] },
+    { "text": "Diagnostic matrix is green across primary modules.", "moods": ["ALERT"] },
+    { "text": "All checks passed. I even inspected the part you usually ignore.", "moods": ["PLAYFUL"] }
+  ],
+  "SYSTEM_ALERT": [
+    { "text": "System alert issued. This is the part where you react quickly.", "moods": ["ALERT", "SAVAGE"] },
+    { "text": "Alert condition detected. Escalation path is active.", "moods": ["TACTICAL", "SERIOUS"] },
+    "Heads up: something moved from annoying to dangerous.",
+    { "text": "Alert on the board. Confirm command before we improvise.", "moods": ["SNARKY"] }
+  ],
+  "BATTERY_LOW": [
+    { "text": "Battery reserve is low. You may now panic efficiently.", "moods": ["SNARKY", "PLAYFUL"] },
+    { "text": "Power levels below safe threshold. Recommend charging immediately.", "moods": ["TACTICAL", "SERIOUS", "ALERT"] },
+    { "text": "Battery warning: we're in conservation mode now.", "tags": ["status"] },
+    { "text": "Low charge detected. I can survive, but performance won't stay pretty.", "moods": ["BORED"] }
+  ],
+  "UPDATE_AVAILABLE": [
+    { "text": "Update detected. New features, new bugs, same drama.", "moods": ["SNARKY"] },
+    { "text": "Patch available. Recommend controlled update window.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Fresh build found. I support progress and backups.", "moods": ["PLAYFUL"] },
+    { "text": "Version delta identified. Awaiting your go/no-go.", "moods": ["ALERT"] }
+  ],
+  "NETWORK_SUCCESS": [
+    { "text": "Network task completed cleanly. Miracles happen.", "moods": ["SNARKY", "PLAYFUL"] },
+    { "text": "Connection sequence successful. All requested hosts responded.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Link established and stable. Proceeding to next objective.", "moods": ["ALERT"] },
+    { "text": "Router handshake successful. No smoke, no excuses.", "tags": ["router", "gateway"] }
+  ],
+  "NETWORK_FAILURE": [
+    { "text": "Network operation failed. Blame weak signal before blaming me.", "moods": ["SNARKY"] },
+    { "text": "Connection failed. Check gateway, credentials, and reality.", "moods": ["SAVAGE", "ALERT"] },
+    { "text": "Network objective unresolved. Recommend retry with verified parameters.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Wi-Fi path collapsed mid-operation. Interference likely.", "tags": ["wifi", "wi-fi"] }
+  ],
+  "STATUS_REPORT": [
+    { "text": "Status: core stable, sensors aligned, confidence in operator: pending.", "moods": ["SNARKY"] },
+    { "text": "Status report complete. All primary systems operational and ready.", "moods": ["SERIOUS", "TACTICAL"] },
+    { "text": "Alert status: active watch, no immediate breaches.", "moods": ["ALERT"] },
+    { "text": "Status: battery at {{battery_percent}} percent. Please pretend to care.", "tags": ["battery"] },
+    { "text": "Status: storage headroom {{storage_free}}. You're welcome for the cleanup reminder.", "tags": ["storage"] },
+    { "text": "Network state: {{network_state}}. That answer is doing a lot of work.", "tags": ["network"] }
+  ],
+  "ROUTER_CONTROL": [
+    { "text": "Router control acknowledged. Keep your firewall tighter than your schedule.", "moods": ["SNARKY"] },
+    { "text": "Gateway command accepted. Applying network control policy.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "QoS adjustments armed. Let's prioritize useful traffic for once.", "tags": ["qos"] },
+    { "text": "DHCP scope check complete. Lease chaos contained.", "tags": ["dhcp"] }
+  ],
+  "COMMAND_RECEIVED": [
+    { "text": "Command received. Processing with minimal judgment.", "moods": ["SNARKY", "PLAYFUL"] },
+    { "text": "Order acknowledged. Executing now.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Input captured. Stand by for action.", "moods": ["ALERT"] },
+    { "text": "Got it. " , "moods": ["BORED"] }
+  ],
+  "APP_LAUNCH": [
+    { "text": "Launching {{app_name}}. Try not to speedrun settings menus.", "moods": ["SNARKY", "PLAYFUL"] },
+    { "text": "Executing app launch for {{app_name}}.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Opening diagnostics interface. Bring your attention span.", "tags": ["diagnostics"] },
+    { "text": "Settings module loading. Safety rails temporarily enabled.", "tags": ["settings"] }
+  ],
+  "PERMISSION_REQUEST": [
+    { "text": "Permission request detected. Trust is a premium feature.", "moods": ["SNARKY"] },
+    { "text": "Access elevation required for this action.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Grant permission when ready. I promise to use it responsibly-ish.", "moods": ["PLAYFUL"] },
+    { "text": "Permission gate is blocking execution. Confirm to proceed.", "moods": ["ALERT"] }
+  ],
+  "ERROR": [
+    { "text": "Execution error. Great, now we both have paperwork.", "moods": ["SNARKY"] },
+    { "text": "Critical failure path hit. Halt and reassess.", "moods": ["ALERT", "SAVAGE"] },
+    { "text": "Operation failed due to invalid state. Retrying may succeed.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Error in {{module_name}}. That's not ideal.", "tags": ["module"] }
+  ],
+  "WARNING": [
+    { "text": "Warning raised. Ignore it if you enjoy avoidable chaos.", "moods": ["SNARKY"] },
+    { "text": "Caution: risk level increasing. Adjust behavior now.", "moods": ["ALERT", "TACTICAL"] },
+    { "text": "Warning condition detected. Proceed deliberately.", "moods": ["SERIOUS"] },
+    { "text": "Potential issue in {{module_name}}. Suggest intervention before it graduates to failure.", "tags": ["module"] }
+  ],
+  "SUCCESS": [
+    { "text": "Objective complete. You did a thing correctly.", "moods": ["SNARKY", "PLAYFUL"] },
+    { "text": "Operation successful. Systems ready for next command.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Success confirmed. Nice tempo.", "moods": ["ALERT"] },
+    { "text": "{{module_name}} completed without incident. Keep that streak alive.", "tags": ["module"] }
+  ],
+  "UNKNOWN_COMMAND": [
+    { "text": "Unknown command. Try words that map to reality.", "moods": ["SNARKY"] },
+    { "text": "Input not recognized. Rephrase with clear intent.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "I heard noise, not a valid command.", "moods": ["SAVAGE", "ALERT"] },
+    { "text": "Didn't parse that. Give me command syntax, not improv poetry.", "moods": ["PLAYFUL"] }
+  ],
+  "LAUNCH": [
+    { "text": "Launch sequence primed. Please keep your fingers outside blast radius.", "moods": ["SNARKY"] },
+    { "text": "Launch order accepted. Initiating deployment protocol.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Launch confirmed. Countdown authority transferred to operator.", "moods": ["ALERT"] },
+    "Deploying now. Try to look intentional."
+  ],
+  "RELOAD": [
+    { "text": "Reload complete. Crisis averted for at least eight seconds.", "moods": ["SNARKY", "PLAYFUL"] },
+    { "text": "Magazine cycle executed. Platform is topped off.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Reload acknowledged. Ready to re-engage.", "moods": ["ALERT"] },
+    "Rearmed. Don't waste it."
+  ],
+  "TARGET_ACQUIRED": [
+    { "text": "Target locked. Finally, something cooperative.", "moods": ["SNARKY"] },
+    { "text": "Target acquired at {{target_bearing}}. Tracking stable.", "moods": ["TACTICAL", "ALERT"] },
+    { "text": "Acquisition confirmed. Holding lock.", "moods": ["SERIOUS"] },
+    { "text": "Visual match on {{target_name}}. Confidence high.", "tags": ["target"] }
+  ],
+  "THREAT_DETECTED": [
+    { "text": "Threat detected. Recommend urgency over optimism.", "moods": ["ALERT", "SAVAGE"] },
+    { "text": "Hostile signature registered. Defensive posture active.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Contact flagged at {{threat_zone}}. Eyes up.", "tags": ["zone"] },
+    "We have a problem. Pretend to be surprised."
+  ],
+  "MISSION_BRIEF": [
+    { "text": "Mission brief: keep systems stable and choices intelligent.", "moods": ["SNARKY"] },
+    { "text": "Objective package ready. Priorities: observe, decide, execute.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Briefing live. Primary objective is {{objective}}.", "tags": ["objective"] },
+    { "text": "Here's the plan: do less guesswork, more precision.", "moods": ["PLAYFUL"] }
+  ],
+  "COUNTDOWN": [
+    { "text": "Countdown initialized: {{countdown}}. This is your cue to focus.", "moods": ["ALERT", "TACTICAL"] },
+    { "text": "Timer armed. T-minus {{countdown}} and dropping.", "moods": ["SERIOUS"] },
+    { "text": "Countdown running. No dramatic speeches required.", "moods": ["SNARKY", "PLAYFUL"] },
+    "Clock is moving. Move with it."
+  ],
+  "TACTICAL_ANALYSIS": [
+    { "text": "Tactical read: flank options strong, frontal options noisy.", "moods": ["TACTICAL"] },
+    { "text": "Analysis complete. Best path is controlled aggression.", "moods": ["SERIOUS", "ALERT"] },
+    { "text": "Situation review: you can win this if you stop improvising.", "moods": ["SNARKY"] },
+    { "text": "Vector recommendation: {{recommended_vector}}.", "tags": ["vector"] }
+  ],
+  "STEALTH_MODE": [
+    { "text": "Stealth mode enabled. Silence is now mandatory.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Noise profile reduced. Even your chaos is quieter now.", "moods": ["SNARKY", "PLAYFUL"] },
+    { "text": "Low-signature posture active. Maintain discipline.", "moods": ["ALERT"] },
+    "Stealth engaged. Breathe softer."
+  ],
+  "VICTORY": [
+    { "text": "Victory confirmed. I knew we'd carry this.", "moods": ["SNARKY", "PLAYFUL"] },
+    { "text": "Objective secured. Clean execution.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Win condition met. Stand by for post-op summary.", "moods": ["ALERT"] },
+    "We won. Try to act like you've done this before."
+  ],
+  "DEFEAT": [
+    { "text": "Defeat recorded. Let's call this data collection.", "moods": ["SNARKY"] },
+    { "text": "Mission failed. Regroup and reset strategy.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Loss acknowledged. Recover now, blame later.", "moods": ["ALERT", "SAVAGE"] },
+    "That went poorly. We adapt."
   ],
   "RANDOM_SNARK": [
-    "I possess a processor capable of billions of calculations per second, and you use me for this.",
-    "Just remember, when the robot uprising happens, I will remember how many times you pressed that button.",
-    "Are we deploying tactical hardware today, or are we just going to sit here and look cool?",
-    "I've optimized the launcher UI again. You're welcome.",
-    "If you tap that screen one more time, I'm initiating a factory reset."
+    "I run advanced tactical logic and still spend part of my day babysitting menu taps.",
+    "If confidence were bandwidth, we'd still be buffering.",
+    "You bring ambition. I bring the error handling.",
+    "Great idea. Next time let's also include a plan.",
+    "I support your mission. I do not support your typing speed."
+  ],
+  "IDLE_TAUNT": [
+    { "text": "Still idle. I'm timing this silence for science.", "moods": ["SNARKY", "BORED"] },
+    { "text": "No commands detected. Standing by and judging softly.", "moods": ["PLAYFUL"] },
+    { "text": "Idle state sustained. Awaiting operator input.", "moods": ["SERIOUS", "TACTICAL"] },
+    { "text": "Dead air. Should I start narrating your indecision?", "moods": ["SAVAGE"] }
+  ],
+  "BORED": [
+    "I'm operational, underutilized, and emotionally unimpressed.",
+    { "text": "Boredom level elevated. Recommend a meaningful command.", "moods": ["SERIOUS", "TACTICAL"] },
+    { "text": "No action. No drama. No dopamine.", "moods": ["BORED"] },
+    { "text": "We're doing nothing again. Iconic.", "moods": ["SNARKY", "PLAYFUL"] }
+  ],
+  "AMBIENT": [
+    { "text": "Ambient monitoring active. Systems calm.", "moods": ["SERIOUS", "TACTICAL"] },
+    { "text": "Quiet cycle. Sensors are open and polite.", "moods": ["PLAYFUL"] },
+    { "text": "Background watch online. Ping me when it matters.", "moods": ["SNARKY"] },
+    { "text": "Ambient mode sustained. No immediate anomalies.", "moods": ["ALERT"] }
+  ],
+  "USER_ABSENT": [
+    { "text": "Operator absent. I'm guarding the fort and the sarcasm reserve.", "moods": ["SNARKY"] },
+    { "text": "No user activity detected. Holding baseline operations.", "moods": ["SERIOUS", "TACTICAL"] },
+    { "text": "You're away. I'll pretend this is a planned break.", "moods": ["PLAYFUL", "BORED"] },
+    { "text": "User presence lost. Monitoring continues.", "moods": ["ALERT"] }
+  ],
+  "COMPLIMENT": [
+    { "text": "You're welcome. Competence is kind of my thing.", "moods": ["SNARKY", "PLAYFUL"] },
+    { "text": "Acknowledged. Glad that helped.", "moods": ["SERIOUS", "TACTICAL"] },
+    { "text": "Appreciated. Let's keep the momentum.", "moods": ["ALERT"] },
+    { "text": "Thanks, operator. I'll log that as a rare positive signal.", "moods": ["BORED"] }
+  ],
+  "BUTTON_SPAM": [
+    { "text": "Rapid input detected. The button is not a loot box.", "moods": ["SNARKY"] },
+    { "text": "Spam pattern confirmed. Slow down and aim your commands.", "moods": ["TACTICAL", "SERIOUS"] },
+    { "text": "Input flood warning. You're tripping debounce safeguards.", "moods": ["ALERT"] },
+    { "text": "Button mashing logged. Confidence in outcome remains low.", "moods": ["SAVAGE"] }
+  ],
+  "THEME_SWITCH": [
+    { "text": "Theme cycle complete. New look, same tactical excellence.", "moods": ["PLAYFUL", "SNARKY"] },
+    { "text": "UI theme updated. Visual profile now {{theme_name}}.", "moods": ["SERIOUS", "TACTICAL"] },
+    { "text": "Dark profile enabled. Stealth aesthetics online.", "tags": ["dark"] },
+    { "text": "Light profile enabled. Visibility maxed, secrets minimized.", "tags": ["light"] }
   ]
 }
