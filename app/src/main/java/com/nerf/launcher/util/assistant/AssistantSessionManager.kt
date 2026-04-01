@@ -30,7 +30,7 @@ object AssistantSessionManager {
 
         current.owners -= 1
         if (current.owners <= 0) {
-            controller.shutdown()
+            controller.dispose()
             sharedSession = null
         }
     }
