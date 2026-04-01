@@ -3,9 +3,9 @@ package com.nerf.launcher.util.assistant
 import com.nerf.launcher.util.assistant.AiResponseRepository.Category
 
 sealed class AssistantActionResult {
-    data class Spoken(
-        val text: String,
-        val category: Category
+    data class CategoryResolved(
+        val category: Category,
+        val tags: Set<String> = emptySet()
     ) : AssistantActionResult()
 
     data class LauncherCommandHandled(
@@ -14,7 +14,7 @@ sealed class AssistantActionResult {
         val performed: Boolean
     ) : AssistantActionResult()
 
-    data class Repeated(val text: String) : AssistantActionResult()
+    data object RepeatLast : AssistantActionResult()
 
     data object Ignored : AssistantActionResult()
 }
