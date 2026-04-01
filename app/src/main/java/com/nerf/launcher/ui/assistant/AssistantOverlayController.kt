@@ -1,5 +1,11 @@
 package com.nerf.launcher.ui.assistant
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.core.content.ContextCompat
@@ -14,10 +20,16 @@ import com.nerf.launcher.util.assistant.AssistantStateSnapshot
 
 class AssistantOverlayController(
     private val binding: LayoutAssistantOverlayBinding,
-    private val assistantController: AssistantController
+    private val assistantController: AssistantController,
+    private val hasRecordAudioPermission: () -> Boolean,
+    private val requestRecordAudioPermission: () -> Unit
 ) {
 
     private var isVisible = false
+    private var speechRecognizer: SpeechRecognizer? = null
+    private var isSpeechRecognitionAvailable = false
+    private var isListening = false
+    private var pendingMicStartAfterPermission = false
 
     fun bind() {
         binding.assistantOverlayCloseButton.setOnClickListener { hide() }
@@ -50,6 +62,7 @@ class AssistantOverlayController(
             )
         }
         binding.assistantOverlaySubmitButton.setOnClickListener { submitTypedCommand() }
+        binding.assistantOverlayMicButton.setOnClickListener { onMicButtonTapped() }
         binding.assistantOverlayRepeatLastButton.setOnClickListener { submitRepeatLast() }
         binding.assistantOverlayInterruptButton.setOnClickListener { interruptSpeaking() }
         binding.assistantOverlayCommandInput.setOnEditorActionListener { _, actionId, _ ->
@@ -61,8 +74,10 @@ class AssistantOverlayController(
             }
         }
         binding.assistantOverlayRoot.visibility = View.GONE
+        initializeSpeechRecognizer()
         assistantController.onTranscriptChanged = ::renderTranscript
         renderState(assistantController.currentSnapshot())
+        renderVoiceAvailability()
     }
 
     fun showWakeOverlay() {
@@ -100,6 +115,7 @@ class AssistantOverlayController(
     private fun hide(resetAssistantToIdle: Boolean) {
         if (!isVisible) return
         isVisible = false
+        stopVoiceRecognition()
         binding.assistantOverlayCard.animate()
             .alpha(0f)
             .translationY(-12f)
@@ -117,7 +133,28 @@ class AssistantOverlayController(
     fun isShowing(): Boolean = isVisible
 
     fun release() {
+        stopVoiceRecognition()
+        speechRecognizer?.destroy()
+        speechRecognizer = null
         assistantController.onTranscriptChanged = null
+    }
+
+    fun onRecordAudioPermissionResult(granted: Boolean) {
+        if (granted && pendingMicStartAfterPermission) {
+            pendingMicStartAfterPermission = false
+            startVoiceRecognition()
+            return
+        }
+        pendingMicStartAfterPermission = false
+        if (!granted) {
+            binding.assistantOverlayStatus.text =
+                binding.root.context.getString(R.string.assistant_overlay_status_permission_denied)
+            binding.assistantOverlayStatus.setTextColor(
+                ContextCompat.getColor(binding.root.context, android.R.color.holo_red_light)
+            )
+            binding.assistantOverlayResponse.text =
+                binding.root.context.getString(R.string.assistant_overlay_voice_permission_denied_response)
+        }
     }
 
     private fun show() {
@@ -139,7 +176,7 @@ class AssistantOverlayController(
         action()
     }
 
-    private fun submitTypedCommand() {
+    private fun submitTypedCommand(clearInputAfterSubmit: Boolean = true) {
         val typedInput = binding.assistantOverlayCommandInput.text?.toString().orEmpty()
         val trimmedInput = typedInput.trim()
 
@@ -166,7 +203,9 @@ class AssistantOverlayController(
         } else {
             binding.assistantOverlayResponse.text = response
         }
-        binding.assistantOverlayCommandInput.text?.clear()
+        if (clearInputAfterSubmit) {
+            binding.assistantOverlayCommandInput.text?.clear()
+        }
     }
 
     private fun submitRepeatLast() {
@@ -176,6 +215,7 @@ class AssistantOverlayController(
 
     private fun interruptSpeaking() {
         assistantController.interruptSpeaking()
+        stopVoiceRecognition()
         binding.assistantOverlayStatus.text =
             binding.root.context.getString(R.string.assistant_overlay_status_listening)
         binding.assistantOverlayStatus.setTextColor(
@@ -200,6 +240,163 @@ class AssistantOverlayController(
         binding.assistantOverlayTranscriptContainer.post {
             binding.assistantOverlayTranscriptContainer.fullScroll(View.FOCUS_DOWN)
         }
+    }
+
+    private fun initializeSpeechRecognizer() {
+        val context = binding.root.context
+        isSpeechRecognitionAvailable = SpeechRecognizer.isRecognitionAvailable(context)
+        if (!isSpeechRecognitionAvailable) return
+
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
+            setRecognitionListener(object : RecognitionListener {
+                override fun onReadyForSpeech(params: Bundle?) {
+                    isListening = true
+                    assistantController.wakeForCommand()
+                    binding.assistantOverlayStatus.text =
+                        context.getString(R.string.assistant_overlay_status_listening)
+                    binding.assistantOverlayStatus.setTextColor(
+                        ContextCompat.getColor(context, R.color.nerf_hud_lime)
+                    )
+                    binding.assistantOverlayResponse.text =
+                        context.getString(R.string.assistant_overlay_voice_prompt_response)
+                }
+
+                override fun onBeginningOfSpeech() = Unit
+
+                override fun onRmsChanged(rmsdB: Float) = Unit
+
+                override fun onBufferReceived(buffer: ByteArray?) = Unit
+
+                override fun onEndOfSpeech() {
+                    isListening = false
+                    binding.assistantOverlayStatus.text =
+                        context.getString(R.string.assistant_overlay_status_thinking)
+                    binding.assistantOverlayStatus.setTextColor(
+                        ContextCompat.getColor(context, R.color.nerf_hud_orange)
+                    )
+                }
+
+                override fun onError(error: Int) {
+                    isListening = false
+                    if (error == SpeechRecognizer.ERROR_NO_MATCH ||
+                        error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT
+                    ) {
+                        binding.assistantOverlayStatus.text =
+                            context.getString(R.string.assistant_overlay_status_listening)
+                        binding.assistantOverlayStatus.setTextColor(
+                            ContextCompat.getColor(context, R.color.nerf_hud_lime)
+                        )
+                        binding.assistantOverlayResponse.text =
+                            context.getString(R.string.assistant_overlay_voice_no_match_response)
+                        return
+                    }
+                    binding.assistantOverlayStatus.text =
+                        context.getString(R.string.assistant_overlay_status_error)
+                    binding.assistantOverlayStatus.setTextColor(
+                        ContextCompat.getColor(context, android.R.color.holo_red_light)
+                    )
+                    binding.assistantOverlayResponse.text =
+                        context.getString(R.string.assistant_overlay_voice_error_response)
+                }
+
+                override fun onResults(results: Bundle?) {
+                    isListening = false
+                    val transcript = results
+                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull()
+                        ?.trim()
+                        .orEmpty()
+                    if (transcript.isBlank()) {
+                        binding.assistantOverlayResponse.text =
+                            context.getString(R.string.assistant_overlay_voice_no_match_response)
+                        return
+                    }
+                    binding.assistantOverlayCommandInput.setText(transcript)
+                    submitTypedCommand(clearInputAfterSubmit = true)
+                }
+
+                override fun onPartialResults(partialResults: Bundle?) {
+                    val partial = partialResults
+                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull()
+                        ?.trim()
+                        .orEmpty()
+                    if (partial.isNotBlank()) {
+                        binding.assistantOverlayCommandInput.setText(partial)
+                        binding.assistantOverlayCommandInput.setSelection(partial.length)
+                    }
+                }
+
+                override fun onEvent(eventType: Int, params: Bundle?) = Unit
+            })
+        }
+    }
+
+    private fun renderVoiceAvailability() {
+        binding.assistantOverlayMicButton.isEnabled = isSpeechRecognitionAvailable
+        if (isSpeechRecognitionAvailable) return
+        binding.assistantOverlayMicButton.text =
+            binding.root.context.getString(R.string.assistant_overlay_voice_unavailable_button)
+        binding.assistantOverlayResponse.text =
+            binding.root.context.getString(R.string.assistant_overlay_voice_unavailable_response)
+    }
+
+    private fun onMicButtonTapped() {
+        if (!isSpeechRecognitionAvailable) {
+            binding.assistantOverlayStatus.text =
+                binding.root.context.getString(R.string.assistant_overlay_status_muted)
+            binding.assistantOverlayStatus.setTextColor(
+                ContextCompat.getColor(binding.root.context, android.R.color.holo_red_light)
+            )
+            return
+        }
+
+        if (isListening) {
+            stopVoiceRecognition()
+            binding.assistantOverlayStatus.text =
+                binding.root.context.getString(R.string.assistant_overlay_status_listening_stopped)
+            binding.assistantOverlayStatus.setTextColor(
+                ContextCompat.getColor(binding.root.context, R.color.nerf_hud_cyan)
+            )
+            return
+        }
+
+        if (!hasRecordAudioPermission()) {
+            pendingMicStartAfterPermission = true
+            requestRecordAudioPermission()
+            return
+        }
+        startVoiceRecognition()
+    }
+
+    private fun startVoiceRecognition() {
+        val recognizer = speechRecognizer ?: return
+        val context = binding.root.context
+        binding.assistantOverlayCommandInput.text?.clear()
+        val recognizeIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+        }
+        try {
+            recognizer.startListening(recognizeIntent)
+        } catch (_: ActivityNotFoundException) {
+            binding.assistantOverlayStatus.text =
+                context.getString(R.string.assistant_overlay_status_error)
+            binding.assistantOverlayResponse.text =
+                context.getString(R.string.assistant_overlay_voice_unavailable_response)
+        } catch (_: IllegalStateException) {
+            binding.assistantOverlayStatus.text =
+                context.getString(R.string.assistant_overlay_status_error)
+            binding.assistantOverlayResponse.text =
+                context.getString(R.string.assistant_overlay_voice_error_response)
+        }
+    }
+
+    private fun stopVoiceRecognition() {
+        isListening = false
+        pendingMicStartAfterPermission = false
+        speechRecognizer?.stopListening()
     }
 
     private fun bankStateLabel(): String {

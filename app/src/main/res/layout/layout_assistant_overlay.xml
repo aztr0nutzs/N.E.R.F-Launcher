@@ -211,10 +211,23 @@
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/assistant_overlay_mic_button"
+                style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:contentDescription="@string/assistant_overlay_mic_cd"
+                android:text="@string/assistant_overlay_mic"
+                android:textColor="@color/nerf_hud_lime"
+                android:textSize="10sp" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/assistant_overlay_repeat_last_button"
                 style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
                 android:layout_width="0dp"
                 android:layout_height="36dp"
+                android:layout_marginStart="4dp"
                 android:layout_marginEnd="4dp"
                 android:layout_weight="1"
                 android:text="@string/assistant_overlay_repeat_last"
