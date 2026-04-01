@@ -7,6 +7,7 @@ import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityReactorDiagnosticsBinding
 import com.nerf.launcher.util.assistant.AiResponseRepository
 import com.nerf.launcher.util.assistant.AssistantController
+import com.nerf.launcher.util.assistant.AssistantSessionManager
 
 class ReactorDiagnosticsActivity : AppCompatActivity() {
 
@@ -18,7 +19,8 @@ class ReactorDiagnosticsActivity : AppCompatActivity() {
         binding = ActivityReactorDiagnosticsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        assistantController = AssistantController(this)
+        assistantController = AssistantSessionManager.acquire(this)
+        assistantController.setActiveSurface("diagnostics")
 
         setupLeftReactor()
         setupRightReactor()
@@ -69,7 +71,7 @@ class ReactorDiagnosticsActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        assistantController.shutdown()
+        AssistantSessionManager.release(assistantController)
         super.onDestroy()
     }
 }

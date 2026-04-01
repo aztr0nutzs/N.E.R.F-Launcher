@@ -9,7 +9,8 @@ import java.util.LinkedList
 class AssistantController(
     context: Context,
     private val responseRepository: AiResponseRepository = AiResponseRepository(context),
-    private val personalityLayer: ReactorAssistant = ReactorAssistant(context)
+    private val personalityLayer: ReactorAssistant = ReactorAssistant(context),
+    private val sessionStore: AssistantSessionStore = AssistantSessionStore(context)
 ) {
     data class TranscriptEntry(
         val speaker: Speaker,
@@ -36,6 +37,11 @@ class AssistantController(
 
     private var snapshot = AssistantStateSnapshot(AssistantState.IDLE)
     private var currentMood = PersonalityMood.SNARKY
+    private var currentVerbosityLevel = AssistantSessionStore.DEFAULT_VERBOSITY
+    private var isMutedByPreference = false
+    private var activeSurface = "launcher"
+    private var sessionMemory = sessionStore.loadSessionMemory()
+    private var currentVoiceProfile = ReactorAssistant.VoiceProfile.SNARKY
 
     private var pendingListeningTransition: Runnable? = null
     private var pendingIdleTimeout: Runnable? = null
@@ -69,6 +75,7 @@ class AssistantController(
         }
 
     init {
+        restorePersistedState()
         personalityLayer.onSpeechStarted = { text ->
             postState(snapshot.copy(state = AssistantState.SPEAKING, response = text))
         }
@@ -88,6 +95,9 @@ class AssistantController(
     fun currentSnapshot(): AssistantStateSnapshot = snapshot
 
     fun currentMood(): PersonalityMood = currentMood
+    fun currentVoiceProfile(): ReactorAssistant.VoiceProfile = currentVoiceProfile
+    fun isMutedByPreference(): Boolean = isMutedByPreference
+    fun currentVerbosityLevel(): Int = currentVerbosityLevel
 
     fun isActive(): Boolean = snapshot.state.isActive
 
@@ -110,12 +120,14 @@ class AssistantController(
 
     fun wakeAssistant(): String {
         clearPendingIdleTimeout()
+        rememberSurface(activeSurface)
         postState(snapshot.copy(state = AssistantState.WAKE))
         return speakCategory(AiResponseRepository.Category.WAKE)
     }
 
     fun wakeForCommand() {
         clearPendingIdleTimeout()
+        rememberSurface(activeSurface)
         postState(snapshot.copy(state = AssistantState.WAKE))
         scheduleListening(snapshot.response)
     }
@@ -167,7 +179,7 @@ class AssistantController(
     fun speakCustom(text: String): String {
         clearPendingListeningTransition()
         postState(snapshot.copy(state = AssistantState.RESPONDING, response = text))
-        if (!personalityLayer.speak(text)) {
+        if (!deliverSpeech(text)) {
             postState(snapshot.copy(state = AssistantState.MUTED, response = text))
         }
         addToHistory(text)
@@ -239,7 +251,9 @@ class AssistantController(
     fun setMood(mood: PersonalityMood) {
         if (currentMood == mood) return
         currentMood = mood
-        personalityLayer.setVoiceProfile(moodToVoiceProfile(mood))
+        currentVoiceProfile = moodToVoiceProfile(mood)
+        personalityLayer.setVoiceProfile(currentVoiceProfile)
+        persistPreferences()
         onMoodChanged?.invoke(mood)
         postState(snapshot.copy(mood = mood))
         Log.d(TAG, "Mood -> ${mood.name}")
@@ -251,7 +265,9 @@ class AssistantController(
     }
 
     fun setVoiceProfile(profile: ReactorAssistant.VoiceProfile) {
+        currentVoiceProfile = profile
         personalityLayer.setVoiceProfile(profile)
+        persistPreferences()
     }
 
     fun respondToKeyword(keyword: String): String? {
@@ -259,8 +275,14 @@ class AssistantController(
     }
 
     fun respondToInput(input: String): String? {
-        val intent = intentParser.parse(input) ?: return null
-        addTranscriptEntry(Speaker.USER, input.trim())
+        val trimmedInput = input.trim()
+        if (trimmedInput.isEmpty()) return null
+        addTranscriptEntry(Speaker.USER, trimmedInput)
+        rememberLastCommand(trimmedInput)
+        rememberSurface(activeSurface)
+        resolveFollowUp(trimmedInput)?.let { return it }
+
+        val intent = intentParser.parse(trimmedInput) ?: return null
         memoryStore.rememberIntent(intent)
         val context = buildContextSnapshot()
         val isSpam = memoryStore.markInput(intent.normalizedInput, System.currentTimeMillis())
@@ -272,6 +294,9 @@ class AssistantController(
         )
 
         val actionResult = executeAction(action)
+        if (actionResult is AssistantActionResult.LauncherCommandHandled) {
+            rememberLauncherCommandResult(actionResult)
+        }
         return when (val plan = responseComposer.compose(actionResult, context)) {
             is AssistantResponseComposer.ResponsePlan.CategoryRequest -> {
                 val response = speakRequest(plan.request)
@@ -321,6 +346,7 @@ class AssistantController(
         postState(snapshot.copy(state = AssistantState.THINKING))
         lastCategory = request.category
         val response = responseRepository.getResponse(request.copy(mood = currentMood))
+        rememberSuccessfulAction("category:${request.category.name}")
         return deliverResponse(response, request.category)
     }
 
@@ -330,7 +356,7 @@ class AssistantController(
     ): String {
         onResponseSelected?.invoke(response, category)
         postState(snapshot.copy(state = AssistantState.RESPONDING, response = response))
-        if (!personalityLayer.speak(response)) {
+        if (!deliverSpeech(response)) {
             postState(snapshot.copy(state = AssistantState.MUTED, response = response))
         }
         addToHistory(response)
@@ -341,6 +367,7 @@ class AssistantController(
     private fun addToHistory(response: String) {
         responseHistory.addFirst(response)
         if (responseHistory.size > MAX_RESPONSE_HISTORY) responseHistory.removeLast()
+        rememberLastResponse(response)
         addTranscriptEntry(Speaker.ASSISTANT, response)
     }
 
@@ -409,4 +436,144 @@ class AssistantController(
         timestampMs = System.currentTimeMillis(),
         isSpeaking = personalityLayer.isSpeaking()
     )
+
+    fun setMutedByPreference(muted: Boolean) {
+        if (isMutedByPreference == muted) return
+        isMutedByPreference = muted
+        if (muted) {
+            personalityLayer.stop()
+            postState(snapshot.copy(state = AssistantState.MUTED))
+        } else if (snapshot.state == AssistantState.MUTED) {
+            postState(snapshot.copy(state = AssistantState.IDLE))
+        }
+        persistPreferences()
+    }
+
+    fun setVerbosityLevel(level: Int) {
+        val sanitized = level.coerceIn(1, 3)
+        if (currentVerbosityLevel == sanitized) return
+        currentVerbosityLevel = sanitized
+        persistPreferences()
+    }
+
+    fun setActiveSurface(surface: String) {
+        activeSurface = surface
+        rememberSurface(surface)
+    }
+
+    private fun resolveFollowUp(input: String): String? {
+        val normalized = input.lowercase()
+        return when {
+            normalized.contains("status now") -> {
+                val handled = executeLauncherCommand(AssistantAction.LauncherCommand.REPORT_SYSTEM_STATE)
+                rememberLauncherCommandResult(handled)
+                speakCustom(handled.spokenText)
+            }
+
+            normalized.contains("open it") -> {
+                val command = sessionMemory.lastSuccessfulAction
+                    ?.removePrefix("launcher:")
+                    ?.let { name -> AssistantAction.LauncherCommand.values().firstOrNull { it.name == name } }
+                if (command == null) {
+                    speakCustom("I cannot open that yet because I don't have enough recent context.")
+                } else {
+                    val handled = executeLauncherCommand(command)
+                    rememberLauncherCommandResult(handled)
+                    speakCustom(handled.spokenText)
+                }
+            }
+
+            normalized.contains("do that again") || normalized == "repeat" -> {
+                repeatLastSuccessfulAction()
+            }
+
+            else -> null
+        }
+    }
+
+    private fun repeatLastSuccessfulAction(): String? {
+        val action = sessionMemory.lastSuccessfulAction ?: return speakCustom(
+            "I don't have enough context yet. Give me one command first."
+        )
+        return when {
+            action.startsWith("launcher:") -> {
+                val commandName = action.removePrefix("launcher:")
+                val command = AssistantAction.LauncherCommand.values().firstOrNull { it.name == commandName }
+                    ?: return speakCustom("I couldn't recover the last launcher action safely.")
+                val handled = executeLauncherCommand(command)
+                rememberLauncherCommandResult(handled)
+                speakCustom(handled.spokenText)
+            }
+
+            action.startsWith("category:") -> {
+                val categoryName = action.removePrefix("category:")
+                val category = AiResponseRepository.Category.values().firstOrNull { it.name == categoryName }
+                    ?: return speakCustom("I couldn't recover the last response category safely.")
+                speakCategory(category)
+            }
+
+            else -> repeatLast()
+        }
+    }
+
+    private fun rememberLauncherCommandResult(result: AssistantActionResult.LauncherCommandHandled) {
+        if (result.performed) {
+            rememberSuccessfulAction("launcher:${result.command.name}")
+        }
+        if (result.spokenText.isNotBlank()) {
+            rememberLastResponse(result.spokenText)
+        }
+    }
+
+    private fun rememberLastCommand(command: String) {
+        sessionMemory = sessionMemory.copy(lastCommand = command)
+        persistSessionMemory()
+    }
+
+    private fun rememberLastResponse(response: String) {
+        sessionMemory = sessionMemory.copy(lastResponse = response)
+        persistSessionMemory()
+    }
+
+    private fun rememberSurface(surface: String) {
+        sessionMemory = sessionMemory.copy(lastLauncherSurface = surface)
+        persistSessionMemory()
+    }
+
+    private fun rememberSuccessfulAction(action: String) {
+        sessionMemory = sessionMemory.copy(lastSuccessfulAction = action)
+        persistSessionMemory()
+    }
+
+    private fun persistSessionMemory() {
+        sessionStore.persistSessionMemory(sessionMemory)
+    }
+
+    private fun persistPreferences() {
+        sessionStore.persistPreferences(
+            AssistantSessionStore.AssistantPreferences(
+                mood = currentMood,
+                voiceProfile = currentVoiceProfile,
+                muted = isMutedByPreference,
+                verbosityLevel = currentVerbosityLevel
+            )
+        )
+    }
+
+    private fun restorePersistedState() {
+        val preferences = sessionStore.loadPreferences()
+        currentMood = preferences.mood
+        currentVoiceProfile = preferences.voiceProfile
+        currentVerbosityLevel = preferences.verbosityLevel
+        isMutedByPreference = preferences.muted
+        personalityLayer.setVoiceProfile(currentVoiceProfile)
+        sessionMemory = sessionStore.loadSessionMemory()
+    }
+
+    private fun deliverSpeech(text: String): Boolean {
+        if (isMutedByPreference) {
+            return false
+        }
+        return personalityLayer.speak(text)
+    }
 }

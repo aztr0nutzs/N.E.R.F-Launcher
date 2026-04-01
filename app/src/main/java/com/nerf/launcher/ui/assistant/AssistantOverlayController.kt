@@ -118,7 +118,6 @@ class AssistantOverlayController(
 
     fun release() {
         assistantController.onTranscriptChanged = null
-        assistantController.shutdown()
     }
 
     private fun show() {
