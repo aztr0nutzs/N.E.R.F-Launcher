@@ -157,6 +157,8 @@
     <string name="assistant_overlay_voice_permission_denied_response">Microphone access was denied. Continue with text input.</string>
     <string name="assistant_overlay_voice_unavailable_response">Speech recognition is unavailable on this device. Text input remains active.</string>
     <string name="assistant_overlay_voice_unavailable_button">NO MIC</string>
+    <string name="assistant_overlay_mode_voice">VOICE MODE: ACTIVE</string>
+    <string name="assistant_overlay_mode_text">TEXT MODE: FALLBACK</string>
     <string name="assistant_overlay_action_settings_status">Routing to launcher settings.</string>
     <string name="assistant_overlay_action_diagnostics_status">Opening Reactor Diagnostics.</string>
     <string name="assistant_overlay_action_node_hunter_status">Launching Node Hunter.</string>
