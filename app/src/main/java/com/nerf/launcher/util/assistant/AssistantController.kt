@@ -49,6 +49,7 @@ class AssistantController(
     var onResponseSelected: ((response: String, category: AiResponseRepository.Category) -> Unit)? = null
 
     var onReadyStateChanged: ((isReady: Boolean) -> Unit)? = null
+    var onLauncherAction: ((AssistantAction.LauncherCommand) -> AssistantActionResult.LauncherCommandHandled)? = null
 
     init {
         personalityLayer.onSpeechStarted = { text ->
@@ -243,7 +244,13 @@ class AssistantController(
             isButtonSpam = isSpam
         )
 
-        return when (val plan = responseComposer.compose(action, context)) {
+        return when (action) {
+            is AssistantAction.ExecuteLauncherCommand -> {
+                val actionResult = executeLauncherCommand(action.command)
+                actionResult.spokenText
+            }
+
+            else -> when (val plan = responseComposer.compose(action, context)) {
             is AssistantResponseComposer.ResponsePlan.CategoryRequest -> {
                 val response = speakRequest(plan.request)
                 memoryStore.rememberCategory(plan.request.category)
@@ -252,7 +259,19 @@ class AssistantController(
 
             AssistantResponseComposer.ResponsePlan.RepeatLast -> repeatLast()
             AssistantResponseComposer.ResponsePlan.NoOp -> null
+            }
         }
+    }
+
+    fun executeLauncherCommand(command: AssistantAction.LauncherCommand): AssistantActionResult.LauncherCommandHandled {
+        val result = onLauncherAction?.invoke(command)
+            ?: AssistantActionResult.LauncherCommandHandled(
+                command = command,
+                spokenText = "That launcher action is not wired on this build yet.",
+                performed = false
+            )
+        speakCustom(result.spokenText)
+        return result
     }
 
     fun scheduleIdleTimeout(delayMs: Long = IDLE_TIMEOUT_MS) {

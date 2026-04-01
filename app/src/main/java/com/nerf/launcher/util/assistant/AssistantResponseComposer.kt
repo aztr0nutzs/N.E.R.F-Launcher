@@ -16,6 +16,7 @@ class AssistantResponseComposer {
             )
         )
 
+        is AssistantAction.ExecuteLauncherCommand -> ResponsePlan.NoOp
         AssistantAction.RepeatLastResponse -> ResponsePlan.RepeatLast
         AssistantAction.Ignore -> ResponsePlan.NoOp
     }

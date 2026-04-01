@@ -6,18 +6,14 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.LayoutAssistantOverlayBinding
-import com.nerf.launcher.util.assistant.AiResponseRepository
+import com.nerf.launcher.util.assistant.AssistantAction
 import com.nerf.launcher.util.assistant.AssistantController
 import com.nerf.launcher.util.assistant.AssistantState
 import com.nerf.launcher.util.assistant.AssistantStateSnapshot
 
 class AssistantOverlayController(
     private val binding: LayoutAssistantOverlayBinding,
-    private val assistantController: AssistantController,
-    private val onOpenSettings: () -> Unit,
-    private val onOpenDiagnostics: () -> Unit,
-    private val onOpenNodeHunter: () -> Unit,
-    private val onShowLockSurface: () -> Unit
+    private val assistantController: AssistantController
 ) {
 
     private var isVisible = false
@@ -27,36 +23,28 @@ class AssistantOverlayController(
         binding.assistantActionSettings.setOnClickListener {
             handleAction(
                 action = {
-                    assistantController.speakCustom(
-                        binding.root.context.getString(R.string.assistant_overlay_action_settings_voice)
-                    )
-                    onOpenSettings()
+                    assistantController.executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_SETTINGS)
                 }
             )
         }
         binding.assistantActionDiagnostics.setOnClickListener {
             handleAction(
                 action = {
-                    assistantController.speakCategory(AiResponseRepository.Category.DIAGNOSTICS)
-                    onOpenDiagnostics()
+                    assistantController.executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_DIAGNOSTICS)
                 }
             )
         }
         binding.assistantActionNodeHunter.setOnClickListener {
             handleAction(
                 action = {
-                    assistantController.speakCategory(AiResponseRepository.Category.NETWORK_SCAN)
-                    onOpenNodeHunter()
+                    assistantController.executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_NODE_HUNTER)
                 }
             )
         }
         binding.assistantActionLock.setOnClickListener {
             handleAction(
                 action = {
-                    assistantController.speakCustom(
-                        binding.root.context.getString(R.string.assistant_overlay_action_lock_voice)
-                    )
-                    onShowLockSurface()
+                    assistantController.executeLauncherCommand(AssistantAction.LauncherCommand.SHOW_LOCK_SURFACE)
                 }
             )
         }

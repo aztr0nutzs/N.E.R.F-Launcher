@@ -33,6 +33,15 @@ data class AssistantIntent(
         PERMISSION_REQUEST(Category.PERMISSION_REQUEST),
         WAKE(Category.WAKE),
         COMPLIMENT(Category.COMPLIMENT),
+        OPEN_SETTINGS(null),
+        OPEN_DIAGNOSTICS(null),
+        OPEN_NODE_HUNTER(null),
+        SHOW_LOCK_SURFACE(null),
+        REPORT_CURRENT_THEME(null),
+        REPORT_SYSTEM_STATE(null),
+        REPORT_APP_FILTER_STATE(null),
+        START_LOCAL_NETWORK_SCAN(null),
+        SUMMARIZE_LOCAL_NETWORK_SCAN(null),
         UNKNOWN(Category.UNKNOWN_COMMAND)
     }
 }

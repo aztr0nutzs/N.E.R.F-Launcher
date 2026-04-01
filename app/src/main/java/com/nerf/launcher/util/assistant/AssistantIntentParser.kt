@@ -3,6 +3,35 @@ package com.nerf.launcher.util.assistant
 class AssistantIntentParser {
 
     private val matchers: List<Pair<AssistantIntent.Command, List<String>>> = listOf(
+        AssistantIntent.Command.OPEN_SETTINGS to listOf("open settings", "settings", "launcher settings"),
+        AssistantIntent.Command.OPEN_DIAGNOSTICS to listOf("open diagnostics", "diagnostics", "reactor diagnostics"),
+        AssistantIntent.Command.OPEN_NODE_HUNTER to listOf("open node hunter", "node hunter", "hunter module"),
+        AssistantIntent.Command.SHOW_LOCK_SURFACE to listOf("show lock surface", "lock surface", "lock screen"),
+        AssistantIntent.Command.REPORT_CURRENT_THEME to listOf("current theme", "report theme", "what theme"),
+        AssistantIntent.Command.REPORT_SYSTEM_STATE to listOf(
+            "battery",
+            "storage",
+            "uptime",
+            "power save",
+            "power-save",
+            "system state"
+        ),
+        AssistantIntent.Command.REPORT_APP_FILTER_STATE to listOf(
+            "app count",
+            "filter count",
+            "filtered apps",
+            "apps loaded"
+        ),
+        AssistantIntent.Command.START_LOCAL_NETWORK_SCAN to listOf(
+            "start local network scan",
+            "start network scan",
+            "scan network now"
+        ),
+        AssistantIntent.Command.SUMMARIZE_LOCAL_NETWORK_SCAN to listOf(
+            "network scan summary",
+            "summarize network",
+            "scan results"
+        ),
         AssistantIntent.Command.NETWORK_SCAN to listOf("scan", "network", "subnet", "ping", "wifi", "wi-fi", "lan"),
         AssistantIntent.Command.STATUS_REPORT to listOf("diagnos", "health", "status", "check", "report"),
         AssistantIntent.Command.ROUTER_CONTROL to listOf("router", "gateway", "modem", "dhcp", "firewall", "qos"),
