@@ -135,6 +135,10 @@
     <string name="assistant_overlay_action_lock">LOCK SURFACE</string>
     <string name="assistant_overlay_bank_loaded">RESPONSE BANK LOADED</string>
     <string name="assistant_overlay_bank_fallback">RESPONSE BANK FALLBACK</string>
+    <string name="assistant_overlay_command_hint">Type assistant command</string>
+    <string name="assistant_overlay_submit">SEND</string>
+    <string name="assistant_overlay_response_empty_command">Command input is empty. Enter a launcher command to continue.</string>
+    <string name="assistant_overlay_response_unknown_command">Command was not recognized. Try settings, diagnostics, node hunter, or lock surface.</string>
     <string name="assistant_overlay_action_settings_status">Routing to launcher settings.</string>
     <string name="assistant_overlay_action_diagnostics_status">Opening Reactor Diagnostics.</string>
     <string name="assistant_overlay_action_node_hunter_status">Launching Node Hunter.</string>
