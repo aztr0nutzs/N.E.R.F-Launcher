@@ -5,24 +5,25 @@ import com.nerf.launcher.util.assistant.AiResponseRepository.ResponseRequest
 class AssistantResponseComposer {
 
     fun compose(
-        action: AssistantAction,
+        result: AssistantActionResult,
         context: AssistantContextSnapshot
-    ): ResponsePlan = when (action) {
-        is AssistantAction.SpeakCategory -> ResponsePlan.CategoryRequest(
+    ): ResponsePlan = when (result) {
+        is AssistantActionResult.CategoryResolved -> ResponsePlan.CategoryRequest(
             request = ResponseRequest(
-                category = action.category,
+                category = result.category,
                 mood = context.mood,
-                tags = action.tags
+                tags = result.tags
             )
         )
 
-        is AssistantAction.ExecuteLauncherCommand -> ResponsePlan.NoOp
-        AssistantAction.RepeatLastResponse -> ResponsePlan.RepeatLast
-        AssistantAction.Ignore -> ResponsePlan.NoOp
+        is AssistantActionResult.LauncherCommandHandled -> ResponsePlan.DirectText(result.spokenText)
+        AssistantActionResult.RepeatLast -> ResponsePlan.RepeatLast
+        AssistantActionResult.Ignored -> ResponsePlan.NoOp
     }
 
     sealed class ResponsePlan {
         data class CategoryRequest(val request: ResponseRequest) : ResponsePlan()
+        data class DirectText(val text: String) : ResponsePlan()
         data object RepeatLast : ResponsePlan()
         data object NoOp : ResponsePlan()
     }

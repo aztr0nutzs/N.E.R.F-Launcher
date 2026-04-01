@@ -235,6 +235,7 @@ class AssistantController(
 
     fun respondToInput(input: String): String? {
         val intent = intentParser.parse(input) ?: return null
+        memoryStore.rememberIntent(intent)
         val context = buildContextSnapshot()
         val isSpam = memoryStore.markInput(intent.normalizedInput, System.currentTimeMillis())
 
@@ -244,34 +245,38 @@ class AssistantController(
             isButtonSpam = isSpam
         )
 
-        return when (action) {
-            is AssistantAction.ExecuteLauncherCommand -> {
-                val actionResult = executeLauncherCommand(action.command)
-                actionResult.spokenText
-            }
-
-            else -> when (val plan = responseComposer.compose(action, context)) {
+        val actionResult = executeAction(action)
+        return when (val plan = responseComposer.compose(actionResult, context)) {
             is AssistantResponseComposer.ResponsePlan.CategoryRequest -> {
                 val response = speakRequest(plan.request)
                 memoryStore.rememberCategory(plan.request.category)
                 response
             }
 
+            is AssistantResponseComposer.ResponsePlan.DirectText -> speakCustom(plan.text)
             AssistantResponseComposer.ResponsePlan.RepeatLast -> repeatLast()
             AssistantResponseComposer.ResponsePlan.NoOp -> null
-            }
         }
     }
 
     fun executeLauncherCommand(command: AssistantAction.LauncherCommand): AssistantActionResult.LauncherCommandHandled {
-        val result = onLauncherAction?.invoke(command)
+        return onLauncherAction?.invoke(command)
             ?: AssistantActionResult.LauncherCommandHandled(
                 command = command,
                 spokenText = "That launcher action is not wired on this build yet.",
                 performed = false
             )
-        speakCustom(result.spokenText)
-        return result
+    }
+
+    private fun executeAction(action: AssistantAction): AssistantActionResult = when (action) {
+        is AssistantAction.SpeakCategory -> AssistantActionResult.CategoryResolved(
+            category = action.category,
+            tags = action.tags
+        )
+
+        is AssistantAction.ExecuteLauncherCommand -> executeLauncherCommand(action.command)
+        AssistantAction.RepeatLastResponse -> AssistantActionResult.RepeatLast
+        AssistantAction.Ignore -> AssistantActionResult.Ignored
     }
 
     fun scheduleIdleTimeout(delayMs: Long = IDLE_TIMEOUT_MS) {
@@ -364,7 +369,9 @@ class AssistantController(
         interactionCount = _interactionCount,
         state = snapshot.state,
         lastCategory = lastCategory,
+        recentCategories = memoryStore.recentCategoryList(),
         lastResponse = getLastResponse(),
+        lastIntent = memoryStore.latestIntent(),
         timestampMs = System.currentTimeMillis(),
         isSpeaking = personalityLayer.isSpeaking()
     )

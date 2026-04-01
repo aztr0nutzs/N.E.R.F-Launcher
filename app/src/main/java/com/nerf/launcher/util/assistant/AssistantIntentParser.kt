@@ -2,82 +2,94 @@ package com.nerf.launcher.util.assistant
 
 class AssistantIntentParser {
 
-    private val matchers: List<Pair<AssistantIntent.Command, List<String>>> = listOf(
-        AssistantIntent.Command.OPEN_SETTINGS to listOf("open settings", "settings", "launcher settings"),
-        AssistantIntent.Command.OPEN_DIAGNOSTICS to listOf("open diagnostics", "diagnostics", "reactor diagnostics"),
-        AssistantIntent.Command.OPEN_NODE_HUNTER to listOf("open node hunter", "node hunter", "hunter module"),
-        AssistantIntent.Command.SHOW_LOCK_SURFACE to listOf("show lock surface", "lock surface", "lock screen"),
-        AssistantIntent.Command.REPORT_CURRENT_THEME to listOf("current theme", "report theme", "what theme"),
-        AssistantIntent.Command.REPORT_SYSTEM_STATE to listOf(
-            "battery",
-            "storage",
-            "uptime",
-            "power save",
-            "power-save",
-            "system state"
+    private data class Rule(
+        val command: AssistantIntent.Command,
+        val tokens: List<String>
+    )
+
+    private val rules: List<Rule> = listOf(
+        Rule(AssistantIntent.Command.OPEN_SETTINGS, listOf("open settings", "launcher settings", "settings")),
+        Rule(AssistantIntent.Command.OPEN_DIAGNOSTICS, listOf("open diagnostics", "reactor diagnostics", "diagnostics")),
+        Rule(AssistantIntent.Command.OPEN_NODE_HUNTER, listOf("open node hunter", "hunter module", "node hunter")),
+        Rule(AssistantIntent.Command.SHOW_LOCK_SURFACE, listOf("show lock surface", "lock surface", "lock screen")),
+        Rule(AssistantIntent.Command.REPORT_CURRENT_THEME, listOf("current theme", "report theme", "what theme")),
+        Rule(
+            AssistantIntent.Command.REPORT_SYSTEM_STATE,
+            listOf("system state", "power save", "power-save", "battery", "storage", "uptime")
         ),
-        AssistantIntent.Command.REPORT_APP_FILTER_STATE to listOf(
-            "app count",
-            "filter count",
-            "filtered apps",
-            "apps loaded"
+        Rule(
+            AssistantIntent.Command.REPORT_APP_FILTER_STATE,
+            listOf("app count", "filter count", "filtered apps", "apps loaded")
         ),
-        AssistantIntent.Command.START_LOCAL_NETWORK_SCAN to listOf(
-            "start local network scan",
-            "start network scan",
-            "scan network now"
+        Rule(
+            AssistantIntent.Command.START_LOCAL_NETWORK_SCAN,
+            listOf("start local network scan", "start network scan", "scan network now")
         ),
-        AssistantIntent.Command.SUMMARIZE_LOCAL_NETWORK_SCAN to listOf(
-            "network scan summary",
-            "summarize network",
-            "scan results"
+        Rule(
+            AssistantIntent.Command.SUMMARIZE_LOCAL_NETWORK_SCAN,
+            listOf("network scan summary", "summarize network", "scan results")
         ),
-        AssistantIntent.Command.NETWORK_SCAN to listOf("scan", "network", "subnet", "ping", "wifi", "wi-fi", "lan"),
-        AssistantIntent.Command.STATUS_REPORT to listOf("diagnos", "health", "status", "check", "report"),
-        AssistantIntent.Command.ROUTER_CONTROL to listOf("router", "gateway", "modem", "dhcp", "firewall", "qos"),
-        AssistantIntent.Command.LAUNCH to listOf("fire", "shoot", "launch", "deploy", "blast"),
-        AssistantIntent.Command.RELOAD to listOf("reload", "ammo", "refill", "restock", "mag"),
-        AssistantIntent.Command.TARGET_ACQUIRED to listOf("target", "aim", "lock", "acquired", "track"),
-        AssistantIntent.Command.STEALTH_MODE to listOf("stealth", "quiet", "silent", "hide"),
-        AssistantIntent.Command.MISSION_BRIEF to listOf("mission", "brief", "objective", "orders", "plan"),
-        AssistantIntent.Command.ERROR to listOf("error", "crash", "broke", "broken", "bug", "failure"),
-        AssistantIntent.Command.WARNING to listOf("warn", "caution", "alert", "danger"),
-        AssistantIntent.Command.VICTORY to listOf("win", "victory", "success", "done", "nailed it"),
-        AssistantIntent.Command.DEFEAT to listOf("lose", "defeat", "lost", "we failed"),
-        AssistantIntent.Command.THREAT_DETECTED to listOf("threat", "enemy", "hostile", "bogey"),
-        AssistantIntent.Command.TACTICAL_ANALYSIS to listOf("tactical", "analyze", "analyse", "assess", "angle", "flank"),
-        AssistantIntent.Command.BATTERY_LOW to listOf("battery", "power", "charge", "low battery"),
-        AssistantIntent.Command.UPDATE_AVAILABLE to listOf("update", "upgrade", "patch", "version", "new build"),
-        AssistantIntent.Command.COUNTDOWN to listOf("countdown", "timer", "count", "launch sequence"),
-        AssistantIntent.Command.RANDOM_SNARK to listOf("snark", "joke", "funny", "sass", "sarcasm", "roast"),
-        AssistantIntent.Command.THEME_SWITCH to listOf("theme", "skin", "palette", "look", "color", "colour"),
-        AssistantIntent.Command.APP_LAUNCH to listOf("open", "launch app", "start app", "module"),
-        AssistantIntent.Command.PERMISSION_REQUEST to listOf("permission", "allow", "grant access"),
-        AssistantIntent.Command.WAKE to listOf("hello", "hey", "yo", "wake", "reactor", "assistant"),
-        AssistantIntent.Command.COMPLIMENT to listOf("good job", "nice", "thanks", "thank you")
+        Rule(AssistantIntent.Command.NETWORK_SCAN, listOf("network", "subnet", "ping", "wi-fi", "wifi", "lan", "scan")),
+        Rule(AssistantIntent.Command.STATUS_REPORT, listOf("status", "health", "diagnos", "check", "report")),
+        Rule(AssistantIntent.Command.ROUTER_CONTROL, listOf("router", "gateway", "modem", "dhcp", "firewall", "qos")),
+        Rule(AssistantIntent.Command.LAUNCH, listOf("launch", "fire", "shoot", "deploy", "blast")),
+        Rule(AssistantIntent.Command.RELOAD, listOf("reload", "ammo", "refill", "restock", "mag")),
+        Rule(AssistantIntent.Command.TARGET_ACQUIRED, listOf("target", "aim", "lock", "acquired", "track")),
+        Rule(AssistantIntent.Command.STEALTH_MODE, listOf("stealth", "quiet", "silent", "hide")),
+        Rule(AssistantIntent.Command.MISSION_BRIEF, listOf("mission", "brief", "objective", "orders", "plan")),
+        Rule(AssistantIntent.Command.ERROR, listOf("error", "crash", "broken", "broke", "bug", "failure")),
+        Rule(AssistantIntent.Command.WARNING, listOf("warn", "caution", "alert", "danger")),
+        Rule(AssistantIntent.Command.VICTORY, listOf("victory", "win", "success", "done", "nailed it")),
+        Rule(AssistantIntent.Command.DEFEAT, listOf("defeat", "lose", "lost", "we failed")),
+        Rule(AssistantIntent.Command.THREAT_DETECTED, listOf("threat", "enemy", "hostile", "bogey")),
+        Rule(AssistantIntent.Command.TACTICAL_ANALYSIS, listOf("tactical", "analyze", "analyse", "assess", "angle", "flank")),
+        Rule(AssistantIntent.Command.BATTERY_LOW, listOf("low battery", "battery", "power", "charge")),
+        Rule(AssistantIntent.Command.UPDATE_AVAILABLE, listOf("update", "upgrade", "patch", "version", "new build")),
+        Rule(AssistantIntent.Command.COUNTDOWN, listOf("countdown", "launch sequence", "timer", "count")),
+        Rule(AssistantIntent.Command.RANDOM_SNARK, listOf("snark", "joke", "funny", "sass", "sarcasm", "roast")),
+        Rule(AssistantIntent.Command.THEME_SWITCH, listOf("theme", "skin", "palette", "look", "color", "colour")),
+        Rule(AssistantIntent.Command.APP_LAUNCH, listOf("launch app", "start app", "open", "module")),
+        Rule(AssistantIntent.Command.PERMISSION_REQUEST, listOf("permission", "allow", "grant access")),
+        Rule(AssistantIntent.Command.WAKE, listOf("hello", "hey", "yo", "wake", "reactor", "assistant")),
+        Rule(AssistantIntent.Command.COMPLIMENT, listOf("good job", "nice", "thanks", "thank you"))
     )
 
     fun parse(input: String): AssistantIntent? {
-        val normalized = input.lowercase().trim()
+        val normalized = normalize(input)
         if (normalized.isBlank()) return null
 
-        for ((command, tokens) in matchers) {
-            val matched = tokens.firstOrNull { normalized.contains(it) }
-            if (matched != null) {
-                return AssistantIntent(
-                    rawInput = input,
-                    normalizedInput = normalized,
-                    command = command,
-                    matchedToken = matched,
-                    tags = setOf(command.name.lowercase())
-                )
-            }
+        for (rule in rules) {
+            val matched = rule.tokens.firstOrNull { token ->
+                containsToken(normalized, token)
+            } ?: continue
+
+            return AssistantIntent(
+                rawInput = input,
+                normalizedInput = normalized,
+                command = rule.command,
+                matchedToken = matched,
+                tags = setOf(rule.command.name.lowercase())
+            )
         }
 
         return AssistantIntent(
             rawInput = input,
             normalizedInput = normalized,
-            command = AssistantIntent.Command.UNKNOWN
+            command = AssistantIntent.Command.UNKNOWN,
+            tags = setOf(AssistantIntent.Command.UNKNOWN.name.lowercase())
         )
+    }
+
+    private fun normalize(input: String): String = input
+        .lowercase()
+        .trim()
+        .replace(Regex("\\s+"), " ")
+
+    private fun containsToken(input: String, token: String): Boolean {
+        if (token.contains(' ')) {
+            return input.contains(token)
+        }
+        val pattern = Regex("\\b${Regex.escape(token)}\\b")
+        return pattern.containsMatchIn(input)
     }
 }
