@@ -48,6 +48,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.roundToLong
 
 /**
  * Main launcher screen – app grid + HUD + taskbar.
@@ -558,7 +559,10 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "Opening launcher settings now.",
-                    performed = true
+                    performed = true,
+                    details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
+                        destination = "settings"
+                    )
                 )
             }
 
@@ -567,7 +571,10 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "Opening reactor diagnostics.",
-                    performed = true
+                    performed = true,
+                    details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
+                        destination = "diagnostics"
+                    )
                 )
             }
 
@@ -576,7 +583,10 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "Opening Node Hunter module.",
-                    performed = true
+                    performed = true,
+                    details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
+                        destination = "node_hunter"
+                    )
                 )
             }
 
@@ -585,7 +595,10 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "Lock surface is now active.",
-                    performed = true
+                    performed = true,
+                    details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
+                        destination = "lock_surface"
+                    )
                 )
             }
 
@@ -595,16 +608,24 @@ class MainActivity : AppCompatActivity() {
                     AssistantActionResult.LauncherCommandHandled(
                         command = command,
                         spokenText = "Theme cycle is unavailable until launcher config is loaded.",
-                        performed = false
+                        performed = false,
+                        details = AssistantActionResult.LauncherCommandDetails.CurrentTheme(
+                            activeTheme = null
+                        )
                     )
                 } else {
                     val currentIndex = themeNames.indexOf(config.themeName).takeIf { it >= 0 } ?: 0
+                    val currentTheme = themeNames[currentIndex]
                     val nextTheme = themeNames[(currentIndex + 1) % themeNames.size]
                     ConfigRepository.get().updateTheme(nextTheme)
                     AssistantActionResult.LauncherCommandHandled(
                         command = command,
                         spokenText = "Theme cycled to $nextTheme.",
-                        performed = true
+                        performed = true,
+                        details = AssistantActionResult.LauncherCommandDetails.ThemeCycled(
+                            previousTheme = currentTheme,
+                            newTheme = nextTheme
+                        )
                     )
                 }
             }
@@ -619,7 +640,10 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = spokenText,
-                    performed = activeTheme != null
+                    performed = activeTheme != null,
+                    details = AssistantActionResult.LauncherCommandDetails.CurrentTheme(
+                        activeTheme = activeTheme
+                    )
                 )
             }
 
@@ -636,7 +660,16 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = spokenText,
-                    performed = snapshot != null
+                    performed = snapshot != null,
+                    details = snapshot?.let {
+                        AssistantActionResult.LauncherCommandDetails.SystemState(
+                            batteryPercent = it.batteryPercent,
+                            storageUsagePercent = it.storageUsagePercent,
+                            uptimeDays = it.uptimeDays,
+                            uptimeHours = it.uptimeHours,
+                            isPowerSaveMode = it.isPowerSaveMode
+                        )
+                    }
                 )
             }
 
@@ -644,7 +677,11 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "App catalog has ${allApps.size} apps loaded with $filteredAppCount currently in filter scope.",
-                    performed = true
+                    performed = true,
+                    details = AssistantActionResult.LauncherCommandDetails.AppFilterState(
+                        totalApps = allApps.size,
+                        filteredApps = filteredAppCount
+                    )
                 )
             }
 
@@ -653,14 +690,24 @@ class MainActivity : AppCompatActivity() {
                     return AssistantActionResult.LauncherCommandHandled(
                         command = command,
                         spokenText = "Local network scan is unavailable because Wi-Fi subnet data is not accessible.",
-                        performed = false
+                        performed = false,
+                        details = AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
+                            supported = false,
+                            running = false,
+                            nodeCount = null
+                        )
                     )
                 }
                 if (isNetworkScanRunning) {
                     return AssistantActionResult.LauncherCommandHandled(
                         command = command,
                         spokenText = "A local network scan is already running.",
-                        performed = true
+                        performed = true,
+                        details = AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
+                            supported = true,
+                            running = true,
+                            nodeCount = null
+                        )
                     )
                 }
                 isNetworkScanRunning = true
@@ -672,20 +719,26 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "Starting local network scan now.",
-                    performed = true
+                    performed = true,
+                    details = AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
+                        supported = true,
+                        running = true,
+                        nodeCount = null
+                    )
                 )
             }
 
             AssistantAction.LauncherCommand.SUMMARIZE_LOCAL_NETWORK_SCAN -> {
+                val nodes = lastNetworkScanResult.orEmpty()
+                val supported = localNetworkScanner.canScanLocalSubnet()
                 val spokenText = when {
                     isNetworkScanRunning -> "Local network scan is in progress. Ask again when it finishes."
                     lastNetworkScanResult == null -> "No completed local network scan is available yet."
                     else -> {
-                        val nodes = lastNetworkScanResult.orEmpty()
                         if (nodes.isEmpty()) {
                             "Local network scan completed with zero reachable nodes."
                         } else {
-                            val averagePing = nodes.map { it.pingMs }.average().toLong()
+                            val averagePing = nodes.map { it.pingMs }.average().roundToLong()
                             "Local network scan found ${nodes.size} reachable nodes with average latency ${averagePing} milliseconds."
                         }
                     }
@@ -693,7 +746,37 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = spokenText,
-                    performed = lastNetworkScanResult != null || isNetworkScanRunning
+                    performed = lastNetworkScanResult != null || isNetworkScanRunning,
+                    details = when {
+                        isNetworkScanRunning -> AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
+                            supported = supported,
+                            running = true,
+                            nodeCount = null
+                        )
+
+                        lastNetworkScanResult == null -> AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
+                            supported = supported,
+                            running = false,
+                            nodeCount = null
+                        )
+
+                        nodes.isEmpty() -> AssistantActionResult.LauncherCommandDetails.NetworkScanSummary(
+                            nodeCount = 0,
+                            averagePingMs = null,
+                            fastestPingMs = null,
+                            slowestPingMs = null
+                        )
+
+                        else -> {
+                            val pingValues = nodes.map { it.pingMs }
+                            AssistantActionResult.LauncherCommandDetails.NetworkScanSummary(
+                                nodeCount = nodes.size,
+                                averagePingMs = pingValues.average().roundToLong(),
+                                fastestPingMs = pingValues.minOrNull(),
+                                slowestPingMs = pingValues.maxOrNull()
+                            )
+                        }
+                    }
                 )
             }
         }

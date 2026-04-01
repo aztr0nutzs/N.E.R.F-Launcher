@@ -19,15 +19,15 @@ class AssistantIntentParser {
         ),
         Rule(
             AssistantIntent.Command.REPORT_APP_FILTER_STATE,
-            listOf("app count", "filter count", "filtered apps", "apps loaded")
+            listOf("app count", "filter count", "app-count", "filter-count", "filtered apps", "apps loaded")
         ),
         Rule(
             AssistantIntent.Command.START_LOCAL_NETWORK_SCAN,
-            listOf("start local network scan", "start network scan", "scan network now")
+            listOf("start local network scan", "start network scan", "scan network now", "scan local network")
         ),
         Rule(
             AssistantIntent.Command.SUMMARIZE_LOCAL_NETWORK_SCAN,
-            listOf("network scan summary", "summarize network", "scan results")
+            listOf("network scan summary", "summarize network", "scan results", "summarize local network scan")
         ),
         Rule(AssistantIntent.Command.NETWORK_SCAN, listOf("network", "subnet", "ping", "wi-fi", "wifi", "lan", "scan")),
         Rule(AssistantIntent.Command.STATUS_REPORT, listOf("status", "health", "diagnos", "check", "report")),
@@ -47,7 +47,7 @@ class AssistantIntentParser {
         Rule(AssistantIntent.Command.UPDATE_AVAILABLE, listOf("update", "upgrade", "patch", "version", "new build")),
         Rule(AssistantIntent.Command.COUNTDOWN, listOf("countdown", "launch sequence", "timer", "count")),
         Rule(AssistantIntent.Command.RANDOM_SNARK, listOf("snark", "joke", "funny", "sass", "sarcasm", "roast")),
-        Rule(AssistantIntent.Command.THEME_SWITCH, listOf("theme", "skin", "palette", "look", "color", "colour")),
+        Rule(AssistantIntent.Command.THEME_SWITCH, listOf("cycle theme", "theme switch", "change theme", "theme", "skin", "palette", "look", "color", "colour")),
         Rule(AssistantIntent.Command.APP_LAUNCH, listOf("launch app", "start app", "open", "module")),
         Rule(AssistantIntent.Command.PERMISSION_REQUEST, listOf("permission", "allow", "grant access")),
         Rule(AssistantIntent.Command.WAKE, listOf("hello", "hey", "yo", "wake", "reactor", "assistant")),
