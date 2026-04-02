@@ -47,6 +47,7 @@ class AssistantController(
     private var pendingIdleTimeout: Runnable? = null
     private var pendingTtsShutdown: Runnable? = null
     private var isDisposed = false
+    private var isUserShutdownInProgress = false
 
     private val responseHistory = LinkedList<String>()
     private val transcriptHistory = LinkedList<TranscriptEntry>()
@@ -146,6 +147,8 @@ class AssistantController(
 
     fun shutdown() {
         if (isDisposed) return
+        if (isUserShutdownInProgress) return
+        isUserShutdownInProgress = true
         clearAllPending()
         postState(snapshot.copy(state = AssistantState.SHUTTING_DOWN))
         speakCategory(AiResponseRepository.Category.SHUTDOWN)
@@ -153,11 +156,7 @@ class AssistantController(
     }
 
     fun dispose() {
-        if (isDisposed) return
-        isDisposed = true
-        clearAllPending()
-        personalityLayer.stop()
-        personalityLayer.shutdown()
+        performSilentTeardown()
     }
 
     fun setIdle() {
@@ -422,10 +421,18 @@ class AssistantController(
     private fun scheduleTtsShutdown() {
         clearPendingTtsShutdown()
         pendingTtsShutdown = Runnable {
-            personalityLayer.shutdown()
             pendingTtsShutdown = null
-            isDisposed = true
+            performSilentTeardown()
         }.also { mainHandler.postDelayed(it, SHUTDOWN_TTS_DELAY) }
+    }
+
+    private fun performSilentTeardown() {
+        if (isDisposed) return
+        isDisposed = true
+        isUserShutdownInProgress = false
+        clearAllPending()
+        personalityLayer.stop()
+        personalityLayer.release()
     }
 
     private fun postState(next: AssistantStateSnapshot) {
