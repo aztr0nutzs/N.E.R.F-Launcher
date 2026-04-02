@@ -9,7 +9,6 @@ enum class AssistantState {
     SPEAKING,
     MUTED,
     ERROR,
-    AWAITING_INPUT,
     REBOOTING,
     SHUTTING_DOWN;
 
