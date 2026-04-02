@@ -69,6 +69,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
 
     private var tts: TextToSpeech? = null
     private val _isReady = AtomicBoolean(false)
+    private val releaseState = AtomicBoolean(false)
 
     /** True once the TTS engine has initialised successfully. */
     val isReady: Boolean get() = _isReady.get()
@@ -102,6 +103,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
     }
 
     override fun onInit(status: Int) {
+        if (releaseState.get()) return
         if (status == TextToSpeech.SUCCESS) {
             val langResult = tts?.setLanguage(Locale.US)
             if (langResult == TextToSpeech.LANG_MISSING_DATA ||
@@ -143,6 +145,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
 
     /** Stops all current and queued speech immediately. */
     fun stop() {
+        if (releaseState.get()) return
         tts?.stop()
     }
 
@@ -151,6 +154,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
      * effectively a soft pause. Resume by calling [speak] or [speakQueued].
      */
     fun pause() {
+        if (releaseState.get()) return
         tts?.stop()
         Log.d(TAG, "Speech paused.")
     }
@@ -163,6 +167,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
      */
     fun setVoiceProfile(profile: VoiceProfile) {
         currentProfile = profile
+        if (releaseState.get()) return
         if (_isReady.get()) {
             applyVoiceProfile(profile)
             onProfileChanged?.invoke(profile)
@@ -183,11 +188,13 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
 
     /** Overrides pitch directly (0.5 – 2.0). Does not change [currentProfile]. */
     fun setPitch(pitch: Float) {
+        if (releaseState.get()) return
         tts?.setPitch(pitch.coerceIn(0.5f, 2.0f))
     }
 
     /** Overrides speech rate directly (0.5 – 2.0). Does not change [currentProfile]. */
     fun setSpeechRate(rate: Float) {
+        if (releaseState.get()) return
         tts?.setSpeechRate(rate.coerceIn(0.5f, 2.0f))
     }
 
@@ -211,7 +218,8 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
      * Stops all speech, releases TTS resources, and marks the engine as not ready.
      * After calling this, [isReady] returns false and a new instance is required.
      */
-    fun shutdown() {
+    fun release() {
+        if (!releaseState.compareAndSet(false, true)) return
         tts?.stop()
         tts?.shutdown()
         tts = null
@@ -221,9 +229,14 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
         Log.d(TAG, "ReactorAssistant shut down.")
     }
 
+    fun shutdown() {
+        release()
+    }
+
     // ── Internal ─────────────────────────────────────────────────────────────
 
     private fun speakInternal(text: String, interrupt: Boolean): Boolean {
+        if (releaseState.get()) return false
         if (!_isReady.get()) {
             Log.w(TAG, "TTS not ready — discarding: \"${text.take(60)}\"")
             return false
