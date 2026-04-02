@@ -325,7 +325,7 @@ class AssistantController(
             ?: AssistantActionResult.LauncherCommandHandled(
                 command = command,
                 spokenText = "That launcher action is not wired on this build yet.",
-                performed = false
+                outcome = AssistantActionResult.LauncherOutcome.UNSUPPORTED
             )
     }
 
@@ -500,7 +500,7 @@ class AssistantController(
             normalized.contains("status now") -> {
                 val handled = executeLauncherCommand(AssistantAction.LauncherCommand.REPORT_SYSTEM_STATE)
                 rememberLauncherCommandResult(handled)
-                speakCustom(handled.spokenText)
+                speakCustom(handled.resolvedSpokenText())
             }
 
             normalized.contains("open it") -> {
@@ -512,7 +512,7 @@ class AssistantController(
                 } else {
                     val handled = executeLauncherCommand(command)
                     rememberLauncherCommandResult(handled)
-                    speakCustom(handled.spokenText)
+                    speakCustom(handled.resolvedSpokenText())
                 }
             }
 
@@ -535,7 +535,7 @@ class AssistantController(
                     ?: return speakCustom("I couldn't recover the last launcher action safely.")
                 val handled = executeLauncherCommand(command)
                 rememberLauncherCommandResult(handled)
-                speakCustom(handled.spokenText)
+                speakCustom(handled.resolvedSpokenText())
             }
 
             action.startsWith("category:") -> {
@@ -553,8 +553,9 @@ class AssistantController(
         if (result.performed) {
             rememberSuccessfulAction("launcher:${result.command.name}")
         }
-        if (result.spokenText.isNotBlank()) {
-            rememberLastResponse(result.spokenText)
+        val spokenText = result.resolvedSpokenText()
+        if (spokenText.isNotBlank()) {
+            rememberLastResponse(spokenText)
         }
     }
 

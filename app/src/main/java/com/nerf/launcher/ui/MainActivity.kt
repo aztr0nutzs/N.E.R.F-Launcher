@@ -579,7 +579,7 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "Opening launcher settings now.",
-                    performed = true,
+                    outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
                     details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
                         destination = "settings"
                     )
@@ -591,7 +591,7 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "Opening reactor diagnostics.",
-                    performed = true,
+                    outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
                     details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
                         destination = "diagnostics"
                     )
@@ -603,7 +603,7 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "Opening Node Hunter module.",
-                    performed = true,
+                    outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
                     details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
                         destination = "node_hunter"
                     )
@@ -611,11 +611,20 @@ class MainActivity : AppCompatActivity() {
             }
 
             AssistantAction.LauncherCommand.SHOW_LOCK_SURFACE -> {
+                val wasAlreadyVisible = isLockSurfaceVisible
                 showLockSurface()
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
-                    spokenText = "Lock surface is now active.",
-                    performed = true,
+                    spokenText = if (wasAlreadyVisible) {
+                        "Lock surface is already active."
+                    } else {
+                        "Lock surface is now active."
+                    },
+                    outcome = if (wasAlreadyVisible) {
+                        AssistantActionResult.LauncherOutcome.ALREADY_ACTIVE
+                    } else {
+                        AssistantActionResult.LauncherOutcome.PERFORMED
+                    },
                     details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
                         destination = "lock_surface"
                     )
@@ -628,7 +637,7 @@ class MainActivity : AppCompatActivity() {
                     AssistantActionResult.LauncherCommandHandled(
                         command = command,
                         spokenText = "Theme cycle is unavailable until launcher config is loaded.",
-                        performed = false,
+                        outcome = AssistantActionResult.LauncherOutcome.BLOCKED,
                         details = AssistantActionResult.LauncherCommandDetails.CurrentTheme(
                             activeTheme = null
                         )
@@ -641,7 +650,7 @@ class MainActivity : AppCompatActivity() {
                     AssistantActionResult.LauncherCommandHandled(
                         command = command,
                         spokenText = "Theme cycled to $nextTheme.",
-                        performed = true,
+                        outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
                         details = AssistantActionResult.LauncherCommandDetails.ThemeCycled(
                             previousTheme = currentTheme,
                             newTheme = nextTheme
@@ -660,7 +669,7 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = spokenText,
-                    performed = activeTheme != null,
+                    outcome = AssistantActionResult.LauncherOutcome.INFORMATIONAL,
                     details = AssistantActionResult.LauncherCommandDetails.CurrentTheme(
                         activeTheme = activeTheme
                     )
@@ -680,7 +689,7 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = spokenText,
-                    performed = snapshot != null,
+                    outcome = AssistantActionResult.LauncherOutcome.INFORMATIONAL,
                     details = snapshot?.let {
                         AssistantActionResult.LauncherCommandDetails.SystemState(
                             batteryPercent = it.batteryPercent,
@@ -697,7 +706,7 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "App catalog has ${allApps.size} apps loaded with $filteredAppCount currently in filter scope.",
-                    performed = true,
+                    outcome = AssistantActionResult.LauncherOutcome.INFORMATIONAL,
                     details = AssistantActionResult.LauncherCommandDetails.AppFilterState(
                         totalApps = allApps.size,
                         filteredApps = filteredAppCount
@@ -710,7 +719,7 @@ class MainActivity : AppCompatActivity() {
                     return AssistantActionResult.LauncherCommandHandled(
                         command = command,
                         spokenText = "Local network scan is unavailable because Wi-Fi subnet data is not accessible.",
-                        performed = false,
+                        outcome = AssistantActionResult.LauncherOutcome.BLOCKED,
                         details = AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
                             supported = false,
                             running = false,
@@ -722,7 +731,7 @@ class MainActivity : AppCompatActivity() {
                     return AssistantActionResult.LauncherCommandHandled(
                         command = command,
                         spokenText = "A local network scan is already running.",
-                        performed = true,
+                        outcome = AssistantActionResult.LauncherOutcome.IN_PROGRESS,
                         details = AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
                             supported = true,
                             running = true,
@@ -739,7 +748,7 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = "Starting local network scan now.",
-                    performed = true,
+                    outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
                     details = AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
                         supported = true,
                         running = true,
@@ -766,7 +775,11 @@ class MainActivity : AppCompatActivity() {
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
                     spokenText = spokenText,
-                    performed = lastNetworkScanResult != null || isNetworkScanRunning,
+                    outcome = when {
+                        isNetworkScanRunning -> AssistantActionResult.LauncherOutcome.IN_PROGRESS
+                        !supported -> AssistantActionResult.LauncherOutcome.BLOCKED
+                        else -> AssistantActionResult.LauncherOutcome.INFORMATIONAL
+                    },
                     details = when {
                         isNetworkScanRunning -> AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
                             supported = supported,

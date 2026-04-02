@@ -16,7 +16,7 @@ class AssistantResponseComposer {
             )
         )
 
-        is AssistantActionResult.LauncherCommandHandled -> ResponsePlan.DirectText(result.spokenText)
+        is AssistantActionResult.LauncherCommandHandled -> ResponsePlan.DirectText(result.resolvedSpokenText())
         AssistantActionResult.RepeatLast -> ResponsePlan.RepeatLast
         AssistantActionResult.Ignored -> ResponsePlan.NoOp
     }
