@@ -169,7 +169,7 @@ class AssistantController(
         if (!snapshot.state.canInterrupt) return
         clearPendingListeningTransition()
         personalityLayer.stop()
-        postState(snapshot.copy(state = AssistantState.AWAITING_INPUT))
+        postState(snapshot.copy(state = AssistantState.LISTENING))
     }
 
     fun speakCategory(category: AiResponseRepository.Category): String =

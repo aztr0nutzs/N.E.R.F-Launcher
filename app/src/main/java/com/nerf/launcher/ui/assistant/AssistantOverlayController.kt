@@ -446,7 +446,6 @@ class AssistantOverlayController(
             AssistantState.SPEAKING -> R.string.assistant_overlay_status_speaking
             AssistantState.MUTED -> R.string.assistant_overlay_status_muted
             AssistantState.ERROR -> R.string.assistant_overlay_status_error
-            AssistantState.AWAITING_INPUT -> R.string.assistant_overlay_status_listening
             AssistantState.REBOOTING -> R.string.assistant_overlay_status_wake
             AssistantState.SHUTTING_DOWN -> R.string.assistant_overlay_status_muted
         }
@@ -461,7 +460,6 @@ class AssistantOverlayController(
             AssistantState.THINKING -> R.color.nerf_hud_orange
             AssistantState.RESPONDING -> R.color.nerf_hud_cyan
             AssistantState.SPEAKING -> R.color.nerf_hud_magenta
-            AssistantState.AWAITING_INPUT -> R.color.nerf_hud_lime
             AssistantState.REBOOTING -> R.color.nerf_hud_orange
             AssistantState.MUTED,
             AssistantState.ERROR,
@@ -475,7 +473,7 @@ class AssistantOverlayController(
         binding.assistantOverlayListeningIndicator.background.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN)
         binding.assistantOverlaySpeakingIndicator.background.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN)
 
-        binding.assistantOverlayListeningIndicator.visibility = if (state == AssistantState.LISTENING || state == AssistantState.AWAITING_INPUT) View.VISIBLE else View.GONE
+        binding.assistantOverlayListeningIndicator.visibility = if (state == AssistantState.LISTENING) View.VISIBLE else View.GONE
         binding.assistantOverlaySpeakingIndicator.visibility = if (state == AssistantState.SPEAKING || state == AssistantState.RESPONDING) View.VISIBLE else View.GONE
 
         binding.assistantOverlayListeningIndicator.animate().cancel()
@@ -483,14 +481,14 @@ class AssistantOverlayController(
         binding.assistantOverlayVisualCore.animate().cancel()
 
         when (state) {
-            AssistantState.LISTENING, AssistantState.AWAITING_INPUT -> {
+            AssistantState.LISTENING -> {
                 binding.assistantOverlayListeningIndicator.alpha = 0.35f
                 binding.assistantOverlayListeningIndicator.animate()
                     .alpha(1f)
                     .setDuration(550L)
                     .setInterpolator(LinearInterpolator())
                     .withEndAction {
-                        if (currentState == AssistantState.LISTENING || currentState == AssistantState.AWAITING_INPUT) {
+                        if (currentState == AssistantState.LISTENING) {
                             renderVisualState(currentState)
                         }
                     }
