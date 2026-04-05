@@ -10,9 +10,12 @@ object IconPackManager {
     const val DEFAULT_PACK = "system"
     const val ICON_PACK_ASSET_ROOT = "icon_packs"
     private val ICON_EXTENSIONS = listOf(".png", ".webp", ".jpg", ".jpeg")
+    @Volatile
+    private var cachedAvailablePacks: List<String>? = null
 
     /** Returns the list of available icon pack identifiers. */
     fun getAvailablePacks(context: Context): List<String> {
+        cachedAvailablePacks?.let { return it }
         val packsFromAssets = try {
             context.assets
                 .list(ICON_PACK_ASSET_ROOT)
@@ -29,6 +32,8 @@ object IconPackManager {
         return buildList {
             add(DEFAULT_PACK)
             addAll(packsFromAssets.filterNot { it == DEFAULT_PACK })
+        }.also { resolved ->
+            cachedAvailablePacks = resolved
         }
     }
 
@@ -48,6 +53,14 @@ object IconPackManager {
         if (getAvailablePacks(context).contains(packName)) {
             ConfigRepository.get().updateIconPack(packName)
         }
+    }
+
+    fun hasAdditionalPackAssets(context: Context): Boolean {
+        return getAvailablePacks(context).any { it != DEFAULT_PACK }
+    }
+
+    fun clearAvailabilityCache() {
+        cachedAvailablePacks = null
     }
 
     private fun hasIcons(context: Context, packName: String): Boolean {
