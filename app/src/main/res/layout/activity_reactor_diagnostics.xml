@@ -9,14 +9,14 @@
     android:padding="16dp">
 
     <com.nerf.launcher.ui.reactor.ReactorModuleView
-        android:id="@+id/leftReactor"
+        android:id="@+id/left_reactor"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:layout_marginEnd="16dp" />
 
     <com.nerf.launcher.ui.reactor.ReactorModuleView
-        android:id="@+id/rightReactor"
+        android:id="@+id/right_reactor"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"

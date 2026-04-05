@@ -37,7 +37,7 @@
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Body1" />
 
             <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/taskbarEnabledSwitch"
+                android:id="@+id/taskbar_enabled_switch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
@@ -50,14 +50,14 @@
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Body1" />
 
             <TextView
-                android:id="@+id/taskbarHeightValue"
+                android:id="@+id/taskbar_height_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Caption" />
 
             <SeekBar
-                android:id="@+id/taskbarHeightSeekbar"
+                android:id="@+id/taskbar_height_seekbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -69,14 +69,14 @@
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Body1" />
 
             <TextView
-                android:id="@+id/taskbarIconSizeValue"
+                android:id="@+id/taskbar_icon_size_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Caption" />
 
             <SeekBar
-                android:id="@+id/taskbarIconSizeSeekbar"
+                android:id="@+id/taskbar_icon_size_seekbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -88,14 +88,14 @@
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Body1" />
 
             <TextView
-                android:id="@+id/taskbarTransparencyValue"
+                android:id="@+id/taskbar_transparency_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Caption" />
 
             <SeekBar
-                android:id="@+id/taskbarTransparencySeekbar"
+                android:id="@+id/taskbar_transparency_seekbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -107,7 +107,7 @@
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Body1" />
 
             <Spinner
-                android:id="@+id/taskbarBackgroundStyleSpinner"
+                android:id="@+id/taskbar_background_style_spinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
@@ -120,14 +120,14 @@
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Body1" />
 
             <TextView
-                android:id="@+id/pinnedAppsSummary"
+                android:id="@+id/pinned_apps_summary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Caption" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/clearPinnedAppsButton"
+                android:id="@+id/clear_pinned_apps_button"
                 style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

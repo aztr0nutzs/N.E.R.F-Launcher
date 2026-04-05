@@ -747,7 +747,7 @@
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium.Cyan" />
 
                         <EditText
-                            android:id="@+id/drawerSearchInput"
+                            android:id="@+id/drawer_search_input"
                             style="@style/Widget.NerfLauncher.Drawer.SearchInput"
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/nerf_drawer_search_height"
@@ -762,7 +762,7 @@
                     </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerView"
+                        android:id="@+id/recycler_view"
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_marginTop="6dp"
@@ -781,7 +781,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.nerf.launcher.ui.TaskbarView
-            android:id="@+id/taskbarView"
+            android:id="@+id/taskbar_view"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="6dp"

@@ -21,7 +21,7 @@
 
     <!-- Theme selector -->
     <LinearLayout
-        android:id="@+id/themeContainer"
+        android:id="@+id/theme_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -33,14 +33,14 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Spinner
-            android:id="@+id/themeSpinner"
+            android:id="@+id/theme_spinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <!-- Icon pack selector -->
     <LinearLayout
-        android:id="@+id/iconPackContainer"
+        android:id="@+id/icon_pack_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -52,14 +52,14 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Spinner
-            android:id="@+id/iconPackSpinner"
+            android:id="@+id/icon_pack_spinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <!-- Glow intensity slider -->
     <LinearLayout
-        android:id="@+id/sliderContainer"
+        android:id="@+id/slider_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -71,7 +71,7 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <SeekBar
-            android:id="@+id/glowSeekBar"
+            android:id="@+id/glow_seek_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:max="100"/>
@@ -79,7 +79,7 @@
 
     <!-- Animation speed switch -->
     <LinearLayout
-        android:id="@+id/switchContainer"
+        android:id="@+id/switch_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -92,7 +92,7 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <TextView
-            android:id="@+id/animationLabel"
+            android:id="@+id/animation_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/settings_animation_speed"
@@ -102,14 +102,14 @@
             android:textColor="@color/theme_shared_hud_lime"/>
 
         <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/animationSwitch"
+            android:id="@+id/animation_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <!-- Grid size spinner -->
     <LinearLayout
-        android:id="@+id/spinnerContainer"
+        android:id="@+id/spinner_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -121,7 +121,7 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Spinner
-            android:id="@+id/gridSizeSpinner"
+            android:id="@+id/grid_size_spinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>

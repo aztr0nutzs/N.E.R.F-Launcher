@@ -79,7 +79,7 @@ object ThemeManager {
         root.setBackgroundColor(theme.windowBackground)
         root.findViewById<View>(R.id.lock_surface_root)?.setBackgroundColor(theme.lockSurfaceScrim)
         root.findViewById<View>(R.id.scanline_overlay)?.background = createScanlineOverlayDrawable(theme)
-        root.findViewById<EditText>(R.id.drawerSearchInput)?.let { drawerSearchInput ->
+        root.findViewById<EditText>(R.id.drawer_search_input)?.let { drawerSearchInput ->
             drawerSearchInput.background = createDrawerSearchFieldBackground(root.context, theme)
             drawerSearchInput.setTextColor(theme.hudPanelTextPrimary)
             drawerSearchInput.setHintTextColor(theme.hudPanelTextSecondary)
@@ -92,7 +92,7 @@ object ThemeManager {
         applyButtonBackground(root, R.id.reloadTile, createHudActionTileDrawable(root.context, theme))
         applyButtonBackground(root, R.id.lockSurfaceTile, createHudActionTileDrawable(root.context, theme))
         applyButtonBackground(root, R.id.lockSurfaceUnlockButton, createHudActionTileDrawable(root.context, theme))
-        applyButtonBackground(root, R.id.openTaskbarSettingsButton, createHudActionTileDrawable(root.context, theme))
+        applyButtonBackground(root, R.id.open_taskbar_settings_button, createHudActionTileDrawable(root.context, theme))
         applyTextColor(root, R.id.quickThemeBtn, theme.hudInfoColor)
         applyTextColor(root, R.id.quickIconPackBtn, theme.hudSuccessColor)
         applyTextColor(root, R.id.quickAnimationBtn, theme.hudWarningColor)
@@ -146,7 +146,7 @@ object ThemeManager {
 
         applyTextColorRecursively(root, theme.hudPanelTextPrimary)
 
-        root.findViewById<MaterialButton>(R.id.clearPinnedAppsButton)?.let { button ->
+        root.findViewById<MaterialButton>(R.id.clear_pinned_apps_button)?.let { button ->
             val fill = ColorStateList(
                 arrayOf(
                     intArrayOf(android.R.attr.state_enabled),
@@ -171,15 +171,15 @@ object ThemeManager {
             button.setTextColor(text)
         }
 
-        root.findViewById<SwitchCompat>(R.id.taskbarEnabledSwitch)?.let { switchView ->
+        root.findViewById<SwitchCompat>(R.id.taskbar_enabled_switch)?.let { switchView ->
             switchView.thumbTintList = createSwitchThumbTint(theme)
             switchView.trackTintList = createSwitchTrackTint(theme)
         }
 
         listOf(
-            R.id.taskbarHeightSeekbar,
-            R.id.taskbarIconSizeSeekbar,
-            R.id.taskbarTransparencySeekbar
+            R.id.taskbar_height_seekbar,
+            R.id.taskbar_icon_size_seekbar,
+            R.id.taskbar_transparency_seekbar
         ).forEach { viewId ->
             root.findViewById<SeekBar>(viewId)?.let { seekBar ->
                 seekBar.thumbTintList = ColorStateList.valueOf(theme.primary)
