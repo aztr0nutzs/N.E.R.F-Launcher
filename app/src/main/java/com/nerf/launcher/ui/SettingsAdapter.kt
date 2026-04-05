@@ -115,9 +115,17 @@ class SettingsAdapter(
                     seekBar.setOnSeekBarChangeListener(null)
                     val progress = ((currentConfig?.glowIntensity ?: item.initialValue) * 100).toInt()
                     seekBar.progress = progress
+                    binding.glowValue.text = binding.root.context.getString(
+                        com.nerf.launcher.R.string.settings_glow_percent,
+                        progress
+                    )
                     seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                             if (fromUser) {
+                                binding.glowValue.text = binding.root.context.getString(
+                                    com.nerf.launcher.R.string.settings_glow_percent,
+                                    progress
+                                )
                                 val value = progress / 100f
                                 if (value != currentConfig?.glowIntensity) {
                                     onSettingChanged(SettingChange.GlowIntensity(value))

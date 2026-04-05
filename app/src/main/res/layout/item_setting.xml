@@ -75,6 +75,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:max="100"/>
+
+        <TextView
+            android:id="@+id/glow_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/settings_glow_percent"
+            android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
+            android:textColor="@color/theme_shared_hud_cyan" />
     </LinearLayout>
 
     <!-- Animation speed switch -->
