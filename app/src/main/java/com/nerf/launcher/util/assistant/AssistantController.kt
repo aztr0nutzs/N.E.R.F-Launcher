@@ -48,6 +48,7 @@ class AssistantController(
     private var pendingTtsShutdown: Runnable? = null
     private var isDisposed = false
     private var isUserShutdownInProgress = false
+    private var idlePromptCount = 0
 
     private val responseHistory = LinkedList<String>()
     private val transcriptHistory = LinkedList<TranscriptEntry>()
@@ -125,7 +126,9 @@ class AssistantController(
         clearPendingIdleTimeout()
         rememberSurface(activeSurface)
         postState(snapshot.copy(state = AssistantState.WAKE))
-        return speakCategory(AiResponseRepository.Category.WAKE)
+        val response = speakCategory(AiResponseRepository.Category.WAKE)
+        scheduleIdleTimeout()
+        return response
     }
 
     fun wakeForCommand() {
@@ -133,6 +136,7 @@ class AssistantController(
         rememberSurface(activeSurface)
         postState(snapshot.copy(state = AssistantState.WAKE))
         scheduleListening(snapshot.response)
+        scheduleIdleTimeout()
     }
 
     fun reboot() {
@@ -311,11 +315,23 @@ class AssistantController(
             is AssistantResponseComposer.ResponsePlan.CategoryRequest -> {
                 val response = speakRequest(plan.request)
                 memoryStore.rememberCategory(plan.request.category)
+                scheduleIdleTimeout()
                 response
             }
 
-            is AssistantResponseComposer.ResponsePlan.DirectText -> speakCustom(plan.text)
-            AssistantResponseComposer.ResponsePlan.RepeatLast -> repeatLast()
+            is AssistantResponseComposer.ResponsePlan.DirectText -> {
+                val response = speakCustom(plan.text)
+                scheduleIdleTimeout()
+                response
+            }
+
+            AssistantResponseComposer.ResponsePlan.RepeatLast -> {
+                val repeated = repeatLast()
+                if (repeated != null) {
+                    scheduleIdleTimeout()
+                }
+                repeated
+            }
             AssistantResponseComposer.ResponsePlan.NoOp -> null
         }
     }
@@ -343,8 +359,14 @@ class AssistantController(
     fun scheduleIdleTimeout(delayMs: Long = IDLE_TIMEOUT_MS) {
         clearPendingIdleTimeout()
         pendingIdleTimeout = Runnable {
-            if (snapshot.state == AssistantState.IDLE) {
-                triggerIdleTaunt()
+            if (isDisposed || isUserShutdownInProgress || personalityLayer.isSpeaking()) return@Runnable
+            if (snapshot.state == AssistantState.IDLE || snapshot.state == AssistantState.LISTENING) {
+                idlePromptCount++
+                if (idlePromptCount % 3 == 0) {
+                    triggerAmbient()
+                } else {
+                    triggerIdleTaunt()
+                }
             }
         }.also { mainHandler.postDelayed(it, delayMs) }
     }

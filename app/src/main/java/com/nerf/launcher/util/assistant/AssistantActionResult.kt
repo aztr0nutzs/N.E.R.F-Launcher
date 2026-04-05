@@ -22,7 +22,8 @@ sealed class AssistantActionResult {
         val command: AssistantAction.LauncherCommand,
         val spokenText: String,
         val outcome: LauncherOutcome,
-        val details: LauncherCommandDetails? = null
+        val details: LauncherCommandDetails? = null,
+        val responseCategory: Category? = null
     ) : AssistantActionResult() {
         val performed: Boolean
             get() = outcome == LauncherOutcome.PERFORMED
