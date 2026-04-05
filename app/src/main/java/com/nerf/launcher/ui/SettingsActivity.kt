@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivitySettingsBinding
-import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.SettingChange
@@ -17,7 +16,6 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var adapter: SettingsAdapter
-    private var lastObservedConfig: AppConfig? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +36,7 @@ class SettingsActivity : AppCompatActivity() {
         adapter = SettingsAdapter(settings) { settingChange ->
             handleSettingChange(settingChange)
         }
+        ConfigRepository.get().config.value?.let(adapter::updateFromConfig)
         binding.settingsRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@SettingsActivity)
             adapter = this@SettingsActivity.adapter
@@ -45,7 +44,6 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         ConfigRepository.get().config.observe(this) { config ->
-            if (lastObservedConfig == config) return@observe
             val theme = ThemeManager.resolveActiveTheme(
                 context = this,
                 themeName = config.themeName,
@@ -57,7 +55,6 @@ class SettingsActivity : AppCompatActivity() {
             binding.settingsHeaderSubtitle.setTextColor(theme.hudWarningColor)
             binding.openTaskbarSettingsButton.setTextColor(theme.hudAccentColor)
             adapter.updateFromConfig(config)
-            lastObservedConfig = config
         }
     }
 

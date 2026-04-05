@@ -13,44 +13,49 @@ object TaskbarController {
     }
 
     fun savePinnedApps(packages: List<String>) {
-        val current = ConfigRepository.get().config.value ?: return
-        ConfigRepository.get().updateTaskbarSettings(
+        val repository = ConfigRepository.get()
+        val current = repository.config.value ?: return
+        repository.updateTaskbarSettings(
             current.taskbarSettings.copy(pinnedApps = packages.distinct())
         )
     }
 
     fun addPinnedApp(packageName: String) {
-        val current = ConfigRepository.get().config.value ?: return
+        val repository = ConfigRepository.get()
+        val current = repository.config.value ?: return
         val mutable = current.taskbarSettings.pinnedApps.toMutableList()
         if (!mutable.contains(packageName)) {
             mutable.add(packageName)
-            ConfigRepository.get().updateTaskbarSettings(
+            repository.updateTaskbarSettings(
                 current.taskbarSettings.copy(pinnedApps = mutable)
             )
         }
     }
 
     fun removePinnedApp(packageName: String) {
-        val current = ConfigRepository.get().config.value ?: return
+        val repository = ConfigRepository.get()
+        val current = repository.config.value ?: return
         val mutable = current.taskbarSettings.pinnedApps.filterNot { it == packageName }
         if (mutable.size != current.taskbarSettings.pinnedApps.size) {
-            ConfigRepository.get().updateTaskbarSettings(
+            repository.updateTaskbarSettings(
                 current.taskbarSettings.copy(pinnedApps = mutable)
             )
         }
     }
 
     fun clearPinnedApps() {
-        val current = ConfigRepository.get().config.value ?: return
+        val repository = ConfigRepository.get()
+        val current = repository.config.value ?: return
         if (current.taskbarSettings.pinnedApps.isNotEmpty()) {
-            ConfigRepository.get().updateTaskbarSettings(
+            repository.updateTaskbarSettings(
                 current.taskbarSettings.copy(pinnedApps = emptyList())
             )
         }
     }
 
     fun updateSettings(transform: TaskbarSettings.() -> TaskbarSettings) {
-        val current = ConfigRepository.get().config.value ?: return
-        ConfigRepository.get().updateTaskbarSettings(current.taskbarSettings.transform())
+        val repository = ConfigRepository.get()
+        val current = repository.config.value ?: return
+        repository.updateTaskbarSettings(current.taskbarSettings.transform())
     }
 }

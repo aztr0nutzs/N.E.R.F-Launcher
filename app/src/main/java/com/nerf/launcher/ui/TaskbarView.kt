@@ -17,7 +17,6 @@ import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.LifecycleOwner
 import com.nerf.launcher.R
 import com.nerf.launcher.util.ConfigRepository
-import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.IconProvider
 import com.nerf.launcher.util.LifecycleOwnerAware
 import com.nerf.launcher.util.NerfTheme
@@ -40,7 +39,9 @@ class TaskbarView @JvmOverloads constructor(
     private var lifecycleOwner: LifecycleOwner? = null
     private var currentIconTint: Int? = null
     private var currentIconSizePx: Int? = null
-    private var lastObservedConfig: AppConfig? = null
+    private var lastObservedTaskbarSettings: TaskbarSettings? = null
+    private var lastObservedThemeInput: ThemeInput? = null
+    private var lastObservedIconPack: String? = null
     private var renderedPackages: List<String> = emptyList()
 
     init {
@@ -101,7 +102,7 @@ class TaskbarView @JvmOverloads constructor(
     }
 
     fun setTransparency(alpha: Float) {
-        val config = lastObservedConfig
+        val config = ConfigRepository.get().config.value
         val style = config?.taskbarSettings?.backgroundStyle ?: TaskbarBackgroundStyle.default
         val theme = config?.let {
             ThemeManager.resolveActiveTheme(
@@ -116,31 +117,37 @@ class TaskbarView @JvmOverloads constructor(
     private fun setupConfigObservers() {
         lifecycleOwner?.let { owner ->
             ConfigRepository.get().config.observe(owner) { config ->
-                val previous = lastObservedConfig
+                val previousTaskbar = lastObservedTaskbarSettings
+                val previousThemeInput = lastObservedThemeInput
+                val previousIconPack = lastObservedIconPack
                 val settings = config.taskbarSettings
-                val resolvedTheme = ThemeManager.resolveActiveTheme(
-                    context = context,
+                val themeInput = ThemeInput(
                     themeName = config.themeName,
                     glowIntensity = config.glowIntensity
                 )
-                applyTaskbarSettings(previous?.taskbarSettings, settings, resolvedTheme)
+                val resolvedTheme = ThemeManager.resolveActiveTheme(
+                    context = context,
+                    themeName = themeInput.themeName,
+                    glowIntensity = themeInput.glowIntensity
+                )
+                applyTaskbarSettings(previousTaskbar, settings, resolvedTheme)
 
-                val iconTintNeedsUpdate = previous == null ||
-                        previous.themeName != config.themeName ||
-                        previous.glowIntensity != config.glowIntensity
+                val iconTintNeedsUpdate = previousThemeInput != themeInput
                 if (iconTintNeedsUpdate) {
                     val iconTint = ThemeManager.resolveTaskbarIconTint(context, resolvedTheme)
                     setIconTint(iconTint)
                     applyShellBackground(settings.backgroundStyle, settings.transparency, resolvedTheme)
                 }
 
-                val pinnedAppsChanged = previous?.taskbarSettings?.pinnedApps != settings.pinnedApps
-                val iconPackChanged = previous?.iconPack != config.iconPack
-                if (previous == null || pinnedAppsChanged || iconPackChanged) {
-                    updateIcons(settings.pinnedApps, forceRebind = iconPackChanged)
+                val pinnedAppsChanged = previousTaskbar?.pinnedApps != settings.pinnedApps
+                val iconPackChanged = previousIconPack != null && previousIconPack != config.iconPack
+                if (previousTaskbar == null || pinnedAppsChanged || iconPackChanged) {
+                    updateIcons(settings.pinnedApps, forceRebind = iconPackChanged && !pinnedAppsChanged)
                 }
 
-                lastObservedConfig = config
+                lastObservedTaskbarSettings = settings
+                lastObservedThemeInput = themeInput
+                lastObservedIconPack = config.iconPack
             }
         }
     }
@@ -272,4 +279,9 @@ class TaskbarView @JvmOverloads constructor(
         }
         context.startActivity(intent)
     }
+
+    private data class ThemeInput(
+        val themeName: String,
+        val glowIntensity: Float
+    )
 }
