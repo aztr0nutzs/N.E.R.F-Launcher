@@ -9,7 +9,6 @@ import android.widget.SeekBar
 import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.databinding.ItemSettingBinding
 import com.nerf.launcher.util.AppConfig
-import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.SettingChange
 import com.nerf.launcher.util.SettingItem
 import com.nerf.launcher.util.SettingsType
@@ -24,14 +23,18 @@ class SettingsAdapter(
     private val items: List<SettingItem>,
     private val onSettingChanged: (SettingChange) -> Unit
 ) : RecyclerView.Adapter<SettingsAdapter.ViewHolder>() {
-    private var currentConfig: AppConfig? = ConfigRepository.get().config.value
+    private var currentConfig: AppConfig? = null
     private val settingIndexByType: Map<SettingsType, Int> =
         items.mapIndexed { index, item -> item.type to index }.toMap()
 
     inner class ViewHolder(private val binding: ItemSettingBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: SettingItem) {
-            val theme = ThemeManager.resolveActiveTheme(binding.root.context)
+            val theme = ThemeManager.resolveActiveTheme(
+                context = binding.root.context,
+                themeName = currentConfig?.themeName,
+                glowIntensity = currentConfig?.glowIntensity
+            )
             binding.title.text = item.title
             binding.title.setTextColor(theme.hudInfoColor)
             binding.animationLabel.setTextColor(theme.hudSuccessColor)
