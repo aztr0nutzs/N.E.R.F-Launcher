@@ -39,19 +39,19 @@ class ReactorModuleView @JvmOverloads constructor(
         LEFT(135f, 90f, "SETTINGS")
     }
 
-    private var hudCyan = Color.CYAN
-    private var hudOrange = Color.YELLOW
-    private var hudMagenta = Color.MAGENTA
-    private var hudLime = Color.GREEN
-    private var reactorMidA = Color.CYAN
-    private var reactorMidB = Color.CYAN
-    private var reactorAccent = Color.YELLOW
-    private var reactorCoreGlow = Color.YELLOW
-    private var armorDark = Color.DKGRAY
-    private var armorMid = Color.LTGRAY
-    private var interiorDark = Color.BLACK
-    private var interiorMid = Color.DKGRAY
-    private var frameShadow = Color.BLACK
+    private var hudCyan = Color.TRANSPARENT
+    private var hudOrange = Color.TRANSPARENT
+    private var hudMagenta = Color.TRANSPARENT
+    private var hudLime = Color.TRANSPARENT
+    private var reactorMidA = Color.TRANSPARENT
+    private var reactorMidB = Color.TRANSPARENT
+    private var reactorAccent = Color.TRANSPARENT
+    private var reactorCoreGlow = Color.TRANSPARENT
+    private var armorDark = Color.TRANSPARENT
+    private var armorMid = Color.TRANSPARENT
+    private var interiorDark = Color.TRANSPARENT
+    private var interiorMid = Color.TRANSPARENT
+    private var frameShadow = Color.TRANSPARENT
 
     private var rotationAngle = 0f
     private var counterRotationAngle = 0f
@@ -62,8 +62,11 @@ class ReactorModuleView @JvmOverloads constructor(
     private var assistantState = AssistantState.IDLE
     private var assistantSignalColor = hudOrange
     private var assistantSignalStrength = 0f
-    private var assistantMutedColor = Color.GRAY
-    private var assistantErrorColor = Color.RED
+    private var assistantMutedColor = Color.TRANSPARENT
+    private var assistantErrorColor = Color.TRANSPARENT
+    private var circuitConnectorColor = Color.TRANSPARENT
+    private var circuitDetailColor = Color.TRANSPARENT
+    private var coreLabelColor = Color.TRANSPARENT
 
     private var idleAnimator: ValueAnimator? = null
     private var highlightAnimator: ValueAnimator? = null
@@ -100,7 +103,7 @@ class ReactorModuleView @JvmOverloads constructor(
     }
 
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
+        color = Color.TRANSPARENT
         textAlign = Paint.Align.CENTER
         typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
     }
@@ -135,6 +138,9 @@ class ReactorModuleView @JvmOverloads constructor(
         frameShadow = theme.reactorFrameShadowColor
         assistantMutedColor = theme.assistantMutedColor
         assistantErrorColor = theme.assistantErrorColor
+        circuitConnectorColor = ColorUtils.blendARGB(theme.reactorArmorMidColor, theme.reactorFrameShadowColor, 0.44f)
+        circuitDetailColor = ColorUtils.blendARGB(theme.reactorArmorMidColor, theme.hudPanelTextSecondary, 0.32f)
+        coreLabelColor = theme.hudPanelTextPrimary
         if (assistantState == AssistantState.IDLE) {
             assistantSignalColor = targetAssistantColor(assistantState)
         }
@@ -341,7 +347,7 @@ class ReactorModuleView @JvmOverloads constructor(
 
     private fun drawCircuitBackdrop(canvas: Canvas, cx: Float, cy: Float, radius: Float) {
         connectorPaint.strokeWidth = radius * 0.016f
-        connectorPaint.color = Color.argb(70, 74, 94, 116)
+        connectorPaint.color = ColorUtils.setAlphaComponent(circuitConnectorColor, 70)
 
         val horizontalInset = radius * 0.52f
         val midLeft = cx - radius * 0.93f
@@ -355,7 +361,7 @@ class ReactorModuleView @JvmOverloads constructor(
         canvas.drawLine(cx, cy + horizontalInset, cx, bottomY, connectorPaint)
 
         detailStrokePaint.strokeWidth = radius * 0.01f
-        detailStrokePaint.color = Color.argb(46, 140, 160, 184)
+        detailStrokePaint.color = ColorUtils.setAlphaComponent(circuitDetailColor, 46)
         canvas.drawLine(midLeft - radius * 0.08f, cy - radius * 0.2f, cx - radius * 0.58f, cy - radius * 0.2f, detailStrokePaint)
         canvas.drawLine(midRight + radius * 0.08f, cy - radius * 0.2f, cx + radius * 0.58f, cy - radius * 0.2f, detailStrokePaint)
         canvas.drawLine(midLeft - radius * 0.08f, cy + radius * 0.22f, cx - radius * 0.58f, cy + radius * 0.22f, detailStrokePaint)
@@ -521,7 +527,7 @@ class ReactorModuleView @JvmOverloads constructor(
             fillPaint
         )
 
-        labelPaint.color = ColorUtils.setAlphaComponent(Color.WHITE, 246)
+        labelPaint.color = ColorUtils.setAlphaComponent(coreLabelColor, 246)
         labelPaint.textSize = radius * 0.22f
         canvas.drawText("N", cx, cy + (labelPaint.textSize * 0.34f), labelPaint)
 

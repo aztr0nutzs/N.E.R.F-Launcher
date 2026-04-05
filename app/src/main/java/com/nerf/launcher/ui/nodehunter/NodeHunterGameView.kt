@@ -13,6 +13,9 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.LinearInterpolator
+import androidx.core.graphics.ColorUtils
+import com.nerf.launcher.util.NerfTheme
+import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.network.NetworkNode
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -27,39 +30,35 @@ class NodeHunterGameView @JvmOverloads constructor(
 
     // --- Paint Objects ---
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#00FFFF") // Neon Cyan
+        color = Color.TRANSPARENT
         textSize = 36f
         textAlign = Paint.Align.CENTER
         isFakeBoldText = true
-        setShadowLayer(5f, 0f, 0f, Color.parseColor("#00FFFF"))
     }
 
     private val subTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#A0A0A0") // Tactical Grey
+        color = Color.TRANSPARENT
         textSize = 24f
         textAlign = Paint.Align.CENTER
         letterSpacing = 0.05f
     }
 
     private val floatingTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#00FF00") // Success Green
+        color = Color.TRANSPARENT
         textSize = 40f
         textAlign = Paint.Align.CENTER
         isFakeBoldText = true
-        setShadowLayer(8f, 0f, 0f, Color.parseColor("#00AA00"))
     }
 
     private val crosshairPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#FF9900") // Tactical Orange
+        color = Color.TRANSPARENT
         style = Paint.Style.STROKE
         strokeWidth = 6f
-        setShadowLayer(8f, 0f, 0f, Color.parseColor("#FF4400"))
     }
 
     private val dartPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#0077FF") // Elite Blue dart
+        color = Color.TRANSPARENT
         style = Paint.Style.FILL
-        setShadowLayer(10f, 0f, 0f, Color.parseColor("#0044FF"))
     }
 
     private val particlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -67,7 +66,7 @@ class NodeHunterGameView @JvmOverloads constructor(
     }
 
     private val radarPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#00FFFF")
+        color = Color.TRANSPARENT
         style = Paint.Style.STROKE
         strokeWidth = 2f
         alpha = 40 // Very subtle background element
@@ -83,6 +82,10 @@ class NodeHunterGameView @JvmOverloads constructor(
     private var floatingTexts = mutableListOf<FloatingText>()
     private var crosshairPos = PointF(0f, 0f)
     private var radarAngle = 0f
+    private var tacticalOrange = Color.TRANSPARENT
+    private var alertRed = Color.TRANSPARENT
+    private var eliteDartBlue = Color.TRANSPARENT
+    private var radarCyan = Color.TRANSPARENT
 
     private var gameLoopAnimator: ValueAnimator? = null
     private var lastTime = System.currentTimeMillis()
@@ -125,11 +128,46 @@ class NodeHunterGameView @JvmOverloads constructor(
     )
 
     init {
-        setBackgroundColor(Color.parseColor("#0a0a0c"))
+        applyTheme(ThemeManager.resolveActiveTheme(context))
         isFocusable = true
         isFocusableInTouchMode = true
         requestFocus()
         startGameLoop()
+    }
+
+    fun applyTheme(theme: NerfTheme) {
+        tacticalOrange = theme.hudWarningColor
+        alertRed = theme.assistantErrorColor
+        eliteDartBlue = ColorUtils.blendARGB(theme.secondary, theme.primary, 0.28f)
+        radarCyan = theme.hudInfoColor
+
+        textPaint.color = theme.hudInfoColor
+        textPaint.setShadowLayer(5f, 0f, 0f, theme.hudInfoColor)
+        subTextPaint.color = theme.hudPanelTextSecondary
+        floatingTextPaint.color = theme.hudSuccessColor
+        floatingTextPaint.setShadowLayer(
+            8f,
+            0f,
+            0f,
+            ColorUtils.blendARGB(theme.hudSuccessColor, theme.windowBackground, 0.45f)
+        )
+        crosshairPaint.color = tacticalOrange
+        crosshairPaint.setShadowLayer(
+            8f,
+            0f,
+            0f,
+            ColorUtils.blendARGB(theme.hudWarningColor, theme.assistantErrorColor, 0.35f)
+        )
+        dartPaint.color = eliteDartBlue
+        dartPaint.setShadowLayer(
+            10f,
+            0f,
+            0f,
+            ColorUtils.blendARGB(eliteDartBlue, theme.windowBackground, 0.35f)
+        )
+        radarPaint.color = radarCyan
+        setBackgroundColor(theme.windowBackground)
+        invalidate()
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -251,7 +289,7 @@ class NodeHunterGameView @JvmOverloads constructor(
                 val distance = hypot(target.x - hitX, target.y - hitY)
                 if (distance <= target.radius + effectiveRadius) {
                     target.isHit = true
-                    spawnExplosion(target.x, target.y, if (isHeavy) Color.RED else Color.parseColor("#FF9900"))
+                    spawnExplosion(target.x, target.y, if (isHeavy) alertRed else tacticalOrange)
                     floatingTexts.add(FloatingText(target.x, target.y - target.radius, "+ DATA EXTRACTED"))
                 }
             }
@@ -259,7 +297,7 @@ class NodeHunterGameView @JvmOverloads constructor(
     }
 
     private fun spawnExplosion(x: Float, y: Float, primaryColor: Int) {
-        val colors = listOf(primaryColor, Color.parseColor("#00FFFF"), Color.WHITE)
+        val colors = listOf(primaryColor, radarCyan, textPaint.color)
         for (i in 0..30) { 
             val angle = Random.nextFloat() * Math.PI * 2
             val speed = Random.nextFloat() * 20f + 5f
@@ -344,9 +382,9 @@ class NodeHunterGameView @JvmOverloads constructor(
             // Sub-data (MAC & Device Type) rendered below the target
             val subTextY = target.y + target.radius + 30
             if (target.isHit) {
-                textPaint.color = Color.parseColor("#FF0000") 
+                textPaint.color = alertRed
                 canvas.drawText("OFFLINE", target.x, subTextY + 10, textPaint)
-                textPaint.color = Color.parseColor("#00FFFF") 
+                textPaint.color = radarCyan
             } else {
                 canvas.drawText("${target.nodeData.pingMs}ms", target.x, subTextY, textPaint)
                 canvas.drawText(target.nodeData.macAddress, target.x, subTextY + 30, subTextPaint)
@@ -360,10 +398,10 @@ class NodeHunterGameView @JvmOverloads constructor(
             val currentY = dart.startY + (dart.targetY - dart.startY) * dart.progress
             
             if (dart.isHeavy) {
-                dartPaint.color = Color.RED
+                dartPaint.color = alertRed
                 canvas.drawCircle(currentX, currentY, 20f, dartPaint)
             } else {
-                dartPaint.color = Color.parseColor("#0077FF")
+                dartPaint.color = eliteDartBlue
                 val dartRect = RectF(currentX - 8f, currentY - 25f, currentX + 8f, currentY + 25f)
                 canvas.drawRoundRect(dartRect, 8f, 8f, dartPaint)
             }

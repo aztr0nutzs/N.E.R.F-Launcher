@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.LinearInterpolator
+import androidx.core.graphics.ColorUtils
 import com.nerf.launcher.R
 import com.nerf.launcher.util.NerfTheme
 import kotlin.math.abs
@@ -26,15 +27,22 @@ class ReactorCoreView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private var neonCyan = Color.CYAN
-    private var midRingA = Color.CYAN
-    private var midRingB = Color.CYAN
-    private var accentRing = Color.YELLOW
-    private var coreGlow = Color.YELLOW
-    private var coreText = Color.YELLOW
-    private var hudOrange = Color.YELLOW
-    private var hudMagenta = Color.MAGENTA
-    private var hudLime = Color.GREEN
+    private var neonCyan = Color.TRANSPARENT
+    private var midRingA = Color.TRANSPARENT
+    private var midRingB = Color.TRANSPARENT
+    private var accentRing = Color.TRANSPARENT
+    private var coreGlow = Color.TRANSPARENT
+    private var coreText = Color.TRANSPARENT
+    private var hudOrange = Color.TRANSPARENT
+    private var hudMagenta = Color.TRANSPARENT
+    private var hudLime = Color.TRANSPARENT
+    private var interiorPlateMid = Color.TRANSPARENT
+    private var interiorPlateDark = Color.TRANSPARENT
+    private var armorPrimary = Color.TRANSPARENT
+    private var armorSecondary = Color.TRANSPARENT
+    private var armorHighlight = Color.TRANSPARENT
+    private var podNeutralFill = Color.TRANSPARENT
+    private var podNeutralRing = Color.TRANSPARENT
     private var ringPalette = intArrayOf(neonCyan, hudOrange, hudMagenta, hudLime)
 
     private val armorOuterRect = RectF()
@@ -121,6 +129,13 @@ class ReactorCoreView @JvmOverloads constructor(
         hudOrange = theme.hudWarningColor
         hudMagenta = theme.hudAccentColor
         hudLime = theme.hudSuccessColor
+        interiorPlateMid = ColorUtils.blendARGB(theme.reactorInteriorMidColor, theme.reactorArmorDarkColor, 0.22f)
+        interiorPlateDark = ColorUtils.blendARGB(theme.reactorInteriorDarkColor, theme.reactorFrameShadowColor, 0.32f)
+        armorPrimary = ColorUtils.blendARGB(theme.reactorArmorMidColor, theme.reactorArmorDarkColor, 0.18f)
+        armorSecondary = ColorUtils.blendARGB(theme.reactorArmorDarkColor, theme.reactorFrameShadowColor, 0.14f)
+        armorHighlight = ColorUtils.blendARGB(theme.reactorArmorMidColor, theme.hudPanelTextSecondary, 0.32f)
+        podNeutralFill = ColorUtils.blendARGB(theme.reactorArmorDarkColor, theme.reactorFrameShadowColor, 0.22f)
+        podNeutralRing = ColorUtils.blendARGB(theme.reactorArmorMidColor, theme.hudPanelTextSecondary, 0.18f)
         ringPalette = intArrayOf(neonCyan, hudOrange, hudMagenta, hudLime)
         invalidate()
     }
@@ -193,15 +208,19 @@ class ReactorCoreView @JvmOverloads constructor(
         // Base ambient layers and inset depth.
         fillPaint.color = Color.argb(70, Color.red(neonCyan), Color.green(neonCyan), Color.blue(neonCyan))
         canvas.drawCircle(cx, cy, radius * (pulse + tapPulseBoost), fillPaint)
-        fillPaint.color = Color.argb(135, 12, 16, 20)
+        fillPaint.color = ColorUtils.setAlphaComponent(interiorPlateMid, 135)
         canvas.drawCircle(cx, cy, radius * 0.91f, fillPaint)
-        fillPaint.color = Color.argb(190, 5, 8, 10)
+        fillPaint.color = ColorUtils.setAlphaComponent(interiorPlateDark, 190)
         canvas.drawCircle(cx, cy, radius * 0.78f, fillPaint)
 
         // Thick armor ring.
         armorStroke.strokeWidth = radius * 0.15f
         repeat(18) { index ->
-            armorStroke.color = if (index % 2 == 0) Color.argb(220, 60, 72, 78) else Color.argb(150, 35, 45, 50)
+            armorStroke.color = if (index % 2 == 0) {
+                ColorUtils.setAlphaComponent(armorPrimary, 220)
+            } else {
+                ColorUtils.setAlphaComponent(armorSecondary, 150)
+            }
             canvas.drawArc(
                 armorOuterRect,
                 rotationPhase * 0.18f + index * 20f,
@@ -213,7 +232,7 @@ class ReactorCoreView @JvmOverloads constructor(
 
         // Mechanical second armor pass to add edge definition.
         armorStroke.strokeWidth = radius * 0.038f
-        armorStroke.color = Color.argb(185, 128, 143, 153)
+        armorStroke.color = ColorUtils.setAlphaComponent(armorHighlight, 185)
         repeat(12) { index ->
             canvas.drawArc(armorInnerRect, -rotationPhase * 0.36f + index * 30f, 11f, false, armorStroke)
         }
@@ -252,18 +271,18 @@ class ReactorCoreView @JvmOverloads constructor(
             val angle = Math.toRadians((rotationPhase * 0.25f + index * 125f + 20f).toDouble())
             val px = cx + cos(angle).toFloat() * podOrbit
             val py = cy + sin(angle).toFloat() * podOrbit
-            detailFill.color = if (index == 0) hudLime else Color.argb(210, 48, 60, 64)
+            detailFill.color = if (index == 0) hudLime else ColorUtils.setAlphaComponent(podNeutralFill, 210)
             canvas.drawCircle(px, py, radius * if (index == 1) 0.026f else 0.02f, detailFill)
-            detailStroke.color = Color.argb(180, 180, 200, 208)
+            detailStroke.color = ColorUtils.setAlphaComponent(podNeutralRing, 180)
             canvas.drawCircle(px, py, radius * 0.034f, detailStroke)
         }
 
         // Core inset stack.
         fillPaint.color = Color.argb(220, Color.red(coreGlow), Color.green(coreGlow), Color.blue(coreGlow))
         canvas.drawCircle(cx, cy, radius * 0.21f * (pulse + (tapPulseBoost * 0.85f)), fillPaint)
-        fillPaint.color = Color.argb(230, 20, 26, 31)
+        fillPaint.color = ColorUtils.setAlphaComponent(interiorPlateMid, 230)
         canvas.drawCircle(cx, cy, radius * 0.17f, fillPaint)
-        fillPaint.color = Color.argb(255, 8, 10, 14)
+        fillPaint.color = ColorUtils.setAlphaComponent(interiorPlateDark, 255)
         canvas.drawCircle(cx, cy, radius * 0.125f, fillPaint)
 
         // Center branding treatment.
@@ -271,7 +290,7 @@ class ReactorCoreView @JvmOverloads constructor(
         val barHeight = radius * 0.034f
         val barWidth = radius * 0.23f
         canvas.drawRect(cx - barWidth, cy - barHeight * 0.58f, cx + barWidth, cy + barHeight * 0.58f, detailFill)
-        detailFill.color = Color.argb(230, 8, 10, 14)
+        detailFill.color = ColorUtils.setAlphaComponent(interiorPlateDark, 230)
         canvas.drawRect(cx - barWidth * 0.32f, cy - barHeight * 0.44f, cx - barWidth * 0.12f, cy + barHeight * 0.44f, detailFill)
         canvas.drawRect(cx + barWidth * 0.08f, cy - barHeight * 0.44f, cx + barWidth * 0.28f, cy + barHeight * 0.44f, detailFill)
         detailFill.color = coreText

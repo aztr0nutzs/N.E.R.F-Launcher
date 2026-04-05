@@ -9,6 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityNodeHunterBinding
+import com.nerf.launcher.util.ConfigRepository
+import com.nerf.launcher.util.NerfTheme
+import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.network.LocalNetworkScanner
 import kotlinx.coroutines.launch
 
@@ -33,10 +36,33 @@ class NodeHunterModuleActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityNodeHunterBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        observeTheme()
 
         networkScanner = LocalNetworkScanner(this)
         bindLauncherChrome()
         startNetworkSweep()
+    }
+
+    private fun observeTheme() {
+        ConfigRepository.get().config.observe(this) { config ->
+            val theme = ThemeManager.resolveActiveTheme(
+                context = this,
+                themeName = config.themeName,
+                glowIntensity = config.glowIntensity
+            )
+            applyTheme(theme)
+        }
+    }
+
+    private fun applyTheme(theme: NerfTheme) {
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(theme.windowBackground))
+        binding.root.setBackgroundColor(theme.windowBackground)
+        binding.nodeHunterView.applyTheme(theme)
+        binding.nodeHunterBackButton.setTextColor(theme.hudWarningColor)
+        binding.nodeHunterSourceLabel.setTextColor(theme.hudPanelTextSecondary)
+        binding.nodeHunterStatusValue.setTextColor(theme.hudInfoColor)
+        binding.scanDetailsText.setTextColor(theme.hudPanelTextSecondary)
+        binding.nodeHunterFooterText.setTextColor(theme.hudPanelTextSecondary)
     }
 
     private fun bindLauncherChrome() {
