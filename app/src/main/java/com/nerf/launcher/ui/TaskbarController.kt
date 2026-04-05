@@ -43,6 +43,26 @@ object TaskbarController {
         }
     }
 
+
+    fun isPinned(packageName: String): Boolean {
+        val normalized = packageName.trim()
+        if (normalized.isEmpty()) return false
+        return ConfigRepository.get().config.value
+            ?.taskbarSettings
+            ?.pinnedApps
+            ?.contains(normalized) == true
+    }
+
+    fun togglePinnedApp(packageName: String) {
+        val normalized = packageName.trim()
+        if (normalized.isEmpty()) return
+        if (isPinned(normalized)) {
+            removePinnedApp(normalized)
+        } else {
+            addPinnedApp(normalized)
+        }
+    }
+
     fun clearPinnedApps() {
         val repository = ConfigRepository.get()
         val current = repository.config.value ?: return

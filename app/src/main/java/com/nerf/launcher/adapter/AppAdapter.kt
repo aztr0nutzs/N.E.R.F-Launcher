@@ -1,8 +1,8 @@
 package com.nerf.launcher.adapter
 
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
-import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
@@ -21,7 +21,8 @@ import com.nerf.launcher.util.ThemeManager
  */
 class AppAdapter(
     private val iconProvider: IconProvider,
-    private val onAppClicked: (AppInfo) -> Unit
+    private val onAppClicked: (AppInfo) -> Unit,
+    private val onAppLongPressed: (View, AppInfo) -> Unit
 ) : ListAdapter<AppInfo, AppAdapter.AppViewHolder>(DIFF_CALLBACK) {
     private val iconOnlyPayload = Any()
 
@@ -42,6 +43,10 @@ class AppAdapter(
             iconProvider.loadIconInto(app.packageName, binding.appIcon)
             binding.root.setOnClickListener {
                 onAppClicked(app)
+            }
+            binding.root.setOnLongClickListener {
+                onAppLongPressed(binding.root, app)
+                true
             }
             binding.root.setOnTouchListener { touchedView, event ->
                 when (event.actionMasked) {

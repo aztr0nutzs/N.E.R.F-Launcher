@@ -126,6 +126,14 @@
                 android:layout_marginTop="4dp"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Caption" />
 
+            <TextView
+                android:id="@+id/taskbar_pin_hint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/taskbar_settings_pin_hint"
+                android:textAppearance="@style/TextAppearance.NerfLauncher.Caption" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/clear_pinned_apps_button"
                 style="@style/Widget.MaterialComponents.Button"

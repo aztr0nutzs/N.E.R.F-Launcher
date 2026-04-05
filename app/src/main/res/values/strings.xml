@@ -89,6 +89,10 @@
     <string name="taskbar_settings_pinned_apps">Pinned Apps</string>
     <string name="taskbar_settings_pinned_summary">%1$d pinned</string>
     <string name="taskbar_settings_clear_pins">Clear pinned apps</string>
+    <string name="taskbar_pin_action">Pin to taskbar</string>
+    <string name="taskbar_unpin_action">Unpin from taskbar</string>
+    <string name="taskbar_customize_action">Taskbar settings</string>
+    <string name="taskbar_settings_pin_hint">Long-press any app in the grid to pin it. Long-press a taskbar icon to unpin.</string>
     <string name="reactor_diagnostics_title">Reactor Diagnostics</string>
     <string name="reactor_subnet_sweep_start">N-Core: Initializing subnet sweep...</string>
     <string name="reactor_assistant_online">Reactor assistant online</string>

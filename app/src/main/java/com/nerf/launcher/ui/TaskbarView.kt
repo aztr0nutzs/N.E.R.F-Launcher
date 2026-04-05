@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -210,7 +211,12 @@ class TaskbarView @JvmOverloads constructor(
             }
 
             setOnLongClickListener {
-                openTaskbarCustomization()
+                val packageName = it.tag as? String
+                if (packageName.isNullOrBlank()) {
+                    openTaskbarCustomization()
+                } else {
+                    showTaskbarIconMenu(it, packageName)
+                }
                 true
             }
 
@@ -241,6 +247,28 @@ class TaskbarView @JvmOverloads constructor(
                 false
             }
         }
+    }
+
+    private fun showTaskbarIconMenu(anchor: View, packageName: String) {
+        val popupMenu = PopupMenu(context, anchor)
+        popupMenu.menu.add(0, MENU_ITEM_UNPIN, 0, context.getString(R.string.taskbar_unpin_action))
+        popupMenu.menu.add(0, MENU_ITEM_CUSTOMIZE, 1, context.getString(R.string.taskbar_customize_action))
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                MENU_ITEM_UNPIN -> {
+                    TaskbarController.removePinnedApp(packageName)
+                    true
+                }
+
+                MENU_ITEM_CUSTOMIZE -> {
+                    openTaskbarCustomization()
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popupMenu.show()
     }
 
     private fun bindIconView(view: ImageView, packageName: String) {
@@ -278,6 +306,11 @@ class TaskbarView @JvmOverloads constructor(
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
+    }
+
+    companion object {
+        private const val MENU_ITEM_UNPIN = 2001
+        private const val MENU_ITEM_CUSTOMIZE = 2002
     }
 
     private data class ThemeInput(

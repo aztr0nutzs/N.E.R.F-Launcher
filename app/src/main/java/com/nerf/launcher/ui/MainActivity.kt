@@ -16,6 +16,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
@@ -64,6 +65,7 @@ import kotlin.math.roundToLong
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val STATE_LOCK_SURFACE_VISIBLE = "state_lock_surface_visible"
+        private const val MENU_ITEM_PIN_TOGGLE = 1001
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -142,11 +144,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = AppAdapter(iconProvider, onAppClicked = { app ->
-            binding.drawerSearchInput.clearFocus()
-            hideDrawerKeyboard()
-            AppUtils.launchApp(this, app)
-        })
+        adapter = AppAdapter(
+            iconProvider = iconProvider,
+            onAppClicked = { app ->
+                binding.drawerSearchInput.clearFocus()
+                hideDrawerKeyboard()
+                AppUtils.launchApp(this, app)
+            },
+            onAppLongPressed = { anchor, app ->
+                showAppContextMenu(anchor, app)
+            }
+        )
 
         binding.recyclerView.apply {
             layoutManager = GridLayoutManager(
@@ -158,6 +166,28 @@ class MainActivity : AppCompatActivity() {
             setItemViewCacheSize(20)
             isDrawingCacheEnabled = false
         }
+    }
+
+    private fun showAppContextMenu(anchor: View, app: AppInfo) {
+        val popupMenu = PopupMenu(this, anchor)
+        val isPinned = TaskbarController.isPinned(app.packageName)
+        val pinActionTitle = if (isPinned) {
+            getString(R.string.taskbar_unpin_action)
+        } else {
+            getString(R.string.taskbar_pin_action)
+        }
+        popupMenu.menu.add(0, MENU_ITEM_PIN_TOGGLE, 0, pinActionTitle)
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                MENU_ITEM_PIN_TOGGLE -> {
+                    TaskbarController.togglePinnedApp(app.packageName)
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popupMenu.show()
     }
 
     private fun setupDrawerSearch() {
