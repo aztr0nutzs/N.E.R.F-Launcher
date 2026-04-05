@@ -313,7 +313,9 @@ class MainActivity : AppCompatActivity() {
     private fun bindAssistantStateSync() {
         assistantController.onStateChanged = { snapshot ->
             assistantOverlayController.renderState(snapshot)
-            reactorCoordinator.renderAssistantState(snapshot.state)
+            if (::reactorCoordinator.isInitialized) {
+                reactorCoordinator.renderAssistantState(snapshot.state)
+            }
         }
     }
 
@@ -322,7 +324,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupSurfaceTransitions() {
-        listOf(binding.leftPanel, binding.corePanel, binding.rightPanel).forEachIndexed { index, view ->
+        val animatedPanels = listOf(binding.leftPanel, binding.corePanel, binding.rightPanel)
+        animatedPanels.forEachIndexed { index, view ->
             view.alpha = 0f
             view.translationY = 16f
             view.animate()
@@ -331,6 +334,10 @@ class MainActivity : AppCompatActivity() {
                 .setStartDelay((index * 56L) + 48L)
                 .setDuration(scaledDuration(310L))
                 .setInterpolator(FastOutSlowInInterpolator())
+                .withEndAction {
+                    view.alpha = 1f
+                    view.translationY = 0f
+                }
                 .start()
         }
 
@@ -344,7 +351,30 @@ class MainActivity : AppCompatActivity() {
             .setStartDelay(185L)
             .setDuration(scaledDuration(330L))
             .setInterpolator(LinearOutSlowInInterpolator())
+            .withEndAction {
+                binding.drawerShell.alpha = 1f
+                binding.drawerShell.translationY = 0f
+                binding.drawerShell.translationX = 0f
+            }
             .start()
+
+        val maxTransitionDuration = maxOf(
+            scaledDuration(310L) + ((animatedPanels.size - 1) * 56L) + 48L,
+            scaledDuration(330L) + 185L
+        ) + 32L
+        binding.root.postDelayed({
+            animatedPanels.forEach { panel ->
+                if (panel.alpha <= 0f) {
+                    panel.alpha = 1f
+                    panel.translationY = 0f
+                }
+            }
+            if (binding.drawerShell.alpha <= 0f) {
+                binding.drawerShell.alpha = 1f
+                binding.drawerShell.translationY = 0f
+                binding.drawerShell.translationX = 0f
+            }
+        }, maxTransitionDuration)
     }
 
     private fun setupScanlineSweep() {
