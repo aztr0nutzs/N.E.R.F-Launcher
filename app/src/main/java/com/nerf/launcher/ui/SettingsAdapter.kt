@@ -23,6 +23,7 @@ class SettingsAdapter(
     private val items: List<SettingItem>,
     private val onSettingChanged: (SettingChange) -> Unit
 ) : RecyclerView.Adapter<SettingsAdapter.ViewHolder>() {
+    private val themePayload = Any()
     private var currentConfig: AppConfig? = null
     private val settingIndexByType: Map<SettingsType, Int> =
         items.mapIndexed { index, item -> item.type to index }.toMap()
@@ -196,18 +197,22 @@ class SettingsAdapter(
         holder.bind(items[position])
     }
 
+    override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>) {
+        holder.bind(items[position])
+    }
+
     override fun getItemCount(): Int = items.size
 
     fun updateFromConfig(config: AppConfig) {
         val previous = currentConfig
         currentConfig = config
         if (previous == null) {
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, itemCount, themePayload)
             return
         }
 
         if (previous.themeName != config.themeName || previous.glowIntensity != config.glowIntensity) {
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, itemCount, themePayload)
             return
         }
 

@@ -22,6 +22,7 @@ import androidx.interpolator.view.animation.FastOutLinearInInterpolator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.adapter.AppAdapter
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityMainBinding
@@ -36,6 +37,7 @@ import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconCache
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.IconProvider
+import com.nerf.launcher.util.NerfTheme
 import com.nerf.launcher.util.StatusBarManager
 import com.nerf.launcher.util.SystemModuleController
 import com.nerf.launcher.util.SystemModuleSnapshot
@@ -205,9 +207,9 @@ class MainActivity : AppCompatActivity() {
                     themeName = config.themeName,
                     glowIntensity = config.glowIntensity
                 )
-                ThemeManager.applyTheme(this, binding.rootContainer, activeTheme)
+                applyLauncherShellTheme(activeTheme)
                 applyStatusBarTheme(config)
-                adapter.refreshTheme()
+                refreshVisibleAppTheme()
             }
             if (gridChanged || previous == null) {
                 (binding.recyclerView.layoutManager as? GridLayoutManager)?.spanCount =
@@ -231,6 +233,66 @@ class MainActivity : AppCompatActivity() {
             systemModuleController.setInputs(config, filteredAppCount, allApps.size)
             lastObservedConfig = config
         }
+    }
+
+    private fun refreshVisibleAppTheme() {
+        val layoutManager = binding.recyclerView.layoutManager as? GridLayoutManager ?: return
+        val firstVisible = layoutManager.findFirstVisibleItemPosition()
+        val lastVisible = layoutManager.findLastVisibleItemPosition()
+        if (firstVisible == RecyclerView.NO_POSITION || lastVisible == RecyclerView.NO_POSITION) {
+            adapter.refreshTheme()
+            return
+        }
+        adapter.refreshThemeInRange(firstVisible, lastVisible)
+    }
+
+    private fun applyLauncherShellTheme(theme: NerfTheme) {
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(theme.windowBackground))
+        binding.rootContainer.setBackgroundColor(theme.windowBackground)
+        binding.lockSurfaceRoot.setBackgroundColor(theme.lockSurfaceScrim)
+        binding.scanlineOverlay.background = ThemeManager.createScanlineOverlayDrawable(theme)
+
+        binding.drawerSearchInput.background = ThemeManager.createDrawerSearchFieldBackground(this, theme)
+        binding.drawerSearchInput.setTextColor(theme.hudPanelTextPrimary)
+        binding.drawerSearchInput.setHintTextColor(theme.hudPanelTextSecondary)
+
+        val quickOrbDrawable = ThemeManager.createQuickToggleOrbDrawable(this, theme)
+        binding.quickThemeBtn.background = quickOrbDrawable.constantState?.newDrawable()?.mutate() ?: quickOrbDrawable
+        binding.quickIconPackBtn.background = quickOrbDrawable.constantState?.newDrawable()?.mutate() ?: quickOrbDrawable
+        binding.quickAnimationBtn.background = quickOrbDrawable.constantState?.newDrawable()?.mutate() ?: quickOrbDrawable
+        binding.quickTaskbarBtn.background = quickOrbDrawable.constantState?.newDrawable()?.mutate() ?: quickOrbDrawable
+
+        val actionTileDrawable = ThemeManager.createHudActionTileDrawable(this, theme)
+        binding.openSettingsTile.background = actionTileDrawable.constantState?.newDrawable()?.mutate() ?: actionTileDrawable
+        binding.reloadTile.background = actionTileDrawable.constantState?.newDrawable()?.mutate() ?: actionTileDrawable
+        binding.lockSurfaceTile.background = actionTileDrawable.constantState?.newDrawable()?.mutate() ?: actionTileDrawable
+        binding.lockSurfaceUnlockButton.background =
+            actionTileDrawable.constantState?.newDrawable()?.mutate() ?: actionTileDrawable
+
+        binding.quickThemeBtn.setTextColor(theme.hudInfoColor)
+        binding.quickIconPackBtn.setTextColor(theme.hudSuccessColor)
+        binding.quickAnimationBtn.setTextColor(theme.hudWarningColor)
+        binding.quickTaskbarBtn.setTextColor(theme.hudAccentColor)
+        binding.quickGlowValue.setTextColor(theme.hudInfoColor)
+        binding.quickGridValue.setTextColor(theme.hudWarningColor)
+        binding.openSettingsTile.setTextColor(theme.hudInfoColor)
+        binding.reloadTile.setTextColor(theme.hudWarningColor)
+        binding.lockSurfaceTile.setTextColor(theme.hudAccentColor)
+        binding.lockSurfaceUnlockButton.setTextColor(theme.hudSuccessColor)
+
+        val quickGlowTint = android.content.res.ColorStateList.valueOf(theme.hudInfoColor)
+        binding.quickGlowSeekbar.thumbTintList = quickGlowTint
+        binding.quickGlowSeekbar.progressTintList = quickGlowTint
+        binding.quickGlowSeekbar.progressBackgroundTintList = android.content.res.ColorStateList.valueOf(
+            androidx.core.graphics.ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
+        )
+
+        val quickGridTint = android.content.res.ColorStateList.valueOf(theme.hudWarningColor)
+        binding.quickGridSeekbar.thumbTintList = quickGridTint
+        binding.quickGridSeekbar.progressTintList = quickGridTint
+        binding.quickGridSeekbar.progressBackgroundTintList = android.content.res.ColorStateList.valueOf(
+            androidx.core.graphics.ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
+        )
     }
 
     private fun refreshVisibleAppIcons() {

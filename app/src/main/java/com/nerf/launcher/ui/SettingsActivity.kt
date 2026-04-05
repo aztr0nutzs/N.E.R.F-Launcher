@@ -9,6 +9,7 @@ import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.SettingChange
 import com.nerf.launcher.util.SettingItem
+import com.nerf.launcher.util.NerfTheme
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 
@@ -49,13 +50,24 @@ class SettingsActivity : AppCompatActivity() {
                 themeName = config.themeName,
                 glowIntensity = config.glowIntensity
             )
-            ThemeManager.applyWindowTheme(this, theme)
-            ThemeManager.applyLauncherShellTheme(binding.root, theme)
-            binding.settingsHeaderTitle.setTextColor(theme.hudInfoColor)
-            binding.settingsHeaderSubtitle.setTextColor(theme.hudWarningColor)
-            binding.openTaskbarSettingsButton.setTextColor(theme.hudAccentColor)
+            applySettingsTheme(theme)
             adapter.updateFromConfig(config)
         }
+    }
+
+    private fun applySettingsTheme(theme: NerfTheme) {
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(theme.windowBackground))
+        binding.root.setBackgroundColor(theme.windowBackground)
+        binding.toolbar.setBackgroundColor(theme.primary)
+        binding.toolbar.setTitleTextColor(theme.hudPanelTextPrimary)
+        binding.toolbar.navigationIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
+        binding.toolbar.overflowIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
+        val buttonDrawable = ThemeManager.createHudActionTileDrawable(this, theme)
+        binding.openTaskbarSettingsButton.background =
+            buttonDrawable.constantState?.newDrawable()?.mutate() ?: buttonDrawable
+        binding.settingsHeaderTitle.setTextColor(theme.hudInfoColor)
+        binding.settingsHeaderSubtitle.setTextColor(theme.hudWarningColor)
+        binding.openTaskbarSettingsButton.setTextColor(theme.hudAccentColor)
     }
 
     /**

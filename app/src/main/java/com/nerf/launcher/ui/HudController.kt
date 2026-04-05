@@ -11,10 +11,12 @@ import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
+import com.nerf.launcher.ui.reactor.ReactorModuleView
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.AppConfig
-import com.nerf.launcher.util.HudStatusMonitor
 import com.nerf.launcher.util.HudStatusSnapshot
+import com.nerf.launcher.util.HudStatusMonitor
+import com.nerf.launcher.util.NerfTheme
 import com.nerf.launcher.util.ThemeManager
 import java.util.Calendar
 import java.util.Locale
@@ -107,9 +109,23 @@ class HudController(
                 themeName = config.themeName,
                 glowIntensity = config.glowIntensity
             )
-            ThemeManager.applyHudTheme(activity, finalTheme)
+            applyHudTheme(finalTheme)
             lastObservedConfig = config
         }
+    }
+
+    private fun applyHudTheme(theme: NerfTheme) {
+        batteryMeter.setActiveColor(theme.primary)
+        batteryMeter.setInactiveColor(theme.hudInactiveMeterColor)
+        batteryMeter.setGradientHighlightColor(theme.hudPanelTextPrimary)
+        timeDisplay.setTextColor(theme.secondary)
+        dateDisplay.setTextColor(theme.hudPanelTextSecondary)
+        hudView.findViewById<TextView>(R.id.battery_label)?.setTextColor(theme.hudWarningColor)
+        hudView.findViewById<TextView>(R.id.brand_signature)?.setTextColor(theme.hudPanelTextSecondary)
+        addWidgetBtn.setTextColor(theme.hudSuccessColor)
+        addWidgetBtn.background = ThemeManager.createHudActionTileDrawable(activity, theme)
+        ThemeManager.applyHudPanelGlow(hudView, theme)
+        hudView.findViewById<ReactorModuleView>(R.id.reactor_core)?.updateTheme(theme)
     }
 
     private fun startHudBreathing() {
