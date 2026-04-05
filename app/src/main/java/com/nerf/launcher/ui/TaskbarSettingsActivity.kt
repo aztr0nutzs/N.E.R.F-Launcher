@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.ColorUtils
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityTaskbarSettingsBinding
 import com.nerf.launcher.util.ConfigRepository
@@ -25,10 +26,8 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val initialTheme = ThemeManager.resolveActiveTheme(this)
-        ThemeManager.applyWindowTheme(this, initialTheme)
 
         binding = ActivityTaskbarSettingsBinding.inflate(layoutInflater)
-        ThemeManager.applyTaskbarSettingsTheme(this, binding.root, initialTheme)
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
@@ -36,6 +35,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         supportActionBar?.setTitle(R.string.taskbar_settings_title)
 
         setupControls(initialTheme)
+        applyTheme(initialTheme)
         observeConfig()
     }
 
@@ -95,11 +95,97 @@ class TaskbarSettingsActivity : AppCompatActivity() {
                 themeName = config.themeName,
                 glowIntensity = config.glowIntensity
             )
-            ThemeManager.applyWindowTheme(this, theme)
-            ThemeManager.applyTaskbarSettingsTheme(this, binding.root, theme)
+            applyTheme(theme)
             backgroundStyleAdapter.updateTheme(theme)
             bindTaskbarSettings(config.taskbarSettings)
         }
+    }
+
+    private fun applyTheme(theme: NerfTheme) {
+        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(theme.windowBackground))
+        binding.root.setBackgroundColor(theme.windowBackground)
+        binding.toolbar.setBackgroundColor(theme.primary)
+        binding.toolbar.setTitleTextColor(theme.hudPanelTextPrimary)
+        binding.toolbar.navigationIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
+        binding.toolbar.overflowIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
+        applyTextColorRecursively(binding.root, theme.hudPanelTextPrimary)
+
+        binding.clearPinnedAppsButton.let { button ->
+            val fill = android.content.res.ColorStateList(
+                arrayOf(
+                    intArrayOf(android.R.attr.state_enabled),
+                    intArrayOf()
+                ),
+                intArrayOf(
+                    theme.primary,
+                    ColorUtils.setAlphaComponent(theme.primary, 0x61)
+                )
+            )
+            val text = android.content.res.ColorStateList(
+                arrayOf(
+                    intArrayOf(android.R.attr.state_enabled),
+                    intArrayOf()
+                ),
+                intArrayOf(
+                    theme.hudPanelTextPrimary,
+                    ColorUtils.setAlphaComponent(theme.hudPanelTextPrimary, 0x61)
+                )
+            )
+            button.backgroundTintList = fill
+            button.setTextColor(text)
+        }
+
+        binding.taskbarEnabledSwitch.thumbTintList = createSwitchThumbTint(theme)
+        binding.taskbarEnabledSwitch.trackTintList = createSwitchTrackTint(theme)
+
+        listOf(
+            binding.taskbarHeightSeekbar,
+            binding.taskbarIconSizeSeekbar,
+            binding.taskbarTransparencySeekbar
+        ).forEach { seekBar ->
+            seekBar.thumbTintList = android.content.res.ColorStateList.valueOf(theme.primary)
+            seekBar.progressTintList = android.content.res.ColorStateList.valueOf(theme.primary)
+            seekBar.progressBackgroundTintList = android.content.res.ColorStateList.valueOf(
+                ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
+            )
+        }
+    }
+
+    private fun applyTextColorRecursively(root: View, color: Int) {
+        when (root) {
+            is TextView -> root.setTextColor(color)
+            is ViewGroup -> {
+                for (index in 0 until root.childCount) {
+                    applyTextColorRecursively(root.getChildAt(index), color)
+                }
+            }
+        }
+    }
+
+    private fun createSwitchThumbTint(theme: NerfTheme): android.content.res.ColorStateList {
+        return android.content.res.ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf()
+            ),
+            intArrayOf(
+                theme.primary,
+                ColorUtils.setAlphaComponent(theme.hudPanelTextPrimary, 0xB3)
+            )
+        )
+    }
+
+    private fun createSwitchTrackTint(theme: NerfTheme): android.content.res.ColorStateList {
+        return android.content.res.ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_checked),
+                intArrayOf()
+            ),
+            intArrayOf(
+                ColorUtils.setAlphaComponent(theme.primary, 0x80),
+                ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x4D)
+            )
+        )
     }
 
     private fun bindTaskbarSettings(settings: TaskbarSettings) {

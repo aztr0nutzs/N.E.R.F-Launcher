@@ -1,31 +1,17 @@
 package com.nerf.launcher.util
 
-import android.app.Activity
-import android.content.res.ColorStateList
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.InsetDrawable
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.StateListDrawable
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
-import android.view.Window
-import android.widget.EditText
-import android.widget.SeekBar
-import android.widget.TextView
-import androidx.appcompat.widget.SwitchCompat
-import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.ColorUtils
 import com.google.android.material.color.MaterialColors
-import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
-import com.nerf.launcher.ui.ReactorCoreView
-import com.nerf.launcher.ui.reactor.ReactorModuleView
-import com.nerf.launcher.ui.SegmentedBarView
 
 /**
  * Applies launcher visuals from the authoritative NerfTheme produced by ThemeRepository.
@@ -56,138 +42,6 @@ object ThemeManager {
             TaskbarBackgroundStyle.LIGHT -> theme.taskbarLightBackground
             TaskbarBackgroundStyle.TRANSPARENT -> Color.TRANSPARENT
             TaskbarBackgroundStyle.DARK -> theme.taskbarDarkBackground
-        }
-    }
-
-    fun applyTheme(activity: Activity, root: View? = null, theme: NerfTheme = resolveActiveTheme(activity)) {
-        activity.setTheme(R.style.Theme_NerfLauncher)
-        applyWindowTheme(activity, theme)
-        applyLauncherShellTheme(root ?: activity.findViewById(R.id.root_container), theme)
-        applyHudTheme(activity, theme)
-    }
-
-    fun applyWindowTheme(activity: Activity, theme: NerfTheme) {
-        updateWindowBackground(activity.window, theme)
-    }
-
-    private fun updateWindowBackground(window: Window?, theme: NerfTheme) {
-        window?.setBackgroundDrawable(ColorDrawable(theme.windowBackground))
-    }
-
-    fun applyLauncherShellTheme(root: View?, theme: NerfTheme) {
-        root ?: return
-        root.setBackgroundColor(theme.windowBackground)
-        root.findViewById<View>(R.id.lock_surface_root)?.setBackgroundColor(theme.lockSurfaceScrim)
-        root.findViewById<View>(R.id.scanline_overlay)?.background = createScanlineOverlayDrawable(theme)
-        root.findViewById<EditText>(R.id.drawer_search_input)?.let { drawerSearchInput ->
-            drawerSearchInput.background = createDrawerSearchFieldBackground(root.context, theme)
-            drawerSearchInput.setTextColor(theme.hudPanelTextPrimary)
-            drawerSearchInput.setHintTextColor(theme.hudPanelTextSecondary)
-        }
-        applyButtonBackground(root, R.id.quickThemeBtn, createQuickToggleOrbDrawable(root.context, theme))
-        applyButtonBackground(root, R.id.quickIconPackBtn, createQuickToggleOrbDrawable(root.context, theme))
-        applyButtonBackground(root, R.id.quickAnimationBtn, createQuickToggleOrbDrawable(root.context, theme))
-        applyButtonBackground(root, R.id.quickTaskbarBtn, createQuickToggleOrbDrawable(root.context, theme))
-        applyButtonBackground(root, R.id.openSettingsTile, createHudActionTileDrawable(root.context, theme))
-        applyButtonBackground(root, R.id.reloadTile, createHudActionTileDrawable(root.context, theme))
-        applyButtonBackground(root, R.id.lockSurfaceTile, createHudActionTileDrawable(root.context, theme))
-        applyButtonBackground(root, R.id.lockSurfaceUnlockButton, createHudActionTileDrawable(root.context, theme))
-        applyButtonBackground(root, R.id.open_taskbar_settings_button, createHudActionTileDrawable(root.context, theme))
-        applyTextColor(root, R.id.quickThemeBtn, theme.hudInfoColor)
-        applyTextColor(root, R.id.quickIconPackBtn, theme.hudSuccessColor)
-        applyTextColor(root, R.id.quickAnimationBtn, theme.hudWarningColor)
-        applyTextColor(root, R.id.quickTaskbarBtn, theme.hudAccentColor)
-        applyTextColor(root, R.id.quickGlowValue, theme.hudInfoColor)
-        applyTextColor(root, R.id.quickGridValue, theme.hudWarningColor)
-        applyTextColor(root, R.id.openSettingsTile, theme.hudInfoColor)
-        applyTextColor(root, R.id.reloadTile, theme.hudWarningColor)
-        applyTextColor(root, R.id.lockSurfaceTile, theme.hudAccentColor)
-        applyTextColor(root, R.id.lockSurfaceUnlockButton, theme.hudSuccessColor)
-        applySeekBarTint(root, R.id.quickGlowSeekbar, theme.hudInfoColor, theme.hudPanelTextSecondary)
-        applySeekBarTint(root, R.id.quickGridSeekbar, theme.hudWarningColor, theme.hudPanelTextSecondary)
-        applyThemeToCustomViews(root, theme)
-    }
-
-    fun applyHudTheme(activity: Activity, theme: NerfTheme) {
-        val root = activity.findViewById<View>(R.id.hud_root) ?: return
-
-        val batteryMeter = root.findViewById<SegmentedBarView>(R.id.battery_meter)
-        batteryMeter?.setActiveColor(theme.primary)
-        batteryMeter?.setInactiveColor(theme.hudInactiveMeterColor)
-        batteryMeter?.setGradientHighlightColor(theme.hudPanelTextPrimary)
-
-        val timeDisplay = root.findViewById<TextView>(R.id.time_display)
-        timeDisplay?.setTextColor(theme.secondary)
-
-        val dateDisplay = root.findViewById<TextView>(R.id.date_display)
-        dateDisplay?.setTextColor(theme.hudPanelTextSecondary)
-
-        root.findViewById<TextView>(R.id.battery_label)?.setTextColor(theme.hudWarningColor)
-        root.findViewById<TextView>(R.id.brand_signature)?.setTextColor(theme.hudPanelTextSecondary)
-
-        val addWidgetBtn = root.findViewById<MaterialButton>(R.id.add_widget_btn)
-        addWidgetBtn?.setTextColor(theme.hudSuccessColor)
-        addWidgetBtn?.background = createHudActionTileDrawable(activity, theme)
-
-        applyHudPanelGlow(root, theme)
-        root.findViewById<ReactorModuleView>(R.id.reactor_core)?.updateTheme(theme)
-    }
-
-    fun applyTaskbarSettingsTheme(activity: Activity, root: View?, theme: NerfTheme) {
-        root ?: return
-        root.setBackgroundColor(theme.windowBackground)
-
-        root.findViewById<Toolbar>(R.id.toolbar)?.let { toolbar ->
-            toolbar.setBackgroundColor(theme.primary)
-            toolbar.setTitleTextColor(theme.hudPanelTextPrimary)
-            toolbar.navigationIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
-            toolbar.overflowIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
-        }
-
-        applyTextColorRecursively(root, theme.hudPanelTextPrimary)
-
-        root.findViewById<MaterialButton>(R.id.clear_pinned_apps_button)?.let { button ->
-            val fill = ColorStateList(
-                arrayOf(
-                    intArrayOf(android.R.attr.state_enabled),
-                    intArrayOf()
-                ),
-                intArrayOf(
-                    theme.primary,
-                    ColorUtils.setAlphaComponent(theme.primary, 0x61)
-                )
-            )
-            val text = ColorStateList(
-                arrayOf(
-                    intArrayOf(android.R.attr.state_enabled),
-                    intArrayOf()
-                ),
-                intArrayOf(
-                    theme.hudPanelTextPrimary,
-                    ColorUtils.setAlphaComponent(theme.hudPanelTextPrimary, 0x61)
-                )
-            )
-            button.backgroundTintList = fill
-            button.setTextColor(text)
-        }
-
-        root.findViewById<SwitchCompat>(R.id.taskbar_enabled_switch)?.let { switchView ->
-            switchView.thumbTintList = createSwitchThumbTint(theme)
-            switchView.trackTintList = createSwitchTrackTint(theme)
-        }
-
-        listOf(
-            R.id.taskbar_height_seekbar,
-            R.id.taskbar_icon_size_seekbar,
-            R.id.taskbar_transparency_seekbar
-        ).forEach { viewId ->
-            root.findViewById<SeekBar>(viewId)?.let { seekBar ->
-                seekBar.thumbTintList = ColorStateList.valueOf(theme.primary)
-                seekBar.progressTintList = ColorStateList.valueOf(theme.primary)
-                seekBar.progressBackgroundTintList = ColorStateList.valueOf(
-                    ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
-                )
-            }
         }
     }
 
@@ -493,78 +347,6 @@ object ThemeManager {
         val mutated = currentBackground.mutate()
         root.setTag(R.id.hud_root, mutated)
         return mutated
-    }
-
-    private fun applyButtonBackground(root: View, viewId: Int, drawable: Drawable) {
-        root.findViewById<MaterialButton>(viewId)?.background = drawable.constantState?.newDrawable()?.mutate() ?: drawable
-    }
-
-    private fun applyTextColor(root: View, viewId: Int, color: Int) {
-        root.findViewById<TextView>(viewId)?.setTextColor(color)
-    }
-
-    private fun applySeekBarTint(root: View, viewId: Int, activeColor: Int, inactiveColor: Int) {
-        root.findViewById<SeekBar>(viewId)?.let { seekBar ->
-            seekBar.thumbTintList = ColorStateList.valueOf(activeColor)
-            seekBar.progressTintList = ColorStateList.valueOf(activeColor)
-            seekBar.progressBackgroundTintList = ColorStateList.valueOf(
-                ColorUtils.setAlphaComponent(inactiveColor, 0x66)
-            )
-        }
-    }
-
-    private fun applyTextColorRecursively(root: View, color: Int) {
-        when (root) {
-            is TextView -> root.setTextColor(color)
-            is ViewGroup -> {
-                for (index in 0 until root.childCount) {
-                    applyTextColorRecursively(root.getChildAt(index), color)
-                }
-            }
-        }
-    }
-
-    private fun applyThemeToCustomViews(root: View, theme: NerfTheme) {
-        when (root) {
-            is SegmentedBarView -> {
-                root.setActiveColor(theme.hudInfoColor)
-                root.setInactiveColor(theme.hudInactiveMeterColor)
-                root.setGradientHighlightColor(theme.hudPanelTextPrimary)
-            }
-            is ReactorModuleView -> root.updateTheme(theme)
-            is ReactorCoreView -> root.updateTheme(theme)
-        }
-        if (root is ViewGroup) {
-            for (index in 0 until root.childCount) {
-                applyThemeToCustomViews(root.getChildAt(index), theme)
-            }
-        }
-    }
-
-    private fun createSwitchThumbTint(theme: NerfTheme): ColorStateList {
-        return ColorStateList(
-            arrayOf(
-                intArrayOf(android.R.attr.state_checked),
-                intArrayOf()
-            ),
-            intArrayOf(
-                theme.primary,
-                ColorUtils.setAlphaComponent(theme.hudPanelTextPrimary, 0xB3)
-            )
-        )
-    }
-
-    private fun createSwitchTrackTint(theme: NerfTheme): ColorStateList {
-        return ColorStateList(
-            arrayOf(
-                intArrayOf(android.R.attr.state_checked),
-                intArrayOf()
-            ),
-            intArrayOf(
-                ColorUtils.setAlphaComponent(theme.primary, 0x80),
-                ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x4D)
-            )
-        )
     }
 
     private fun px(context: Context, dp: Float): Int {

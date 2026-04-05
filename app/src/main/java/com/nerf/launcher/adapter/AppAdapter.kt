@@ -138,6 +138,14 @@ class AppAdapter(
         }
     }
 
+    fun refreshThemeInRange(start: Int, endInclusive: Int) {
+        if (itemCount == 0) return
+        val safeStart = start.coerceAtLeast(0)
+        val safeEnd = endInclusive.coerceAtMost(itemCount - 1)
+        if (safeStart > safeEnd) return
+        notifyItemRangeChanged(safeStart, safeEnd - safeStart + 1)
+    }
+
     companion object {
         private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AppInfo>() {
             override fun areItemsTheSame(oldItem: AppInfo, newItem: AppInfo): Boolean {
