@@ -16,7 +16,7 @@
     android:paddingBottom="8dp">
 
     <FrameLayout
-        android:id="@+id/iconSocket"
+        android:id="@+id/icon_socket"
         android:layout_width="54dp"
         android:layout_height="54dp"
         android:background="@drawable/app_icon_socket_background"
@@ -26,7 +26,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/appIcon"
+            android:id="@+id/app_icon"
             android:layout_width="34dp"
             android:layout_height="34dp"
             android:layout_gravity="center"
@@ -34,7 +34,7 @@
     </FrameLayout>
 
     <TextView
-        android:id="@+id/appName"
+        android:id="@+id/app_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="7dp"
@@ -44,6 +44,6 @@
         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.AppTileLabel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/iconSocket" />
+        app:layout_constraintTop_toBottomOf="@id/icon_socket" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
