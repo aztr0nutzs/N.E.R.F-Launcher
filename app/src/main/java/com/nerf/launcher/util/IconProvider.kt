@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import com.nerf.launcher.R
 import java.io.File
 import java.io.IOException
+import java.util.WeakHashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,6 +44,8 @@ class IconProvider(
     private val scope = kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val inFlightLoads = mutableMapOf<String, kotlinx.coroutines.Deferred<Drawable>>()
     private val inFlightLock = Mutex()
+    private val latestRequestByView = WeakHashMap<android.widget.ImageView, String>()
+    private val latestRequestLock = Any()
 
     /**
      * Loads an icon asynchronously and sets it onto the target ImageView.
@@ -51,26 +54,26 @@ class IconProvider(
     fun loadIconInto(packageName: String, imageView: android.widget.ImageView) {
         val selectedPack = IconPackManager.getCurrentPack(context)
         val cacheKey = "$selectedPack:$packageName"
-        if (imageView.tag == cacheKey) {
+        val currentRequest = synchronized(latestRequestLock) { latestRequestByView[imageView] }
+        if (currentRequest == cacheKey) {
             return
+        }
+        synchronized(latestRequestLock) {
+            latestRequestByView[imageView] = cacheKey
         }
         val cached = iconCache.get(cacheKey)
         if (cached != null) {
-            imageView.tag = cacheKey
             imageView.setImageDrawable(cached)
             return
         }
-
-        // Apply placeholder and tag mapping
-        imageView.setImageDrawable(null)
-        imageView.tag = cacheKey
 
         scope.launch {
             val icon = getOrLoadIcon(cacheKey, packageName, selectedPack)
             iconCache.put(cacheKey, icon)
 
             withContext(Dispatchers.Main) {
-                if (imageView.tag == cacheKey && IconPackManager.getCurrentPack(context) == selectedPack) {
+                val latestRequest = synchronized(latestRequestLock) { latestRequestByView[imageView] }
+                if (latestRequest == cacheKey && IconPackManager.getCurrentPack(context) == selectedPack) {
                     imageView.setImageDrawable(icon)
                 }
             }

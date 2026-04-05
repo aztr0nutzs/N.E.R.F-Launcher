@@ -9,6 +9,7 @@ import android.widget.SeekBar
 import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.databinding.ItemSettingBinding
 import com.nerf.launcher.util.AppConfig
+import com.nerf.launcher.util.IconPackManager
 import com.nerf.launcher.util.SettingChange
 import com.nerf.launcher.util.SettingItem
 import com.nerf.launcher.util.SettingsType
@@ -73,6 +74,12 @@ class SettingsAdapter(
                 }
 
                 is SettingItem.IconPack -> {
+                    val hasAdditionalPacks = IconPackManager.hasAdditionalPackAssets(binding.root.context)
+                    binding.title.text = if (hasAdditionalPacks) {
+                        item.title
+                    } else {
+                        binding.root.context.getString(com.nerf.launcher.R.string.settings_icon_pack_system_only)
+                    }
                     binding.themeContainer.visibility = View.GONE
                     binding.iconPackContainer.visibility = View.VISIBLE
                     binding.sliderContainer.visibility = View.GONE
@@ -87,6 +94,9 @@ class SettingsAdapter(
                     )
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinner.adapter = adapter
+                    spinner.isEnabled = hasAdditionalPacks
+                    spinner.isClickable = hasAdditionalPacks
+                    spinner.alpha = if (hasAdditionalPacks) 1f else 0.65f
                     val current = currentConfig?.iconPack
                     val currentIndex = adapter.getPosition(current)
                     if (currentIndex >= 0) {
@@ -94,6 +104,7 @@ class SettingsAdapter(
                     }
                     spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                         override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+                            if (!hasAdditionalPacks) return
                             val selected = item.options.getOrNull(pos) ?: return
                             if (selected != currentConfig?.iconPack) {
                                 onSettingChanged(SettingChange.IconPack(selected))
