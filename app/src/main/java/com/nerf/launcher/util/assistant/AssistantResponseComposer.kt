@@ -16,7 +16,20 @@ class AssistantResponseComposer {
             )
         )
 
-        is AssistantActionResult.LauncherCommandHandled -> ResponsePlan.DirectText(result.resolvedSpokenText())
+        is AssistantActionResult.LauncherCommandHandled -> {
+            val category = result.responseCategory
+            if (category != null) {
+                ResponsePlan.CategoryRequest(
+                    request = ResponseRequest(
+                        category = category,
+                        mood = context.mood,
+                        preferredText = result.resolvedSpokenText()
+                    )
+                )
+            } else {
+                ResponsePlan.DirectText(result.resolvedSpokenText())
+            }
+        }
         AssistantActionResult.RepeatLast -> ResponsePlan.RepeatLast
         AssistantActionResult.Ignored -> ResponsePlan.NoOp
     }

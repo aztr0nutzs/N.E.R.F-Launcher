@@ -43,6 +43,7 @@ import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.ThemeRepository
 import com.nerf.launcher.util.assistant.AssistantAction
 import com.nerf.launcher.util.assistant.AssistantActionResult
+import com.nerf.launcher.util.assistant.AiResponseRepository
 import com.nerf.launcher.util.assistant.AssistantController
 import com.nerf.launcher.util.assistant.AssistantSessionManager
 import com.nerf.launcher.util.network.LocalNetworkScanner
@@ -580,6 +581,7 @@ class MainActivity : AppCompatActivity() {
                     command = command,
                     spokenText = "Opening launcher settings now.",
                     outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
+                    responseCategory = AiResponseRepository.Category.COMMAND_RECEIVED,
                     details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
                         destination = "settings"
                     )
@@ -592,6 +594,7 @@ class MainActivity : AppCompatActivity() {
                     command = command,
                     spokenText = "Opening reactor diagnostics.",
                     outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
+                    responseCategory = AiResponseRepository.Category.DIAGNOSTICS,
                     details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
                         destination = "diagnostics"
                     )
@@ -604,6 +607,7 @@ class MainActivity : AppCompatActivity() {
                     command = command,
                     spokenText = "Opening Node Hunter module.",
                     outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
+                    responseCategory = AiResponseRepository.Category.APP_LAUNCH,
                     details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
                         destination = "node_hunter"
                     )
@@ -625,6 +629,7 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         AssistantActionResult.LauncherOutcome.PERFORMED
                     },
+                    responseCategory = AiResponseRepository.Category.COMMAND_RECEIVED,
                     details = AssistantActionResult.LauncherCommandDetails.OpenedDestination(
                         destination = "lock_surface"
                     )
@@ -638,6 +643,7 @@ class MainActivity : AppCompatActivity() {
                         command = command,
                         spokenText = "Theme cycle is unavailable until launcher config is loaded.",
                         outcome = AssistantActionResult.LauncherOutcome.BLOCKED,
+                        responseCategory = AiResponseRepository.Category.THEME_SWITCH,
                         details = AssistantActionResult.LauncherCommandDetails.CurrentTheme(
                             activeTheme = null
                         )
@@ -651,6 +657,7 @@ class MainActivity : AppCompatActivity() {
                         command = command,
                         spokenText = "Theme cycled to $nextTheme.",
                         outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
+                        responseCategory = AiResponseRepository.Category.THEME_SWITCH,
                         details = AssistantActionResult.LauncherCommandDetails.ThemeCycled(
                             previousTheme = currentTheme,
                             newTheme = nextTheme
@@ -670,6 +677,7 @@ class MainActivity : AppCompatActivity() {
                     command = command,
                     spokenText = spokenText,
                     outcome = AssistantActionResult.LauncherOutcome.INFORMATIONAL,
+                    responseCategory = AiResponseRepository.Category.STATUS_REPORT,
                     details = AssistantActionResult.LauncherCommandDetails.CurrentTheme(
                         activeTheme = activeTheme
                     )
@@ -690,6 +698,7 @@ class MainActivity : AppCompatActivity() {
                     command = command,
                     spokenText = spokenText,
                     outcome = AssistantActionResult.LauncherOutcome.INFORMATIONAL,
+                    responseCategory = AiResponseRepository.Category.STATUS_REPORT,
                     details = snapshot?.let {
                         AssistantActionResult.LauncherCommandDetails.SystemState(
                             batteryPercent = it.batteryPercent,
@@ -707,6 +716,7 @@ class MainActivity : AppCompatActivity() {
                     command = command,
                     spokenText = "App catalog has ${allApps.size} apps loaded with $filteredAppCount currently in filter scope.",
                     outcome = AssistantActionResult.LauncherOutcome.INFORMATIONAL,
+                    responseCategory = AiResponseRepository.Category.STATUS_REPORT,
                     details = AssistantActionResult.LauncherCommandDetails.AppFilterState(
                         totalApps = allApps.size,
                         filteredApps = filteredAppCount
@@ -720,6 +730,7 @@ class MainActivity : AppCompatActivity() {
                         command = command,
                         spokenText = "Local network scan is unavailable because Wi-Fi subnet data is not accessible.",
                         outcome = AssistantActionResult.LauncherOutcome.BLOCKED,
+                        responseCategory = AiResponseRepository.Category.NETWORK_FAILURE,
                         details = AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
                             supported = false,
                             running = false,
@@ -732,6 +743,7 @@ class MainActivity : AppCompatActivity() {
                         command = command,
                         spokenText = "A local network scan is already running.",
                         outcome = AssistantActionResult.LauncherOutcome.IN_PROGRESS,
+                        responseCategory = AiResponseRepository.Category.SCANNING,
                         details = AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
                             supported = true,
                             running = true,
@@ -749,6 +761,7 @@ class MainActivity : AppCompatActivity() {
                     command = command,
                     spokenText = "Starting local network scan now.",
                     outcome = AssistantActionResult.LauncherOutcome.PERFORMED,
+                    responseCategory = AiResponseRepository.Category.SCANNING,
                     details = AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
                         supported = true,
                         running = true,
@@ -779,6 +792,13 @@ class MainActivity : AppCompatActivity() {
                         isNetworkScanRunning -> AssistantActionResult.LauncherOutcome.IN_PROGRESS
                         !supported -> AssistantActionResult.LauncherOutcome.BLOCKED
                         else -> AssistantActionResult.LauncherOutcome.INFORMATIONAL
+                    },
+                    responseCategory = when {
+                        isNetworkScanRunning -> AiResponseRepository.Category.SCANNING
+                        !supported -> AiResponseRepository.Category.NETWORK_FAILURE
+                        lastNetworkScanResult == null -> AiResponseRepository.Category.NETWORK_SCAN
+                        nodes.isEmpty() -> AiResponseRepository.Category.NETWORK_FAILURE
+                        else -> AiResponseRepository.Category.NETWORK_SUCCESS
                     },
                     details = when {
                         isNetworkScanRunning -> AssistantActionResult.LauncherCommandDetails.NetworkScanStatus(
