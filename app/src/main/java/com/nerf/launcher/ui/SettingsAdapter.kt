@@ -1,5 +1,6 @@
 package com.nerf.launcher.ui
 
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -131,22 +132,38 @@ class SettingsAdapter(
                         progress
                     )
                     seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                        private var lastCommittedProgress = progress
+                        private var lastCommittedAt = 0L
+
                         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                             if (fromUser) {
                                 binding.glowValue.text = binding.root.context.getString(
                                     com.nerf.launcher.R.string.settings_glow_percent,
                                     progress
                                 )
-                                val value = progress / 100f
-                                if (value != currentConfig?.glowIntensity) {
-                                    onSettingChanged(SettingChange.GlowIntensity(value))
+                                if (shouldCommitDragUpdate(progress, lastCommittedProgress, lastCommittedAt)) {
+                                    val value = progress / 100f
+                                    if (value != currentConfig?.glowIntensity) {
+                                        onSettingChanged(SettingChange.GlowIntensity(value))
+                                    }
+                                    lastCommittedProgress = progress
+                                    lastCommittedAt = SystemClock.elapsedRealtime()
                                 }
                             }
                         }
 
-                        override fun onStartTrackingTouch(seekBar: SeekBar?) = Unit
+                        override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                            lastCommittedProgress = seekBar?.progress ?: lastCommittedProgress
+                            lastCommittedAt = 0L
+                        }
 
-                        override fun onStopTrackingTouch(seekBar: SeekBar?) = Unit
+                        override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                            val finalProgress = seekBar?.progress ?: return
+                            val value = finalProgress / 100f
+                            if (value != currentConfig?.glowIntensity) {
+                                onSettingChanged(SettingChange.GlowIntensity(value))
+                            }
+                        }
                     })
                 }
 
@@ -277,5 +294,21 @@ class SettingsAdapter(
         if (!changed) return
         val index = settingIndexByType[type] ?: return
         notifyItemChanged(index)
+    }
+
+    private fun shouldCommitDragUpdate(
+        progress: Int,
+        lastCommittedProgress: Int,
+        lastCommittedAt: Long
+    ): Boolean {
+        val now = SystemClock.elapsedRealtime()
+        val progressDelta = kotlin.math.abs(progress - lastCommittedProgress)
+        val timeElapsed = now - lastCommittedAt
+        return progressDelta >= DRAG_PROGRESS_STEP || lastCommittedAt == 0L || timeElapsed >= DRAG_UPDATE_THROTTLE_MS
+    }
+
+    companion object {
+        private const val DRAG_UPDATE_THROTTLE_MS = 120L
+        private const val DRAG_PROGRESS_STEP = 2
     }
 }

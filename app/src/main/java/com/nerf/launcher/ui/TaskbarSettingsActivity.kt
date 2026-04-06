@@ -3,6 +3,7 @@ package com.nerf.launcher.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
@@ -53,22 +54,52 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         }
 
         binding.taskbarHeightSeekbar.max = MAX_HEIGHT_DP - MIN_HEIGHT_DP
-        binding.taskbarHeightSeekbar.setOnSeekBarChangeListener(SimpleSeekBarListener { progress, fromUser ->
-            if (!fromUser || isBindingState) return@SimpleSeekBarListener
-            updateTaskbarSettings { copy(height = progress + MIN_HEIGHT_DP) }
-        })
+        binding.taskbarHeightSeekbar.setOnSeekBarChangeListener(
+            createThrottledSeekBarListener(
+                onProgress = { progress ->
+                    binding.taskbarHeightValue.text = getString(
+                        R.string.taskbar_settings_height_value,
+                        progress + MIN_HEIGHT_DP
+                    )
+                },
+                commitStep = DRAG_DP_STEP,
+                commitValue = { progress ->
+                    updateTaskbarSettings { copy(height = progress + MIN_HEIGHT_DP) }
+                }
+            )
+        )
 
         binding.taskbarIconSizeSeekbar.max = MAX_ICON_SIZE_DP - MIN_ICON_SIZE_DP
-        binding.taskbarIconSizeSeekbar.setOnSeekBarChangeListener(SimpleSeekBarListener { progress, fromUser ->
-            if (!fromUser || isBindingState) return@SimpleSeekBarListener
-            updateTaskbarSettings { copy(iconSize = progress + MIN_ICON_SIZE_DP) }
-        })
+        binding.taskbarIconSizeSeekbar.setOnSeekBarChangeListener(
+            createThrottledSeekBarListener(
+                onProgress = { progress ->
+                    binding.taskbarIconSizeValue.text = getString(
+                        R.string.taskbar_settings_icon_size_value,
+                        progress + MIN_ICON_SIZE_DP
+                    )
+                },
+                commitStep = DRAG_DP_STEP,
+                commitValue = { progress ->
+                    updateTaskbarSettings { copy(iconSize = progress + MIN_ICON_SIZE_DP) }
+                }
+            )
+        )
 
         binding.taskbarTransparencySeekbar.max = 100
-        binding.taskbarTransparencySeekbar.setOnSeekBarChangeListener(SimpleSeekBarListener { progress, fromUser ->
-            if (!fromUser || isBindingState) return@SimpleSeekBarListener
-            updateTaskbarSettings { copy(transparency = progress / 100f) }
-        })
+        binding.taskbarTransparencySeekbar.setOnSeekBarChangeListener(
+            createThrottledSeekBarListener(
+                onProgress = { progress ->
+                    binding.taskbarTransparencyValue.text = getString(
+                        R.string.taskbar_settings_transparency_value,
+                        progress
+                    )
+                },
+                commitStep = DRAG_PERCENT_STEP,
+                commitValue = { progress ->
+                    updateTaskbarSettings { copy(transparency = progress / 100f) }
+                }
+            )
+        )
 
         backgroundStyleAdapter = ThemedSpinnerAdapter(
             this,
@@ -362,7 +393,9 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     }
 
     private class SimpleSeekBarListener(
-        private val onProgressChanged: (progress: Int, fromUser: Boolean) -> Unit
+        private val onProgressChanged: (progress: Int, fromUser: Boolean) -> Unit,
+        private val onStartTrackingTouch: () -> Unit = {},
+        private val onStopTrackingTouch: (progress: Int) -> Unit = {}
     ) : android.widget.SeekBar.OnSeekBarChangeListener {
         override fun onProgressChanged(
             seekBar: android.widget.SeekBar?,
@@ -372,9 +405,51 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             onProgressChanged(progress, fromUser)
         }
 
-        override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
+        override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {
+            onStartTrackingTouch()
+        }
 
-        override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
+        override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {
+            onStopTrackingTouch(seekBar?.progress ?: return)
+        }
+    }
+
+    private fun createThrottledSeekBarListener(
+        onProgress: (Int) -> Unit,
+        commitStep: Int,
+        commitValue: (Int) -> Unit
+    ): SimpleSeekBarListener {
+        var lastCommittedProgress = 0
+        var lastCommittedAt = 0L
+        return SimpleSeekBarListener(
+            onProgressChanged = { progress, fromUser ->
+                onProgress(progress)
+                if (!fromUser || isBindingState) return@SimpleSeekBarListener
+                if (shouldCommitDragUpdate(progress, lastCommittedProgress, lastCommittedAt, commitStep)) {
+                    commitValue(progress)
+                    lastCommittedProgress = progress
+                    lastCommittedAt = SystemClock.elapsedRealtime()
+                }
+            },
+            onStartTrackingTouch = {
+                lastCommittedAt = 0L
+            },
+            onStopTrackingTouch = { progress ->
+                if (isBindingState) return@SimpleSeekBarListener
+                commitValue(progress)
+            }
+        )
+    }
+
+    private fun shouldCommitDragUpdate(
+        progress: Int,
+        lastCommittedProgress: Int,
+        lastCommittedAt: Long,
+        commitStep: Int
+    ): Boolean {
+        val progressDelta = kotlin.math.abs(progress - lastCommittedProgress)
+        val elapsed = SystemClock.elapsedRealtime() - lastCommittedAt
+        return lastCommittedAt == 0L || progressDelta >= commitStep || elapsed >= DRAG_UPDATE_THROTTLE_MS
     }
 
     companion object {
@@ -382,6 +457,9 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         private const val MAX_HEIGHT_DP = 96
         private const val MIN_ICON_SIZE_DP = 24
         private const val MAX_ICON_SIZE_DP = 72
+        private const val DRAG_UPDATE_THROTTLE_MS = 120L
+        private const val DRAG_DP_STEP = 2
+        private const val DRAG_PERCENT_STEP = 2
         private val BACKGROUND_LABELS = mapOf(
             TaskbarBackgroundStyle.DARK to R.string.taskbar_settings_background_dark,
             TaskbarBackgroundStyle.LIGHT to R.string.taskbar_settings_background_light,
