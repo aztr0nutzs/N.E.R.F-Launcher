@@ -203,7 +203,11 @@ class AiResponseRepository(private val context: Context) {
                 Log.d(TAG, "Response bank loaded: ${it.size} categories, $total total lines.")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to load assistant response bank: ${e.message}", e)
+            Log.e(
+                TAG,
+                "Failed to load assistant response bank: " +
+                    "${e.javaClass.simpleName}: ${e.message ?: "no detail"}"
+            )
             null
         }
     }
