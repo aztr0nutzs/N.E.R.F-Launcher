@@ -42,6 +42,7 @@ To run Android Gradle tasks that need the SDK, the local environment must provid
 - Android SDK Platform 34
 - a `local.properties` file at the repo root with `sdk.dir` pointing at that SDK, or an Android Studio setup that generates it locally
 - JDK 17 or a newer JDK supported by the Android Gradle Plugin and Gradle wrapper in this repo
+- executable permission on `gradlew` when building from macOS/Linux (`chmod +x ./gradlew`)
 
 Repo-side asset wiring is intentional:
 - Android assets are loaded from `app/src/assets` via `app/build.gradle`
@@ -66,13 +67,21 @@ What still requires a real Android SDK environment:
 
 ## Validation steps after SDK setup
 
-After creating a local `local.properties` with `sdk.dir=...` or opening the project in Android Studio with a configured SDK, run:
+After creating a local `local.properties` with `sdk.dir=...` (you can copy `local.properties.example`) or opening the project in Android Studio with a configured SDK, run:
+
+macOS/Linux:
+- `./gradlew help`
+- `./gradlew :app:assembleDebug`
+- `./gradlew :app:installDebug`
+
+Windows (PowerShell/cmd):
 - `.\gradlew.bat help`
 - `.\gradlew.bat :app:assembleDebug`
 - `.\gradlew.bat :app:installDebug`
 
 If release packaging needs to be checked as part of a release candidate, also run:
-- `.\gradlew.bat :app:assembleRelease`
+- macOS/Linux: `./gradlew :app:assembleRelease`
+- Windows: `.\gradlew.bat :app:assembleRelease`
 
 ## Minimal smoke-test checklist
 
