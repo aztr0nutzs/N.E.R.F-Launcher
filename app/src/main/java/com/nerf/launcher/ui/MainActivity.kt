@@ -67,6 +67,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val STATE_LOCK_SURFACE_VISIBLE = "state_lock_surface_visible"
         private const val MENU_ITEM_PIN_TOGGLE = 1001
+        private const val DRAG_UPDATE_THROTTLE_MS = 120L
+        private const val DRAG_PROGRESS_STEP = 2
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -1035,22 +1037,41 @@ class MainActivity : AppCompatActivity() {
 
         binding.quickGlowSeekbar.setOnSeekBarChangeListener(object :
             android.widget.SeekBar.OnSeekBarChangeListener {
+            private var lastCommittedProgress = binding.quickGlowSeekbar.progress
+            private var lastCommittedAt = 0L
+
             override fun onProgressChanged(
                 seekBar: android.widget.SeekBar?,
                 progress: Int,
                 fromUser: Boolean
             ) {
                 if (!fromUser) return
+                binding.quickGlowValue.text = getString(com.nerf.launcher.R.string.quick_glow_percent, progress)
                 val value = progress / 100f
-                ConfigRepository.get().updateGlowIntensity(value)
+                if (shouldCommitDragUpdate(progress, lastCommittedProgress, lastCommittedAt)) {
+                    ConfigRepository.get().updateGlowIntensity(value)
+                    lastCommittedProgress = progress
+                    lastCommittedAt = SystemClock.elapsedRealtime()
+                }
             }
 
-            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
-            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {
+                lastCommittedProgress = seekBar?.progress ?: lastCommittedProgress
+                lastCommittedAt = 0L
+            }
+
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {
+                val finalProgress = seekBar?.progress ?: return
+                val value = finalProgress / 100f
+                ConfigRepository.get().updateGlowIntensity(value)
+            }
         })
 
         binding.quickGridSeekbar.setOnSeekBarChangeListener(object :
             android.widget.SeekBar.OnSeekBarChangeListener {
+            private var lastCommittedProgress = binding.quickGridSeekbar.progress
+            private var lastCommittedAt = 0L
+
             override fun onProgressChanged(
                 seekBar: android.widget.SeekBar?,
                 progress: Int,
@@ -1058,12 +1079,35 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (!fromUser) return
                 val gridSize = progress + 2
-                ConfigRepository.get().updateGridSize(gridSize)
+                binding.quickGridValue.text = getString(com.nerf.launcher.R.string.quick_grid_state, gridSize)
+                if (shouldCommitDragUpdate(progress, lastCommittedProgress, lastCommittedAt)) {
+                    ConfigRepository.get().updateGridSize(gridSize)
+                    lastCommittedProgress = progress
+                    lastCommittedAt = SystemClock.elapsedRealtime()
+                }
             }
 
-            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
-            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) = Unit
+            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {
+                lastCommittedProgress = seekBar?.progress ?: lastCommittedProgress
+                lastCommittedAt = 0L
+            }
+
+            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {
+                val finalProgress = seekBar?.progress ?: return
+                val gridSize = finalProgress + 2
+                ConfigRepository.get().updateGridSize(gridSize)
+            }
         })
+    }
+
+    private fun shouldCommitDragUpdate(
+        progress: Int,
+        lastCommittedProgress: Int,
+        lastCommittedAt: Long
+    ): Boolean {
+        val progressDelta = kotlin.math.abs(progress - lastCommittedProgress)
+        val elapsed = SystemClock.elapsedRealtime() - lastCommittedAt
+        return lastCommittedAt == 0L || progressDelta >= DRAG_PROGRESS_STEP || elapsed >= DRAG_UPDATE_THROTTLE_MS
     }
 
     private fun bindQuickControls(config: AppConfig) {

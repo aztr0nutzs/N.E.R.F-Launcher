@@ -65,6 +65,7 @@ class ConfigRepository(private val context: Context) {
             glowIntensity = config.glowIntensity.coerceIn(0f, 1f),
             taskbarSettings = normalizeTaskbarSettings(config.taskbarSettings)
         )
+        if (_config.value == sanitized) return
 
         PreferencesManager.saveSelectedTheme(context, sanitized.themeName)
         PreferencesManager.saveIconPack(context, sanitized.iconPack)
