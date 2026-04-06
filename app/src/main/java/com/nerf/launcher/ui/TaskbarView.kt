@@ -111,11 +111,7 @@ class TaskbarView @JvmOverloads constructor(
         val config = ConfigRepository.get().config.value
         val style = config?.taskbarSettings?.backgroundStyle ?: TaskbarBackgroundStyle.default
         val theme = config?.let {
-            ThemeManager.resolveActiveTheme(
-                context = context,
-                themeName = it.themeName,
-                glowIntensity = it.glowIntensity
-            )
+            ThemeManager.resolveConfigTheme(context, it)
         }
         applyShellBackground(style, alpha, theme)
     }
@@ -131,11 +127,7 @@ class TaskbarView @JvmOverloads constructor(
                     themeName = config.themeName,
                     glowIntensity = config.glowIntensity
                 )
-                val resolvedTheme = ThemeManager.resolveActiveTheme(
-                    context = context,
-                    themeName = themeInput.themeName,
-                    glowIntensity = themeInput.glowIntensity
-                )
+                val resolvedTheme = ThemeManager.resolveConfigTheme(context, config)
                 applyTaskbarSettings(previousTaskbar, settings, resolvedTheme)
 
                 val iconTintNeedsUpdate = previousThemeInput != themeInput

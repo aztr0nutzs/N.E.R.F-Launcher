@@ -104,11 +104,7 @@ class HudController(
                 lastObservedConfig = config
                 return@observe
             }
-            val finalTheme = ThemeManager.resolveActiveTheme(
-                context = activity,
-                themeName = config.themeName,
-                glowIntensity = config.glowIntensity
-            )
+            val finalTheme = ThemeManager.resolveConfigTheme(activity, config)
             applyHudTheme(finalTheme)
             lastObservedConfig = config
         }

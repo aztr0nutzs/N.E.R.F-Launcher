@@ -97,12 +97,8 @@ class TaskbarSettingsActivity : AppCompatActivity() {
 
     private fun observeConfig() {
         ConfigRepository.get().config.observe(this) { config ->
-            val themeKey = config.themeName to config.glowIntensity
-            val theme = ThemeManager.resolveActiveTheme(
-                context = this,
-                themeName = config.themeName,
-                glowIntensity = config.glowIntensity
-            )
+            val themeKey = ThemeManager.themeKey(config)
+            val theme = ThemeManager.resolveConfigTheme(this, config)
             if (themeKey != lastThemeKey) {
                 applyTheme(theme)
                 backgroundStyleAdapter.updateTheme(theme)
@@ -113,12 +109,12 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     }
 
     private fun applyTheme(theme: NerfTheme) {
-        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(theme.windowBackground))
-        binding.root.setBackgroundColor(theme.windowBackground)
-        binding.toolbar.setBackgroundColor(theme.primary)
-        binding.toolbar.setTitleTextColor(theme.hudPanelTextPrimary)
-        binding.toolbar.navigationIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
-        binding.toolbar.overflowIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
+        ThemeManager.applyWindowAndToolbarTheme(
+            activity = this,
+            root = binding.root,
+            toolbar = binding.toolbar,
+            theme = theme
+        )
         applyTextColorRecursively(binding.root, theme.hudPanelTextPrimary)
 
         binding.clearPinnedAppsButton.let { button ->

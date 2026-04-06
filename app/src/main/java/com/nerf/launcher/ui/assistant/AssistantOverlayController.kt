@@ -98,13 +98,9 @@ class AssistantOverlayController(
 
     private fun observeTheme(lifecycleOwner: LifecycleOwner) {
         ConfigRepository.get().config.observe(lifecycleOwner) { config ->
-            val themeKey = config.themeName to config.glowIntensity
+            val themeKey = ThemeManager.themeKey(config)
             if (themeKey == lastThemeKey) return@observe
-            val theme = ThemeManager.resolveActiveTheme(
-                context = binding.root.context,
-                themeName = config.themeName,
-                glowIntensity = config.glowIntensity
-            )
+            val theme = ThemeManager.resolveConfigTheme(binding.root.context, config)
             applyTheme(theme)
             lastThemeKey = themeKey
         }
