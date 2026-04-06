@@ -37,6 +37,16 @@
     <dimen name="nerf_settings_cta_height">44dp</dimen>
 
     <!-- Taskbar management tokens -->
+    <dimen name="nerf_taskbar_shell_padding_horizontal">8dp</dimen>
+    <dimen name="nerf_taskbar_shell_padding_vertical">6dp</dimen>
+    <dimen name="nerf_taskbar_icon_padding_horizontal">10dp</dimen>
+    <dimen name="nerf_taskbar_icon_padding_vertical">8dp</dimen>
+    <dimen name="nerf_taskbar_icon_horizontal_margin">4dp</dimen>
+    <dimen name="nerf_taskbar_settings_content_padding">16dp</dimen>
+    <dimen name="nerf_taskbar_settings_control_margin_top">8dp</dimen>
+    <dimen name="nerf_taskbar_settings_section_margin_top">20dp</dimen>
+    <dimen name="nerf_taskbar_settings_value_margin_top">4dp</dimen>
+    <dimen name="nerf_taskbar_settings_clear_button_margin_top">12dp</dimen>
     <dimen name="nerf_taskbar_empty_state_text_size">13sp</dimen>
     <dimen name="nerf_taskbar_row_title_text_size">14sp</dimen>
     <dimen name="nerf_taskbar_row_package_text_size">12sp</dimen>
