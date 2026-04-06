@@ -32,6 +32,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/assistant_overlay_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:drawablePadding="6dp"
@@ -132,6 +133,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/assistant_overlay_visual_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/assistant_overlay_visual_label"
@@ -139,6 +141,7 @@
                         android:textColor="@color/nerf_hud_cyan" />
 
                     <TextView
+                        android:id="@+id/assistant_overlay_visual_hint"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
@@ -188,6 +191,7 @@
             android:textColor="@color/nerf_hud_panel_text_primary" />
 
         <TextView
+            android:id="@+id/assistant_overlay_transcript_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -291,6 +295,7 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/assistant_overlay_actions_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
