@@ -189,12 +189,12 @@
     <string name="module_grid_default">GRID 4x</string>
     <string name="module_dock_default">DOCK 4</string>
     <string name="module_scan_apps_action">SCAN APPS</string>
-    <string name="hud_time_placeholder">12:00</string>
-    <string name="hud_date_placeholder">MON 01 JAN</string>
-    <string name="hud_battery_percent_placeholder">50%</string>
+    <string name="hud_time_placeholder">--:--</string>
+    <string name="hud_date_placeholder">---</string>
+    <string name="hud_battery_percent_placeholder">--%</string>
     <string name="hud_settings_action">SETTINGS</string>
-    <string name="modules_energy_placeholder">--%</string>
-    <string name="modules_storage_placeholder">N/A</string>
-    <string name="modules_runtime_placeholder">0h 0m</string>
+    <string name="modules_energy_placeholder">0% IDLE</string>
+    <string name="modules_storage_placeholder">0% USED</string>
+    <string name="modules_runtime_placeholder">0d 0h</string>
     <string name="drawer_result_count_default">0 VISIBLE</string>
 </resources>
