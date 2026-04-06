@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import com.nerf.launcher.BuildConfig
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -115,7 +116,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
                 tts?.setOnUtteranceProgressListener(buildProgressListener())
                 _isReady.set(true)
                 onReadyChanged?.invoke(true)
-                Log.d(TAG, "ReactorAssistant ready. Profile: ${currentProfile.label}")
+                logDebug("ReactorAssistant ready. Profile: ${currentProfile.label}")
             }
         } else {
             Log.e(TAG, "TTS init failed. Status: $status")
@@ -156,7 +157,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
     fun pause() {
         if (releaseState.get()) return
         tts?.stop()
-        Log.d(TAG, "Speech paused.")
+        logDebug("Speech paused.")
     }
 
     // ── Voice Profile API ─────────────────────────────────────────────────────
@@ -171,7 +172,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
         if (_isReady.get()) {
             applyVoiceProfile(profile)
             onProfileChanged?.invoke(profile)
-            Log.d(TAG, "Voice profile → ${profile.label} (pitch=${profile.pitch}, rate=${profile.rate})")
+            logDebug("Voice profile → ${profile.label} (pitch=${profile.pitch}, rate=${profile.rate})")
         }
     }
 
@@ -209,7 +210,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
         val warmId = "${UTTERANCE_PREFIX}WARMUP"
         val params = Bundle()
         tts?.speak(" ", TextToSpeech.QUEUE_FLUSH, params, warmId)
-        Log.d(TAG, "TTS engine pre-warmed.")
+        logDebug("TTS engine pre-warmed.")
     }
 
     // ── Shutdown ──────────────────────────────────────────────────────────────
@@ -226,7 +227,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
         utteranceTexts.clear()
         _isReady.set(false)
         onReadyChanged?.invoke(false)
-        Log.d(TAG, "ReactorAssistant shut down.")
+        logDebug("ReactorAssistant shut down.")
     }
 
     fun shutdown() {
@@ -259,6 +260,13 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
             return false
         }
         return true
+    }
+
+
+    private fun logDebug(message: String) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, message)
+        }
     }
 
     private fun applyVoiceProfile(profile: VoiceProfile) {

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import com.nerf.launcher.BuildConfig
 import java.util.LinkedList
 
 class AssistantController(
@@ -270,7 +271,14 @@ class AssistantController(
         persistPreferences()
         onMoodChanged?.invoke(mood)
         postState(snapshot.copy(mood = mood))
-        Log.d(TAG, "Mood -> ${mood.name}")
+        logDebug("Mood -> ${mood.name}")
+    }
+
+
+    private fun logDebug(message: String) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, message)
+        }
     }
 
     fun cycleMood() {

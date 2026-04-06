@@ -2,6 +2,7 @@ package com.nerf.launcher.util.assistant
 
 import android.content.Context
 import android.util.Log
+import com.nerf.launcher.BuildConfig
 import com.nerf.launcher.R
 import org.json.JSONArray
 import org.json.JSONObject
@@ -180,7 +181,7 @@ class AiResponseRepository(private val context: Context) {
         responseLibrary = null
         recentHistory.clear()
         ensureLoaded()
-        Log.d(TAG, "Response bank reloaded. ${getLibrarySummary().values.sum()} total responses.")
+        logDebug("Response bank reloaded. ${getLibrarySummary().values.sum()} total responses.")
     }
 
     private fun ensureLoaded() {
@@ -200,15 +201,22 @@ class AiResponseRepository(private val context: Context) {
                 }
             }.also {
                 val total = it.values.sumOf { entries -> entries.size }
-                Log.d(TAG, "Response bank loaded: ${it.size} categories, $total total lines.")
+                logDebug("Response bank loaded: ${it.size} categories, $total total lines.")
             }
         } catch (e: Exception) {
-            Log.e(
-                TAG,
-                "Failed to load assistant response bank: " +
-                    "${e.javaClass.simpleName}: ${e.message ?: "no detail"}"
-            )
+            if (BuildConfig.DEBUG) {
+                Log.e(TAG, "Failed to load assistant response bank (${e.javaClass.simpleName}).", e)
+            } else {
+                Log.e(TAG, "Failed to load assistant response bank.")
+            }
             null
+        }
+    }
+
+
+    private fun logDebug(message: String) {
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, message)
         }
     }
 
