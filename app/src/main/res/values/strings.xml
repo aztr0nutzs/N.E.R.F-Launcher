@@ -23,6 +23,13 @@
     <string name="drawer_shell_title">APP DRAWER</string>
     <string name="drawer_shell_subtitle">N.E.R.F. SHELL</string>
     <string name="drawer_header_label">LAUNCH MATRIX</string>
+    <string name="drawer_interaction_hint">Tap to launch · long-press to pin</string>
+    <string name="drawer_empty_state_no_apps">No launchable apps were found yet.</string>
+    <string name="drawer_empty_state_no_results">No apps match "%1$s". Clear search to view all apps.</string>
+    <string name="default_launcher_banner_title">SET AS DEFAULT HOME</string>
+    <string name="default_launcher_banner_message">N.E.R.F. is running in preview mode until Android sets it as the default launcher.</string>
+    <string name="default_launcher_banner_action">OPEN DEFAULT HOME SETTINGS</string>
+    <string name="quick_icon_state_locked">ICONS %1$s · SYSTEM ONLY</string>
     <string name="hud_brand_signature">N.E.R.F. OPS</string>
     <string name="nerf_brand_mark_cd">N.E.R.F. brand mark</string>
     <string name="drawer_brand_mark_cd">Launch matrix brand mark</string>
