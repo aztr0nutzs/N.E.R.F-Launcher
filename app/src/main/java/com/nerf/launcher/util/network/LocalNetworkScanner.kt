@@ -1,12 +1,19 @@
 package com.nerf.launcher.util.network
 
 import android.content.Context
+import android.util.Log
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.FileReader
@@ -23,30 +30,60 @@ data class NetworkNode(
 )
 
 class LocalNetworkScanner(private val context: Context) {
+    companion object {
+        private const val TAG = "LocalNetworkScanner"
+        private const val HOSTS_PER_SUBNET = 254
+        private const val MAX_PARALLEL_PROBES = 24
+        private const val PING_TIMEOUT_MS = 500
+    }
+
+    private val scanMutex = Mutex()
+    private var inFlightScan: Deferred<List<NetworkNode>>? = null
 
     fun canScanLocalSubnet(): Boolean = getLocalIpAddress() != null
 
     /**
-     * Scans the local /24 subnet for active devices using parallel coroutines
+     * Scans the local /24 subnet for active devices using bounded parallel coroutines
      * and attempts to resolve hardware MAC addresses via the ARP table.
      */
-    suspend fun scanLocalSubnet(): List<NetworkNode> = withContext(Dispatchers.IO) {
+    suspend fun scanLocalSubnet(): List<NetworkNode> = coroutineScope {
+        val scanTask = scanMutex.withLock {
+            inFlightScan?.takeIf { it.isActive } ?: async(Dispatchers.IO) {
+                performSubnetScan()
+            }.also { inFlightScan = it }
+        }
+
+        try {
+            scanTask.await()
+        } finally {
+            scanMutex.withLock {
+                if (inFlightScan === scanTask && !scanTask.isActive) {
+                    inFlightScan = null
+                }
+            }
+        }
+    }
+
+    private suspend fun performSubnetScan(): List<NetworkNode> = withContext(Dispatchers.IO) {
         val activeNodes = mutableListOf<NetworkNode>()
         val deviceIp = getLocalIpAddress() ?: return@withContext emptyList()
-        
+
         val subnet = deviceIp.substringBeforeLast(".")
-        
-        // Phase 1: Parallel Ping Sweep to populate the ARP table
-        val pingTasks = (1..254).map { i ->
+
+        // Phase 1: Bounded ping sweep to populate the ARP table without high resource spikes
+        val probeSemaphore = Semaphore(MAX_PARALLEL_PROBES)
+        val pingTasks = (1..HOSTS_PER_SUBNET).map { i ->
             async {
-                val ipToTest = "$subnet.$i"
-                pingDevice(ipToTest)
+                probeSemaphore.withPermit {
+                    val ipToTest = "$subnet.$i"
+                    pingDevice(ipToTest)
+                }
             }
         }
 
         // Wait for all pings to complete
         val results = pingTasks.awaitAll().filterNotNull()
-        
+
         // Phase 2: Read ARP table to match MAC addresses to the discovered IPs
         val arpTable = readArpTable()
 
@@ -66,7 +103,7 @@ class LocalNetworkScanner(private val context: Context) {
                 )
             )
         }
-        
+
         return@withContext activeNodes
     }
 
@@ -74,8 +111,7 @@ class LocalNetworkScanner(private val context: Context) {
         return try {
             val inetAddress = InetAddress.getByName(ipAddress)
             val startTime = System.currentTimeMillis()
-            // 500ms timeout for better accuracy on heavily loaded local networks
-            val isReachable = inetAddress.isReachable(500)
+            val isReachable = inetAddress.isReachable(PING_TIMEOUT_MS)
             val pingTime = System.currentTimeMillis() - startTime
 
             if (isReachable) {
@@ -92,6 +128,7 @@ class LocalNetworkScanner(private val context: Context) {
                 null
             }
         } catch (e: Exception) {
+            Log.w(TAG, "Probe failed for $ipAddress", e)
             null
         }
     }
@@ -119,8 +156,8 @@ class LocalNetworkScanner(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            // Fallback: If ARP is completely blocked, return empty map.
+            Log.w(TAG, "Failed reading ARP table", e)
+            // Fallback: If ARP is blocked, return empty map.
         }
         return arpMap
     }

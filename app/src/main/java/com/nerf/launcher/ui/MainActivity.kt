@@ -14,6 +14,7 @@ import android.animation.ValueAnimator
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -55,6 +56,7 @@ import com.nerf.launcher.util.network.NetworkNode
 import com.nerf.launcher.viewmodel.LauncherViewModel
 import android.view.animation.LinearInterpolator
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
@@ -65,6 +67,7 @@ import kotlin.math.roundToLong
  */
 class MainActivity : AppCompatActivity() {
     companion object {
+        private const val TAG = "MainActivity"
         private const val STATE_LOCK_SURFACE_VISIBLE = "state_lock_surface_visible"
         private const val MENU_ITEM_PIN_TOGGLE = 1001
         private const val DRAG_UPDATE_THROTTLE_MS = 120L
@@ -94,6 +97,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var localNetworkScanner: LocalNetworkScanner
     private var isNetworkScanRunning: Boolean = false
     private var lastNetworkScanResult: List<NetworkNode>? = null
+    private var networkScanJob: Job? = null
     private val recordAudioPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -910,7 +914,7 @@ class MainActivity : AppCompatActivity() {
                         )
                     )
                 }
-                if (isNetworkScanRunning) {
+                if (isNetworkScanRunning || networkScanJob?.isActive == true) {
                     return AssistantActionResult.LauncherCommandHandled(
                         command = command,
                         spokenText = "A local network scan is already running.",
@@ -925,9 +929,15 @@ class MainActivity : AppCompatActivity() {
                 }
                 isNetworkScanRunning = true
                 lastNetworkScanResult = null
-                lifecycleScope.launch {
-                    lastNetworkScanResult = localNetworkScanner.scanLocalSubnet()
-                    isNetworkScanRunning = false
+                networkScanJob = lifecycleScope.launch {
+                    try {
+                        lastNetworkScanResult = localNetworkScanner.scanLocalSubnet()
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Local network scan failed", e)
+                        lastNetworkScanResult = emptyList()
+                    } finally {
+                        isNetworkScanRunning = false
+                    }
                 }
                 AssistantActionResult.LauncherCommandHandled(
                     command = command,
