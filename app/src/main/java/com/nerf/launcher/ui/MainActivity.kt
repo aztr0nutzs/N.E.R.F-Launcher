@@ -3,6 +3,7 @@ package com.nerf.launcher.ui
 import android.annotation.SuppressLint
 import android.Manifest
 import android.content.Intent
+import android.view.inputmethod.EditorInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
@@ -120,6 +121,7 @@ class MainActivity : AppCompatActivity() {
 
         setupRecyclerView()
         setupDrawerSearch()
+        setupDefaultLauncherBanner()
         observeViewModel()
 
         hudController = HudController(this, binding.hudRoot.root, this)
@@ -194,6 +196,15 @@ class MainActivity : AppCompatActivity() {
         binding.drawerSearchInput.doAfterTextChanged {
             applyDrawerFilter(it?.toString().orEmpty())
         }
+        binding.drawerSearchInput.setOnEditorActionListener { textView, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_SEARCH) {
+                textView.clearFocus()
+                hideDrawerKeyboard()
+                true
+            } else {
+                false
+            }
+        }
     }
 
     private fun observeViewModel() {
@@ -206,7 +217,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyDrawerFilter(query: String) {
-        val normalizedQuery = query.trim().lowercase(Locale.getDefault())
+        val trimmedQuery = query.trim()
+        val normalizedQuery = trimmedQuery.lowercase(Locale.getDefault())
         val filtered = if (normalizedQuery.isBlank()) {
             allApps
         } else {
@@ -218,7 +230,41 @@ class MainActivity : AppCompatActivity() {
         adapter.submitList(filtered)
         filteredAppCount = filtered.size
         binding.drawerResultCount.text = getString(com.nerf.launcher.R.string.drawer_result_count, filtered.size)
+
+        val emptyStateMessageRes = if (trimmedQuery.isBlank()) {
+            com.nerf.launcher.R.string.drawer_empty_state_no_apps
+        } else {
+            null
+        }
+        val emptyMessage = if (filtered.isEmpty()) {
+            if (emptyStateMessageRes != null) {
+                getString(emptyStateMessageRes)
+            } else {
+                getString(com.nerf.launcher.R.string.drawer_empty_state_no_results, trimmedQuery)
+            }
+        } else {
+            null
+        }
+        binding.drawerEmptyState.text = emptyMessage
+        binding.drawerEmptyState.visibility = if (emptyMessage == null) View.GONE else View.VISIBLE
+
         systemModuleController.setInputs(ConfigRepository.get().config.value, filteredAppCount, allApps.size)
+    }
+
+    private fun setupDefaultLauncherBanner() {
+        binding.defaultLauncherAction.setOnClickListener {
+            AppUtils.openDefaultHomeSettings(this)
+        }
+        updateDefaultLauncherBannerVisibility()
+    }
+
+    private fun updateDefaultLauncherBannerVisibility() {
+        val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        val resolvedHome = packageManager.resolveActivity(homeIntent, PackageManager.MATCH_DEFAULT_ONLY)
+        val isDefaultLauncher = resolvedHome?.activityInfo?.packageName == packageName
+        binding.defaultLauncherBanner.visibility = if (isDefaultLauncher) View.GONE else View.VISIBLE
     }
 
     private fun setupConfigObservers() {
@@ -1020,7 +1066,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun bindQuickControls(config: AppConfig) {
         binding.quickThemeBtn.text = getString(com.nerf.launcher.R.string.quick_theme_state, config.themeName)
-        binding.quickIconPackBtn.text = getString(com.nerf.launcher.R.string.quick_icon_state, config.iconPack)
+        val iconStateRes = if (iconPackNames.size <= 1) {
+            com.nerf.launcher.R.string.quick_icon_state_locked
+        } else {
+            com.nerf.launcher.R.string.quick_icon_state
+        }
+        binding.quickIconPackBtn.text = getString(iconStateRes, config.iconPack)
+        binding.quickIconPackBtn.isEnabled = iconPackNames.size > 1
+        binding.quickIconPackBtn.alpha = if (iconPackNames.size > 1) 1f else 0.78f
         val animStateRes = if (config.animationSpeedEnabled) {
             com.nerf.launcher.R.string.quick_animation_on
         } else {
@@ -1088,6 +1141,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        updateDefaultLauncherBannerVisibility()
         if (isLockSurfaceVisible) {
             lockSurfaceClockHandler.post(lockSurfaceClockTick)
         }
