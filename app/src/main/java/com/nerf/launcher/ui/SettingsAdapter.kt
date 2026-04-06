@@ -199,6 +199,28 @@ class SettingsAdapter(
             }
         }
 
+        fun bindThemeOnly(item: SettingItem) {
+            val theme = ThemeManager.resolveActiveTheme(
+                context = binding.root.context,
+                themeName = currentConfig?.themeName,
+                glowIntensity = currentConfig?.glowIntensity
+            )
+            binding.title.text = when (item) {
+                is SettingItem.IconPack -> {
+                    val hasAdditionalPacks = IconPackManager.hasAdditionalPackAssets(binding.root.context)
+                    if (hasAdditionalPacks) {
+                        item.title
+                    } else {
+                        binding.root.context.getString(com.nerf.launcher.R.string.settings_icon_pack_system_only)
+                    }
+                }
+
+                else -> item.title
+            }
+            binding.title.setTextColor(theme.hudInfoColor)
+            binding.animationLabel.setTextColor(theme.hudSuccessColor)
+        }
+
         private val binderContext: android.content.Context
             get() = itemView.context
     }
@@ -217,6 +239,10 @@ class SettingsAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.contains(themePayload)) {
+            holder.bindThemeOnly(items[position])
+            return
+        }
         holder.bind(items[position])
     }
 
@@ -226,23 +252,25 @@ class SettingsAdapter(
         val previous = currentConfig
         currentConfig = config
         if (previous == null) {
-            notifyItemRangeChanged(0, itemCount, themePayload)
+            notifyItemRangeChanged(0, itemCount)
             return
         }
 
-        if (previous.themeName != config.themeName || previous.glowIntensity != config.glowIntensity) {
-            notifyItemRangeChanged(0, itemCount, themePayload)
-            return
-        }
+        val themeNameChanged = previous.themeName != config.themeName
+        val glowChanged = previous.glowIntensity != config.glowIntensity
 
-        notifyIfChanged(previous.themeName != config.themeName, SettingsType.THEME)
+        notifyIfChanged(themeNameChanged, SettingsType.THEME)
         notifyIfChanged(previous.iconPack != config.iconPack, SettingsType.ICON_PACK)
-        notifyIfChanged(previous.glowIntensity != config.glowIntensity, SettingsType.GLOW_INTENSITY)
+        notifyIfChanged(glowChanged, SettingsType.GLOW_INTENSITY)
         notifyIfChanged(
             previous.animationSpeedEnabled != config.animationSpeedEnabled,
             SettingsType.ANIMATION_SPEED
         )
         notifyIfChanged(previous.gridSize != config.gridSize, SettingsType.GRID_SIZE)
+
+        if (themeNameChanged) {
+            notifyItemRangeChanged(0, itemCount, themePayload)
+        }
     }
 
     private fun notifyIfChanged(changed: Boolean, type: SettingsType) {

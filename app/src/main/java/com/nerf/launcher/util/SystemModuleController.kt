@@ -32,6 +32,7 @@ class SystemModuleController(
 ) {
     companion object {
         private const val REFRESH_INTERVAL_MS = 60_000L
+        private const val STORAGE_READ_MIN_INTERVAL_MS = 30_000L
         private const val DAY_MS = 24 * 60 * 60 * 1000L
         private const val HOUR_MS = 60 * 60 * 1000L
     }
@@ -46,6 +47,8 @@ class SystemModuleController(
     private var config: AppConfig? = null
     private var started: Boolean = false
     private var latestSnapshot: SystemModuleSnapshot? = null
+    private var cachedStorageUsagePercent: Int? = null
+    private var lastStorageReadElapsedRealtime: Long = Long.MIN_VALUE
 
     private val batteryReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -115,7 +118,7 @@ class SystemModuleController(
 
     private fun buildSnapshot(): SystemModuleSnapshot {
         val elapsedRealtime = SystemClock.elapsedRealtime()
-        val storageUsagePercent = readStorageUsagePercent()
+        val storageUsagePercent = readStorageUsagePercent(elapsedRealtime)
         val isInteractive = powerManager?.isInteractive == true
         val isPowerSaveMode = powerManager?.isPowerSaveMode == true
         return SystemModuleSnapshot(
@@ -138,8 +141,15 @@ class SystemModuleController(
         return ((appPopulation + batteryScore + storageScore + taskbarScore) / 4).coerceIn(0, 100)
     }
 
-    private fun readStorageUsagePercent(): Int? {
-        return runCatching {
+    private fun readStorageUsagePercent(currentElapsedRealtime: Long): Int? {
+        val cached = cachedStorageUsagePercent
+        if (cached != null &&
+            currentElapsedRealtime - lastStorageReadElapsedRealtime < STORAGE_READ_MIN_INTERVAL_MS
+        ) {
+            return cached
+        }
+
+        val computed = runCatching {
             val stats = StatFs(Environment.getDataDirectory().absolutePath)
             val totalBytes = stats.totalBytes
             val availableBytes = stats.availableBytes
@@ -150,5 +160,9 @@ class SystemModuleController(
                 ((usedBytes * 100L) / totalBytes).toInt().coerceIn(0, 100)
             }
         }.getOrNull()
+
+        lastStorageReadElapsedRealtime = currentElapsedRealtime
+        cachedStorageUsagePercent = computed
+        return computed
     }
 }
