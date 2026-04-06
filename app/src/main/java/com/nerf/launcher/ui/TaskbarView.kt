@@ -48,7 +48,12 @@ class TaskbarView @JvmOverloads constructor(
     init {
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
-        setPadding(8, 6, 8, 6)
+        setPadding(
+            dimensionPixelSize(R.dimen.nerf_space_8),
+            dimensionPixelSize(R.dimen.nerf_space_6),
+            dimensionPixelSize(R.dimen.nerf_space_8),
+            dimensionPixelSize(R.dimen.nerf_space_6)
+        )
         applyShellBackground(TaskbarBackgroundStyle.DARK, 1f, null)
         setOnLongClickListener {
             openTaskbarCustomization()
@@ -187,7 +192,10 @@ class TaskbarView @JvmOverloads constructor(
             val iconView = createIconView()
             addView(
                 iconView,
-                LayoutParams(0, LayoutParams.MATCH_PARENT, 1f).apply { setMargins(4, 0, 4, 0) }
+                LayoutParams(0, LayoutParams.MATCH_PARENT, 1f).apply {
+                    val horizontalMargin = dimensionPixelSize(R.dimen.nerf_space_4)
+                    setMargins(horizontalMargin, 0, horizontalMargin, 0)
+                }
             )
             applyIconSize(iconView)
             iconViews.add(iconView)
@@ -198,7 +206,12 @@ class TaskbarView @JvmOverloads constructor(
         return ImageView(context).apply {
             setImageResource(R.drawable.ic_module)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
-            setPadding(10, 8, 10, 8)
+            setPadding(
+                dimensionPixelSize(R.dimen.nerf_space_10),
+                dimensionPixelSize(R.dimen.nerf_space_8),
+                dimensionPixelSize(R.dimen.nerf_space_10),
+                dimensionPixelSize(R.dimen.nerf_space_8)
+            )
             background = ContextCompat.getDrawable(context, R.drawable.dock_tile_background)
             contentDescription = context.getString(R.string.app_icon)
             currentIconTint?.let { setColorFilter(it) }
@@ -225,9 +238,9 @@ class TaskbarView @JvmOverloads constructor(
                     MotionEvent.ACTION_DOWN -> {
                         touchedView.animate().cancel()
                         touchedView.animate()
-                            .scaleX(0.965f)
-                            .scaleY(0.965f)
-                            .alpha(0.92f)
+                            .scaleX(fractionValue(R.fraction.nerf_touch_scale_down_taskbar))
+                            .scaleY(fractionValue(R.fraction.nerf_touch_scale_down_taskbar))
+                            .alpha(fractionValue(R.fraction.nerf_touch_alpha_down_taskbar))
                             .setDuration(70L)
                             .setInterpolator(FastOutSlowInInterpolator())
                             .start()
@@ -248,6 +261,10 @@ class TaskbarView @JvmOverloads constructor(
             }
         }
     }
+
+    private fun dimensionPixelSize(dimenRes: Int): Int = resources.getDimensionPixelSize(dimenRes)
+
+    private fun fractionValue(fractionRes: Int): Float = resources.getFraction(fractionRes, 1, 1)
 
     private fun showTaskbarIconMenu(anchor: View, packageName: String) {
         val popupMenu = PopupMenu(context, anchor)

@@ -3,6 +3,7 @@ package com.nerf.launcher.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -253,8 +254,8 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         if (packageNames.isEmpty()) {
             val emptyState = TextView(this).apply {
                 text = getString(R.string.taskbar_settings_pinned_empty)
-                textSize = 13f
-                setPadding(0, 8.dp, 0, 0)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.nerf_taskbar_empty_state_text_size))
+                setPadding(0, dimensionPx(R.dimen.nerf_space_8), 0, 0)
             }
             binding.pinnedAppsListContainer.addView(emptyState)
             pinnedSecondaryLabels.add(emptyState)
@@ -272,26 +273,31 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     private fun createPinnedAppRow(index: Int, packageName: String, totalCount: Int): View {
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(0, if (index == 0) 8.dp else 12.dp, 0, 0)
+            setPadding(
+                0,
+                if (index == 0) dimensionPx(R.dimen.nerf_space_8) else dimensionPx(R.dimen.nerf_space_12),
+                0,
+                0
+            )
 
             val title = TextView(context).apply {
                 text = resolveLabel(packageName)
-                textSize = 14f
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.nerf_taskbar_row_title_text_size))
             }
             addView(title)
             pinnedPrimaryLabels.add(title)
 
             val packageText = TextView(context).apply {
                 text = packageName
-                textSize = 12f
-                setPadding(0, 2.dp, 0, 0)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, resources.getDimension(R.dimen.nerf_taskbar_row_package_text_size))
+                setPadding(0, dimensionPx(R.dimen.nerf_space_2), 0, 0)
             }
             addView(packageText)
             pinnedSecondaryLabels.add(packageText)
 
             val actions = LinearLayout(context).apply {
                 orientation = LinearLayout.HORIZONTAL
-                setPadding(0, 8.dp, 0, 0)
+                setPadding(0, dimensionPx(R.dimen.nerf_space_8), 0, 0)
             }
             actions.addView(createRowButton(R.string.taskbar_settings_move_up).apply {
                 isEnabled = index > 0
@@ -314,14 +320,14 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             isAllCaps = false
             insetTop = 0
             insetBottom = 0
-            minimumHeight = 36.dp
-            minHeight = 36.dp
+            minimumHeight = dimensionPx(R.dimen.nerf_taskbar_row_button_min_height)
+            minHeight = dimensionPx(R.dimen.nerf_taskbar_row_button_min_height)
             layoutParams = LinearLayout.LayoutParams(
                 0,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 1f
             ).apply {
-                marginEnd = 8.dp
+                marginEnd = dimensionPx(R.dimen.nerf_space_8)
             }
             pinnedActionButtons.add(this)
         }
@@ -432,6 +438,5 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         val labelRes: Int
     )
 
-    private val Int.dp: Int
-        get() = (this * resources.displayMetrics.density).toInt()
+    private fun dimensionPx(dimenRes: Int): Int = resources.getDimensionPixelSize(dimenRes)
 }
