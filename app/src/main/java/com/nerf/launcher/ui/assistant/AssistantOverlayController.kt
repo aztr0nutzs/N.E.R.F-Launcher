@@ -2,6 +2,7 @@ package com.nerf.launcher.ui.assistant
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Bundle
@@ -11,11 +12,15 @@ import android.speech.SpeechRecognizer
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.view.inputmethod.EditorInfo
-import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
+import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.LayoutAssistantOverlayBinding
+import com.nerf.launcher.util.NerfTheme
+import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.assistant.AssistantAction
 import com.nerf.launcher.util.assistant.AssistantController
 import com.nerf.launcher.util.assistant.AssistantState
@@ -34,6 +39,7 @@ class AssistantOverlayController(
     private var isListening = false
     private var pendingMicStartAfterPermission = false
     private var currentState: AssistantState = AssistantState.IDLE
+    private var activeTheme: NerfTheme? = null
 
     fun bind() {
         binding.assistantOverlayCloseButton.setOnClickListener { hide() }
@@ -78,6 +84,7 @@ class AssistantOverlayController(
             }
         }
         binding.assistantOverlayRoot.visibility = View.GONE
+        applyTheme(ThemeManager.resolveActiveTheme(binding.root.context))
         initializeSpeechRecognizer()
         assistantController.onTranscriptChanged = ::renderTranscript
         renderState(assistantController.currentSnapshot())
@@ -107,9 +114,7 @@ class AssistantOverlayController(
             snapshot.mood.label.uppercase()
         )
         binding.assistantOverlayStatus.text = stateLabel(snapshot.state)
-        binding.assistantOverlayStatus.setTextColor(
-            ContextCompat.getColor(binding.root.context, stateColor(snapshot.state))
-        )
+        binding.assistantOverlayStatus.setTextColor(stateColor(snapshot.state))
         when {
             snapshot.response != null -> binding.assistantOverlayResponse.text = snapshot.response
             snapshot.state == AssistantState.IDLE -> {
@@ -163,9 +168,7 @@ class AssistantOverlayController(
         if (!granted) {
             binding.assistantOverlayStatus.text =
                 binding.root.context.getString(R.string.assistant_overlay_status_permission_denied)
-            binding.assistantOverlayStatus.setTextColor(
-                ContextCompat.getColor(binding.root.context, android.R.color.holo_red_light)
-            )
+            binding.assistantOverlayStatus.setTextColor(assistantErrorColor())
             binding.assistantOverlayResponse.text =
                 binding.root.context.getString(R.string.assistant_overlay_voice_permission_denied_response)
         }
@@ -198,9 +201,7 @@ class AssistantOverlayController(
         if (trimmedInput.isEmpty()) {
             binding.assistantOverlayStatus.text =
                 binding.root.context.getString(R.string.assistant_overlay_status_listening)
-            binding.assistantOverlayStatus.setTextColor(
-                ContextCompat.getColor(binding.root.context, R.color.nerf_hud_lime)
-            )
+            binding.assistantOverlayStatus.setTextColor(stateColor(AssistantState.LISTENING))
             binding.assistantOverlayResponse.text =
                 binding.root.context.getString(R.string.assistant_overlay_response_empty_command)
             return
@@ -210,9 +211,7 @@ class AssistantOverlayController(
         if (response.isNullOrBlank()) {
             binding.assistantOverlayStatus.text =
                 binding.root.context.getString(R.string.assistant_overlay_status_error)
-            binding.assistantOverlayStatus.setTextColor(
-                ContextCompat.getColor(binding.root.context, android.R.color.holo_red_light)
-            )
+            binding.assistantOverlayStatus.setTextColor(assistantErrorColor())
             binding.assistantOverlayResponse.text =
                 binding.root.context.getString(R.string.assistant_overlay_response_unknown_command)
         } else {
@@ -233,9 +232,7 @@ class AssistantOverlayController(
         stopVoiceRecognition()
         binding.assistantOverlayStatus.text =
             binding.root.context.getString(R.string.assistant_overlay_status_listening)
-        binding.assistantOverlayStatus.setTextColor(
-            ContextCompat.getColor(binding.root.context, R.color.nerf_hud_lime)
-        )
+        binding.assistantOverlayStatus.setTextColor(stateColor(AssistantState.LISTENING))
     }
 
     private fun renderTranscript(entries: List<AssistantController.TranscriptEntry>) {
@@ -269,9 +266,7 @@ class AssistantOverlayController(
                     assistantController.wakeForCommand()
                     binding.assistantOverlayStatus.text =
                         context.getString(R.string.assistant_overlay_status_listening)
-                    binding.assistantOverlayStatus.setTextColor(
-                        ContextCompat.getColor(context, R.color.nerf_hud_lime)
-                    )
+                    binding.assistantOverlayStatus.setTextColor(stateColor(AssistantState.LISTENING))
                     binding.assistantOverlayResponse.text =
                         context.getString(R.string.assistant_overlay_voice_prompt_response)
                 }
@@ -286,9 +281,7 @@ class AssistantOverlayController(
                     isListening = false
                     binding.assistantOverlayStatus.text =
                         context.getString(R.string.assistant_overlay_status_thinking)
-                    binding.assistantOverlayStatus.setTextColor(
-                        ContextCompat.getColor(context, R.color.nerf_hud_orange)
-                    )
+                    binding.assistantOverlayStatus.setTextColor(stateColor(AssistantState.THINKING))
                 }
 
                 override fun onError(error: Int) {
@@ -298,18 +291,14 @@ class AssistantOverlayController(
                     ) {
                         binding.assistantOverlayStatus.text =
                             context.getString(R.string.assistant_overlay_status_listening)
-                        binding.assistantOverlayStatus.setTextColor(
-                            ContextCompat.getColor(context, R.color.nerf_hud_lime)
-                        )
+                        binding.assistantOverlayStatus.setTextColor(stateColor(AssistantState.LISTENING))
                         binding.assistantOverlayResponse.text =
                             context.getString(R.string.assistant_overlay_voice_no_match_response)
                         return
                     }
                     binding.assistantOverlayStatus.text =
                         context.getString(R.string.assistant_overlay_status_error)
-                    binding.assistantOverlayStatus.setTextColor(
-                        ContextCompat.getColor(context, android.R.color.holo_red_light)
-                    )
+                    binding.assistantOverlayStatus.setTextColor(assistantErrorColor())
                     binding.assistantOverlayResponse.text =
                         context.getString(R.string.assistant_overlay_voice_error_response)
                 }
@@ -355,10 +344,11 @@ class AssistantOverlayController(
             binding.root.context.getString(R.string.assistant_overlay_mode_text)
         }
         binding.assistantOverlayModeIndicator.setTextColor(
-            ContextCompat.getColor(
-                binding.root.context,
-                if (isSpeechRecognitionAvailable) R.color.nerf_hud_lime else R.color.nerf_hud_orange
-            )
+            if (isSpeechRecognitionAvailable) {
+                stateColor(AssistantState.LISTENING)
+            } else {
+                stateColor(AssistantState.THINKING)
+            }
         )
 
         if (isSpeechRecognitionAvailable) return
@@ -372,9 +362,7 @@ class AssistantOverlayController(
         if (!isSpeechRecognitionAvailable) {
             binding.assistantOverlayStatus.text =
                 binding.root.context.getString(R.string.assistant_overlay_status_muted)
-            binding.assistantOverlayStatus.setTextColor(
-                ContextCompat.getColor(binding.root.context, android.R.color.holo_red_light)
-            )
+            binding.assistantOverlayStatus.setTextColor(stateColor(AssistantState.MUTED))
             return
         }
 
@@ -382,9 +370,7 @@ class AssistantOverlayController(
             stopVoiceRecognition()
             binding.assistantOverlayStatus.text =
                 binding.root.context.getString(R.string.assistant_overlay_status_listening_stopped)
-            binding.assistantOverlayStatus.setTextColor(
-                ContextCompat.getColor(binding.root.context, R.color.nerf_hud_cyan)
-            )
+            binding.assistantOverlayStatus.setTextColor(stateColor(AssistantState.IDLE))
             return
         }
 
@@ -453,23 +439,62 @@ class AssistantOverlayController(
     }
 
     private fun stateColor(state: AssistantState): Int {
+        val theme = activeTheme ?: ThemeManager.resolveActiveTheme(binding.root.context)
         return when (state) {
-            AssistantState.IDLE -> R.color.nerf_hud_cyan
-            AssistantState.WAKE -> R.color.nerf_hud_orange
-            AssistantState.LISTENING -> R.color.nerf_hud_lime
-            AssistantState.THINKING -> R.color.nerf_hud_orange
-            AssistantState.RESPONDING -> R.color.nerf_hud_cyan
-            AssistantState.SPEAKING -> R.color.nerf_hud_magenta
-            AssistantState.REBOOTING -> R.color.nerf_hud_orange
-            AssistantState.MUTED,
-            AssistantState.ERROR,
-            AssistantState.SHUTTING_DOWN -> android.R.color.holo_red_light
+            AssistantState.IDLE -> theme.hudInfoColor
+            AssistantState.WAKE -> theme.hudWarningColor
+            AssistantState.LISTENING -> theme.hudSuccessColor
+            AssistantState.THINKING -> theme.hudWarningColor
+            AssistantState.RESPONDING -> theme.hudInfoColor
+            AssistantState.SPEAKING -> theme.hudAccentColor
+            AssistantState.REBOOTING -> theme.hudWarningColor
+            AssistantState.MUTED -> theme.assistantMutedColor
+            AssistantState.ERROR -> theme.assistantErrorColor
+            AssistantState.SHUTTING_DOWN -> theme.assistantErrorColor
         }
     }
 
+    fun applyTheme(theme: NerfTheme) {
+        activeTheme = theme
+        binding.assistantOverlayTitle.setTextColor(theme.hudAccentColor)
+        binding.assistantOverlayBankState.setTextColor(theme.hudPanelTextSecondary)
+        binding.assistantOverlayVisualLabel.setTextColor(theme.hudInfoColor)
+        binding.assistantOverlayVisualHint.setTextColor(theme.hudPanelTextPrimary)
+        binding.assistantOverlayMoodIndicator.setTextColor(theme.hudAccentColor)
+        binding.assistantOverlayResponse.setTextColor(theme.hudPanelTextPrimary)
+        binding.assistantOverlayTranscriptLabel.setTextColor(theme.hudWarningColor)
+        binding.assistantOverlayTranscript.setTextColor(theme.hudPanelTextPrimary)
+        binding.assistantOverlayActionsLabel.setTextColor(theme.hudSuccessColor)
+        binding.assistantOverlayCommandInput.setTextColor(theme.hudPanelTextPrimary)
+        binding.assistantOverlayCommandInput.setHintTextColor(theme.hudPanelTextSecondary)
+        binding.assistantOverlayStatus.setTextColor(stateColor(currentState))
+
+        tintBackground(
+            binding.assistantOverlayCard,
+            ColorUtils.setAlphaComponent(theme.reactorInteriorDarkColor, 0xF2)
+        )
+        val shellTint = ColorUtils.setAlphaComponent(theme.windowBackground, 0xD6)
+        tintBackground(binding.assistantOverlayResponse, shellTint)
+        tintBackground(binding.assistantOverlayTranscriptContainer, shellTint)
+        tintBackground(binding.assistantOverlayCommandInput, shellTint)
+        tintBackground(binding.assistantOverlayVisualCoreContainer, shellTint)
+
+        setButtonStyle(binding.assistantOverlayCloseButton, theme.hudWarningColor)
+        setButtonStyle(binding.assistantOverlaySubmitButton, theme.hudInfoColor)
+        setButtonStyle(binding.assistantOverlayMicButton, theme.hudSuccessColor)
+        setButtonStyle(binding.assistantOverlayRepeatLastButton, theme.hudAccentColor)
+        setButtonStyle(binding.assistantOverlayInterruptButton, theme.hudWarningColor)
+        setButtonStyle(binding.assistantActionSettings, theme.hudInfoColor)
+        setButtonStyle(binding.assistantActionDiagnostics, theme.hudWarningColor)
+        setButtonStyle(binding.assistantActionNodeHunter, theme.hudSuccessColor)
+        setButtonStyle(binding.assistantActionLock, theme.hudAccentColor)
+
+        renderVoiceAvailability()
+        renderVisualState(currentState)
+    }
+
     private fun renderVisualState(state: AssistantState) {
-        val context = binding.root.context
-        val tintColor = ContextCompat.getColor(context, stateColor(state))
+        val tintColor = stateColor(state)
         binding.assistantOverlayListeningIndicator.background.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN)
         binding.assistantOverlaySpeakingIndicator.background.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN)
 
@@ -576,5 +601,22 @@ class AssistantOverlayController(
         if (!binding.assistantOverlayVisualVideo.isPlaying) {
             binding.assistantOverlayVisualVideo.start()
         }
+    }
+
+    private fun setButtonStyle(button: MaterialButton, textColor: Int) {
+        button.setTextColor(textColor)
+        button.iconTint = ColorStateList.valueOf(textColor)
+    }
+
+    private fun tintBackground(view: View, tintColor: Int) {
+        val background = view.background ?: return
+        val wrapped = DrawableCompat.wrap(background.mutate())
+        DrawableCompat.setTint(wrapped, tintColor)
+        view.background = wrapped
+    }
+
+    private fun assistantErrorColor(): Int {
+        val theme = activeTheme ?: ThemeManager.resolveActiveTheme(binding.root.context)
+        return theme.assistantErrorColor
     }
 }

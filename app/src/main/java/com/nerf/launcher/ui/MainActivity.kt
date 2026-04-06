@@ -327,6 +327,7 @@ class MainActivity : AppCompatActivity() {
         binding.rootContainer.setBackgroundColor(theme.windowBackground)
         binding.lockSurfaceRoot.setBackgroundColor(theme.lockSurfaceScrim)
         binding.scanlineOverlay.background = ThemeManager.createScanlineOverlayDrawable(theme)
+        assistantOverlayController.applyTheme(theme)
 
         binding.drawerSearchInput.background = ThemeManager.createDrawerSearchFieldBackground(this, theme)
         binding.drawerSearchInput.setTextColor(theme.hudPanelTextPrimary)
