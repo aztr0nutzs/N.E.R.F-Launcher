@@ -54,6 +54,87 @@
     <color name="theme_hyper_secondary">#00FFFF</color>
     <color name="theme_hyper_accent">#FFFF00</color>
 
+    <!-- Theme-specific structural/HUD/assistant/reactor surfaces -->
+    <color name="theme_classic_window_background">#212121</color>
+    <color name="theme_classic_taskbar_dark_background">#212121</color>
+    <color name="theme_classic_taskbar_light_background">#F7F7F7</color>
+    <color name="theme_classic_hud_cyan">#00E9FF</color>
+    <color name="theme_classic_hud_orange">#FF8A00</color>
+    <color name="theme_classic_hud_magenta">#FF39B5</color>
+    <color name="theme_classic_drawer_border">#6600E9FF</color>
+    <color name="theme_classic_scanline_glow">#0400E9FF</color>
+    <color name="theme_classic_hud_energy_high">#FF8A00</color>
+    <color name="theme_classic_hud_energy_low">#FF39B5</color>
+    <color name="theme_classic_reactor_mid_a">#6BFFD6</color>
+    <color name="theme_classic_reactor_mid_b">#3ED5FF</color>
+    <color name="theme_classic_reactor_accent_ring">#FFE66A</color>
+    <color name="theme_classic_reactor_core_glow">#FFB300</color>
+    <color name="theme_classic_assistant_muted">#9E9E9E</color>
+
+    <color name="theme_stealth_window_background">#181A1E</color>
+    <color name="theme_stealth_taskbar_dark_background">#14161A</color>
+    <color name="theme_stealth_taskbar_light_background">#D7D9DE</color>
+    <color name="theme_stealth_hud_cyan">#FF5151</color>
+    <color name="theme_stealth_hud_orange">#FF6F00</color>
+    <color name="theme_stealth_hud_magenta">#C30000</color>
+    <color name="theme_stealth_drawer_border">#66FF5151</color>
+    <color name="theme_stealth_scanline_glow">#08FF3D3D</color>
+    <color name="theme_stealth_hud_energy_high">#FF6F00</color>
+    <color name="theme_stealth_hud_energy_low">#C30000</color>
+    <color name="theme_stealth_reactor_mid_a">#FF5D5D</color>
+    <color name="theme_stealth_reactor_mid_b">#A80000</color>
+    <color name="theme_stealth_reactor_accent_ring">#FF8F5A</color>
+    <color name="theme_stealth_reactor_core_glow">#FF4A00</color>
+    <color name="theme_stealth_assistant_muted">#B0A3A3</color>
+
+    <color name="theme_elite_window_background">#111A22</color>
+    <color name="theme_elite_taskbar_dark_background">#0D161E</color>
+    <color name="theme_elite_taskbar_light_background">#EAF4FF</color>
+    <color name="theme_elite_hud_cyan">#00D8FF</color>
+    <color name="theme_elite_hud_orange">#FFD447</color>
+    <color name="theme_elite_hud_magenta">#4FCEFF</color>
+    <color name="theme_elite_drawer_border">#6638C8FF</color>
+    <color name="theme_elite_scanline_glow">#0900CCFF</color>
+    <color name="theme_elite_hud_energy_high">#FFD447</color>
+    <color name="theme_elite_hud_energy_low">#4FCEFF</color>
+    <color name="theme_elite_reactor_mid_a">#7CE8FF</color>
+    <color name="theme_elite_reactor_mid_b">#3BA0FF</color>
+    <color name="theme_elite_reactor_accent_ring">#A8F1FF</color>
+    <color name="theme_elite_reactor_core_glow">#38B9FF</color>
+    <color name="theme_elite_assistant_muted">#9FAFC0</color>
+
+    <color name="theme_zombie_window_background">#171E14</color>
+    <color name="theme_zombie_taskbar_dark_background">#131A11</color>
+    <color name="theme_zombie_taskbar_light_background">#E7F0E2</color>
+    <color name="theme_zombie_hud_cyan">#59FF8B</color>
+    <color name="theme_zombie_hud_orange">#C0FF33</color>
+    <color name="theme_zombie_hud_magenta">#4AFF00</color>
+    <color name="theme_zombie_drawer_border">#6659FF8B</color>
+    <color name="theme_zombie_scanline_glow">#0847FF6A</color>
+    <color name="theme_zombie_hud_energy_high">#C0FF33</color>
+    <color name="theme_zombie_hud_energy_low">#4AFF00</color>
+    <color name="theme_zombie_reactor_mid_a">#89FF7D</color>
+    <color name="theme_zombie_reactor_mid_b">#4BCD4B</color>
+    <color name="theme_zombie_reactor_accent_ring">#D8FF64</color>
+    <color name="theme_zombie_reactor_core_glow">#7DFF00</color>
+    <color name="theme_zombie_assistant_muted">#A6B89D</color>
+
+    <color name="theme_hyper_window_background">#1F1026</color>
+    <color name="theme_hyper_taskbar_dark_background">#1A0D21</color>
+    <color name="theme_hyper_taskbar_light_background">#FFF0FF</color>
+    <color name="theme_hyper_hud_cyan">#00FFFF</color>
+    <color name="theme_hyper_hud_orange">#FFE600</color>
+    <color name="theme_hyper_hud_magenta">#FF22E6</color>
+    <color name="theme_hyper_drawer_border">#66FF22E6</color>
+    <color name="theme_hyper_scanline_glow">#0AFF22E6</color>
+    <color name="theme_hyper_hud_energy_high">#FFE600</color>
+    <color name="theme_hyper_hud_energy_low">#FF22E6</color>
+    <color name="theme_hyper_reactor_mid_a">#8A6BFF</color>
+    <color name="theme_hyper_reactor_mid_b">#2DE9FF</color>
+    <color name="theme_hyper_reactor_accent_ring">#FF8DFF</color>
+    <color name="theme_hyper_reactor_core_glow">#FF3DF2</color>
+    <color name="theme_hyper_assistant_muted">#B7A5C1</color>
+
     <color name="theme_shared_window_background">#212121</color>
     <color name="theme_shared_taskbar_dark_background">#212121</color>
     <color name="theme_shared_taskbar_light_background">#FFFFFF</color>
