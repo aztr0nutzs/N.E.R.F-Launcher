@@ -30,6 +30,13 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     private val pinnedPrimaryLabels = mutableListOf<TextView>()
     private val pinnedSecondaryLabels = mutableListOf<TextView>()
     private val pinnedActionButtons = mutableListOf<MaterialButton>()
+    private val minHeightDp by lazy { integerValue(R.integer.nerf_taskbar_settings_min_height_dp) }
+    private val maxHeightDp by lazy { integerValue(R.integer.nerf_taskbar_settings_max_height_dp) }
+    private val minIconSizeDp by lazy { integerValue(R.integer.nerf_taskbar_settings_min_icon_size_dp) }
+    private val maxIconSizeDp by lazy { integerValue(R.integer.nerf_taskbar_settings_max_icon_size_dp) }
+    private val dragUpdateThrottleMs by lazy { longIntegerValue(R.integer.nerf_taskbar_settings_drag_update_throttle_ms) }
+    private val dragDpStep by lazy { integerValue(R.integer.nerf_taskbar_settings_drag_dp_step) }
+    private val dragPercentStep by lazy { integerValue(R.integer.nerf_taskbar_settings_drag_percent_step) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,34 +64,34 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             updateTaskbarSettings { copy(enabled = isChecked) }
         }
 
-        binding.taskbarHeightSeekbar.max = MAX_HEIGHT_DP - MIN_HEIGHT_DP
+        binding.taskbarHeightSeekbar.max = maxHeightDp - minHeightDp
         binding.taskbarHeightSeekbar.setOnSeekBarChangeListener(
             createThrottledSeekBarListener(
                 onProgress = { progress ->
                     binding.taskbarHeightValue.text = getString(
                         R.string.taskbar_settings_height_value,
-                        progress + MIN_HEIGHT_DP
+                        progress + minHeightDp
                     )
                 },
-                commitStep = DRAG_DP_STEP,
+                commitStep = dragDpStep,
                 commitValue = { progress ->
-                    updateTaskbarSettings { copy(height = progress + MIN_HEIGHT_DP) }
+                    updateTaskbarSettings { copy(height = progress + minHeightDp) }
                 }
             )
         )
 
-        binding.taskbarIconSizeSeekbar.max = MAX_ICON_SIZE_DP - MIN_ICON_SIZE_DP
+        binding.taskbarIconSizeSeekbar.max = maxIconSizeDp - minIconSizeDp
         binding.taskbarIconSizeSeekbar.setOnSeekBarChangeListener(
             createThrottledSeekBarListener(
                 onProgress = { progress ->
                     binding.taskbarIconSizeValue.text = getString(
                         R.string.taskbar_settings_icon_size_value,
-                        progress + MIN_ICON_SIZE_DP
+                        progress + minIconSizeDp
                     )
                 },
-                commitStep = DRAG_DP_STEP,
+                commitStep = dragDpStep,
                 commitValue = { progress ->
-                    updateTaskbarSettings { copy(iconSize = progress + MIN_ICON_SIZE_DP) }
+                    updateTaskbarSettings { copy(iconSize = progress + minIconSizeDp) }
                 }
             )
         )
@@ -98,7 +105,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
                         progress
                     )
                 },
-                commitStep = DRAG_PERCENT_STEP,
+                commitStep = dragPercentStep,
                 commitValue = { progress ->
                     updateTaskbarSettings { copy(transparency = progress / 100f) }
                 }
@@ -253,12 +260,12 @@ class TaskbarSettingsActivity : AppCompatActivity() {
 
         binding.taskbarEnabledSwitch.isChecked = settings.enabled
 
-        val heightDp = settings.height.coerceIn(MIN_HEIGHT_DP, MAX_HEIGHT_DP)
-        binding.taskbarHeightSeekbar.progress = heightDp - MIN_HEIGHT_DP
+        val heightDp = settings.height.coerceIn(minHeightDp, maxHeightDp)
+        binding.taskbarHeightSeekbar.progress = heightDp - minHeightDp
         binding.taskbarHeightValue.text = getString(R.string.taskbar_settings_height_value, heightDp)
 
-        val iconSizeDp = settings.iconSize.coerceIn(MIN_ICON_SIZE_DP, MAX_ICON_SIZE_DP)
-        binding.taskbarIconSizeSeekbar.progress = iconSizeDp - MIN_ICON_SIZE_DP
+        val iconSizeDp = settings.iconSize.coerceIn(minIconSizeDp, maxIconSizeDp)
+        binding.taskbarIconSizeSeekbar.progress = iconSizeDp - minIconSizeDp
         binding.taskbarIconSizeValue.text = getString(R.string.taskbar_settings_icon_size_value, iconSizeDp)
 
         val transparencyPercent = (settings.transparency.coerceIn(0f, 1f) * 100).toInt()
@@ -453,17 +460,10 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     ): Boolean {
         val progressDelta = kotlin.math.abs(progress - lastCommittedProgress)
         val elapsed = SystemClock.elapsedRealtime() - lastCommittedAt
-        return lastCommittedAt == 0L || progressDelta >= commitStep || elapsed >= DRAG_UPDATE_THROTTLE_MS
+        return lastCommittedAt == 0L || progressDelta >= commitStep || elapsed >= dragUpdateThrottleMs
     }
 
     companion object {
-        private const val MIN_HEIGHT_DP = 40
-        private const val MAX_HEIGHT_DP = 96
-        private const val MIN_ICON_SIZE_DP = 24
-        private const val MAX_ICON_SIZE_DP = 72
-        private const val DRAG_UPDATE_THROTTLE_MS = 120L
-        private const val DRAG_DP_STEP = 2
-        private const val DRAG_PERCENT_STEP = 2
         private val BACKGROUND_LABELS = mapOf(
             TaskbarBackgroundStyle.DARK to R.string.taskbar_settings_background_dark,
             TaskbarBackgroundStyle.LIGHT to R.string.taskbar_settings_background_light,
@@ -522,4 +522,6 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     )
 
     private fun dimensionPx(dimenRes: Int): Int = resources.getDimensionPixelSize(dimenRes)
+    private fun integerValue(integerRes: Int): Int = resources.getInteger(integerRes)
+    private fun longIntegerValue(integerRes: Int): Long = resources.getInteger(integerRes).toLong()
 }
