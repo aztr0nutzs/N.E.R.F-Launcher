@@ -31,6 +31,7 @@ class NodeHunterModuleActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityNodeHunterBinding
     private lateinit var networkScanner: LocalNetworkScanner
+    private var lastThemeKey: Pair<String, Float>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,12 +46,15 @@ class NodeHunterModuleActivity : AppCompatActivity() {
 
     private fun observeTheme() {
         ConfigRepository.get().config.observe(this) { config ->
+            val themeKey = config.themeName to config.glowIntensity
+            if (themeKey == lastThemeKey) return@observe
             val theme = ThemeManager.resolveActiveTheme(
                 context = this,
                 themeName = config.themeName,
                 glowIntensity = config.glowIntensity
             )
             applyTheme(theme)
+            lastThemeKey = themeKey
         }
     }
 

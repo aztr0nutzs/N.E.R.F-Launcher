@@ -25,6 +25,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTaskbarSettingsBinding
     private lateinit var backgroundStyleAdapter: ThemedSpinnerAdapter
     private var isBindingState = false
+    private var lastThemeKey: Pair<String, Float>? = null
     private val pinnedPrimaryLabels = mutableListOf<TextView>()
     private val pinnedSecondaryLabels = mutableListOf<TextView>()
     private val pinnedActionButtons = mutableListOf<MaterialButton>()
@@ -96,13 +97,17 @@ class TaskbarSettingsActivity : AppCompatActivity() {
 
     private fun observeConfig() {
         ConfigRepository.get().config.observe(this) { config ->
+            val themeKey = config.themeName to config.glowIntensity
             val theme = ThemeManager.resolveActiveTheme(
                 context = this,
                 themeName = config.themeName,
                 glowIntensity = config.glowIntensity
             )
-            applyTheme(theme)
-            backgroundStyleAdapter.updateTheme(theme)
+            if (themeKey != lastThemeKey) {
+                applyTheme(theme)
+                backgroundStyleAdapter.updateTheme(theme)
+                lastThemeKey = themeKey
+            }
             bindTaskbarSettings(config.taskbarSettings, theme)
         }
     }

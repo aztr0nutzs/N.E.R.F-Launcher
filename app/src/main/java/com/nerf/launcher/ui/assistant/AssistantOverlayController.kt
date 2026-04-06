@@ -12,6 +12,7 @@ import android.speech.SpeechRecognizer
 import android.view.View
 import android.view.animation.LinearInterpolator
 import android.view.inputmethod.EditorInfo
+import androidx.lifecycle.LifecycleOwner
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
@@ -19,6 +20,7 @@ import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.LayoutAssistantOverlayBinding
+import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.NerfTheme
 import com.nerf.launcher.util.ThemeManager
 import com.nerf.launcher.util.assistant.AssistantAction
@@ -40,8 +42,9 @@ class AssistantOverlayController(
     private var pendingMicStartAfterPermission = false
     private var currentState: AssistantState = AssistantState.IDLE
     private var activeTheme: NerfTheme? = null
+    private var lastThemeKey: Pair<String, Float>? = null
 
-    fun bind() {
+    fun bind(lifecycleOwner: LifecycleOwner) {
         binding.assistantOverlayCloseButton.setOnClickListener { hide() }
         binding.assistantActionSettings.setOnClickListener {
             handleAction(
@@ -84,13 +87,27 @@ class AssistantOverlayController(
             }
         }
         binding.assistantOverlayRoot.visibility = View.GONE
-        applyTheme(ThemeManager.resolveActiveTheme(binding.root.context))
+        observeTheme(lifecycleOwner)
         initializeSpeechRecognizer()
         assistantController.onTranscriptChanged = ::renderTranscript
         renderState(assistantController.currentSnapshot())
         renderVoiceAvailability()
         configureVideoLoop()
         startIdleVisualLoop()
+    }
+
+    private fun observeTheme(lifecycleOwner: LifecycleOwner) {
+        ConfigRepository.get().config.observe(lifecycleOwner) { config ->
+            val themeKey = config.themeName to config.glowIntensity
+            if (themeKey == lastThemeKey) return@observe
+            val theme = ThemeManager.resolveActiveTheme(
+                context = binding.root.context,
+                themeName = config.themeName,
+                glowIntensity = config.glowIntensity
+            )
+            applyTheme(theme)
+            lastThemeKey = themeKey
+        }
     }
 
     fun showWakeOverlay() {

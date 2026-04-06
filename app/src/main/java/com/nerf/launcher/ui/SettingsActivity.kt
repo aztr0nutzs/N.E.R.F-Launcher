@@ -17,6 +17,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySettingsBinding
     private lateinit var adapter: SettingsAdapter
+    private var lastThemeKey: Pair<String, Float>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,12 +46,16 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         ConfigRepository.get().config.observe(this) { config ->
-            val theme = ThemeManager.resolveActiveTheme(
-                context = this,
-                themeName = config.themeName,
-                glowIntensity = config.glowIntensity
-            )
-            applySettingsTheme(theme)
+            val themeKey = config.themeName to config.glowIntensity
+            if (themeKey != lastThemeKey) {
+                val theme = ThemeManager.resolveActiveTheme(
+                    context = this,
+                    themeName = config.themeName,
+                    glowIntensity = config.glowIntensity
+                )
+                applySettingsTheme(theme)
+                lastThemeKey = themeKey
+            }
             adapter.updateFromConfig(config)
         }
     }
