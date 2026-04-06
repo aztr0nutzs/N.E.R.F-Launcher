@@ -182,4 +182,19 @@
     <string name="assistant_overlay_action_lock_status">Lock surface requested.</string>
     <string name="assistant_overlay_action_settings_voice">Routing you to launcher settings. Try not to break the calibration menu.</string>
     <string name="assistant_overlay_action_lock_voice">Lock surface engaged. I assume this is where we pretend security has improved.</string>
+    <string name="module_app_grid_title">APP GRID</string>
+    <string name="module_app_count_default">0 APPS</string>
+    <string name="module_load_label">LOAD</string>
+    <string name="module_config_label">CONFIG</string>
+    <string name="module_grid_default">GRID 4x</string>
+    <string name="module_dock_default">DOCK 4</string>
+    <string name="module_scan_apps_action">SCAN APPS</string>
+    <string name="hud_time_placeholder">12:00</string>
+    <string name="hud_date_placeholder">MON 01 JAN</string>
+    <string name="hud_battery_percent_placeholder">50%</string>
+    <string name="hud_settings_action">SETTINGS</string>
+    <string name="modules_energy_placeholder">--%</string>
+    <string name="modules_storage_placeholder">N/A</string>
+    <string name="modules_runtime_placeholder">0h 0m</string>
+    <string name="drawer_result_count_default">0 VISIBLE</string>
 </resources>

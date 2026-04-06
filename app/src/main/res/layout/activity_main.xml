@@ -55,7 +55,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="APP GRID"
+                    android:text="@string/module_app_grid_title"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
 
                 <TextView
@@ -63,14 +63,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="0 APPS"
+                    android:text="@string/module_app_count_default"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="LOAD"
+                    android:text="@string/module_load_label"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
 
                 <com.nerf.launcher.ui.SegmentedBarView
@@ -83,7 +83,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="CONFIG"
+                    android:text="@string/module_config_label"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
 
                 <TextView
@@ -91,7 +91,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="GRID 4x"
+                    android:text="@string/module_grid_default"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
 
                 <TextView
@@ -99,7 +99,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:text="DOCK 4"
+                    android:text="@string/module_dock_default"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
 
                 <LinearLayout
@@ -273,7 +273,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/nerf_hud_button_height"
                     android:layout_marginTop="10dp"
-                    android:text="SETTINGS"
+                    android:text="@string/hud_settings_action"
                     android:textSize="12sp"
                     app:icon="@drawable/ic_settings"
                     app:iconGravity="textStart"
@@ -286,7 +286,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/nerf_hud_button_height"
                     android:layout_marginTop="6dp"
-                    android:text="SCAN APPS"
+                    android:text="@string/module_scan_apps_action"
                     android:textSize="12sp"
                     app:icon="@drawable/ic_network"
                     app:iconGravity="textStart"
@@ -325,7 +325,7 @@
                     android:contentDescription="@null"
                     android:importantForAccessibility="no"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/reactor_hud_mock"
+                    android:src="@drawable/reactor_hud_panel_art"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -518,7 +518,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="--%"
+                            android:text="@string/modules_energy_placeholder"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge.Orange" />
 
                         <com.nerf.launcher.ui.SegmentedBarView
@@ -560,7 +560,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="N/A"
+                            android:text="@string/modules_storage_placeholder"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
 
                         <com.nerf.launcher.ui.SegmentedBarView
@@ -592,7 +592,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="0h 0m"
+                            android:text="@string/modules_runtime_placeholder"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
                     </LinearLayout>
                 </LinearLayout>
@@ -627,7 +627,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="ACTIVE"
+                            android:text="@string/modules_state_active"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium.Lime" />
                     </LinearLayout>
 
@@ -671,7 +671,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:gravity="end"
-                                    android:text="SYNC 0%"
+                                    android:text="@string/reactor_home_sync_default"
                                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge" />
                             </LinearLayout>
                         </LinearLayout>
@@ -743,7 +743,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="0 VISIBLE"
+                            android:text="@string/drawer_result_count_default"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium.Cyan" />
 
                         <EditText
