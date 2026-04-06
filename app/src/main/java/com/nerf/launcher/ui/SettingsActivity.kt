@@ -46,13 +46,9 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         ConfigRepository.get().config.observe(this) { config ->
-            val themeKey = config.themeName to config.glowIntensity
+            val themeKey = ThemeManager.themeKey(config)
             if (themeKey != lastThemeKey) {
-                val theme = ThemeManager.resolveActiveTheme(
-                    context = this,
-                    themeName = config.themeName,
-                    glowIntensity = config.glowIntensity
-                )
+                val theme = ThemeManager.resolveConfigTheme(this, config)
                 applySettingsTheme(theme)
                 lastThemeKey = themeKey
             }
@@ -61,15 +57,14 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun applySettingsTheme(theme: NerfTheme) {
-        window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(theme.windowBackground))
-        binding.root.setBackgroundColor(theme.windowBackground)
-        binding.toolbar.setBackgroundColor(theme.primary)
-        binding.toolbar.setTitleTextColor(theme.hudPanelTextPrimary)
-        binding.toolbar.navigationIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
-        binding.toolbar.overflowIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
+        ThemeManager.applyWindowAndToolbarTheme(
+            activity = this,
+            root = binding.root,
+            toolbar = binding.toolbar,
+            theme = theme
+        )
         val buttonDrawable = ThemeManager.createHudActionTileDrawable(this, theme)
-        binding.openTaskbarSettingsButton.background =
-            buttonDrawable.constantState?.newDrawable()?.mutate() ?: buttonDrawable
+        binding.openTaskbarSettingsButton.background = ThemeManager.cloneMutableDrawable(buttonDrawable)
         binding.settingsHeaderTitle.setTextColor(theme.hudInfoColor)
         binding.settingsHeaderSubtitle.setTextColor(theme.hudWarningColor)
         binding.openTaskbarSettingsButton.setTextColor(theme.hudAccentColor)

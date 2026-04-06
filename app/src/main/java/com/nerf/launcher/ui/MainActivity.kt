@@ -283,11 +283,7 @@ class MainActivity : AppCompatActivity() {
 
             animationSpeedMultiplier = if (config.animationSpeedEnabled) 0.65f else 1f
             if (themeChanged || previous == null) {
-                val activeTheme = ThemeManager.resolveActiveTheme(
-                    context = this,
-                    themeName = config.themeName,
-                    glowIntensity = config.glowIntensity
-                )
+                val activeTheme = ThemeManager.resolveConfigTheme(this, config)
                 applyLauncherShellTheme(activeTheme)
                 applyStatusBarTheme(config)
                 adapter.updateThemeResources(
@@ -342,17 +338,17 @@ class MainActivity : AppCompatActivity() {
         binding.drawerSearchInput.setHintTextColor(theme.hudPanelTextSecondary)
 
         val quickOrbDrawable = ThemeManager.createQuickToggleOrbDrawable(this, theme)
-        binding.quickThemeBtn.background = quickOrbDrawable.constantState?.newDrawable()?.mutate() ?: quickOrbDrawable
-        binding.quickIconPackBtn.background = quickOrbDrawable.constantState?.newDrawable()?.mutate() ?: quickOrbDrawable
-        binding.quickAnimationBtn.background = quickOrbDrawable.constantState?.newDrawable()?.mutate() ?: quickOrbDrawable
-        binding.quickTaskbarBtn.background = quickOrbDrawable.constantState?.newDrawable()?.mutate() ?: quickOrbDrawable
+        binding.quickThemeBtn.background = ThemeManager.cloneMutableDrawable(quickOrbDrawable)
+        binding.quickIconPackBtn.background = ThemeManager.cloneMutableDrawable(quickOrbDrawable)
+        binding.quickAnimationBtn.background = ThemeManager.cloneMutableDrawable(quickOrbDrawable)
+        binding.quickTaskbarBtn.background = ThemeManager.cloneMutableDrawable(quickOrbDrawable)
 
         val actionTileDrawable = ThemeManager.createHudActionTileDrawable(this, theme)
-        binding.openSettingsTile.background = actionTileDrawable.constantState?.newDrawable()?.mutate() ?: actionTileDrawable
-        binding.reloadTile.background = actionTileDrawable.constantState?.newDrawable()?.mutate() ?: actionTileDrawable
-        binding.lockSurfaceTile.background = actionTileDrawable.constantState?.newDrawable()?.mutate() ?: actionTileDrawable
+        binding.openSettingsTile.background = ThemeManager.cloneMutableDrawable(actionTileDrawable)
+        binding.reloadTile.background = ThemeManager.cloneMutableDrawable(actionTileDrawable)
+        binding.lockSurfaceTile.background = ThemeManager.cloneMutableDrawable(actionTileDrawable)
         binding.lockSurfaceUnlockButton.background =
-            actionTileDrawable.constantState?.newDrawable()?.mutate() ?: actionTileDrawable
+            ThemeManager.cloneMutableDrawable(actionTileDrawable)
 
         binding.quickThemeBtn.setTextColor(theme.hudInfoColor)
         binding.quickIconPackBtn.setTextColor(theme.hudSuccessColor)
@@ -1113,11 +1109,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyStatusBarTheme(config: AppConfig) {
-        val primaryColor = ThemeManager.resolveActiveTheme(
-            context = this,
-            themeName = config.themeName,
-            glowIntensity = config.glowIntensity
-        ).primary
+        val primaryColor = ThemeManager.resolveConfigTheme(this, config).primary
         val isLightTheme = com.nerf.launcher.util.ColorUtils.isColorLight(primaryColor)
         StatusBarManager.applyStatusBarTheme(this, primaryColor, isLightTheme)
     }

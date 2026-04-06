@@ -9,6 +9,7 @@ import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.StateListDrawable
 import android.view.Gravity
 import android.view.View
+import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.ColorUtils
 import com.google.android.material.color.MaterialColors
 import com.nerf.launcher.R
@@ -27,6 +28,34 @@ object ThemeManager {
         val baseTheme = ThemeRepository.resolve(context, themeName)
         val resolvedGlow = glowIntensity ?: baseTheme.glowIntensity
         return baseTheme.withGlowIntensity(resolvedGlow)
+    }
+
+    fun resolveConfigTheme(context: Context, config: AppConfig): NerfTheme {
+        return resolveActiveTheme(
+            context = context,
+            themeName = config.themeName,
+            glowIntensity = config.glowIntensity
+        )
+    }
+
+    fun themeKey(config: AppConfig): Pair<String, Float> = config.themeName to config.glowIntensity
+
+    fun cloneMutableDrawable(drawable: Drawable): Drawable {
+        return drawable.constantState?.newDrawable()?.mutate() ?: drawable.mutate()
+    }
+
+    fun applyWindowAndToolbarTheme(
+        activity: androidx.appcompat.app.AppCompatActivity,
+        root: View,
+        toolbar: Toolbar,
+        theme: NerfTheme
+    ) {
+        activity.window.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(theme.windowBackground))
+        root.setBackgroundColor(theme.windowBackground)
+        toolbar.setBackgroundColor(theme.primary)
+        toolbar.setTitleTextColor(theme.hudPanelTextPrimary)
+        toolbar.navigationIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
+        toolbar.overflowIcon?.mutate()?.setTint(theme.hudPanelTextPrimary)
     }
 
     fun resolveTaskbarIconTint(context: Context, theme: NerfTheme): Int {
