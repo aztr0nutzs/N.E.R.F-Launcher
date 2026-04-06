@@ -56,6 +56,11 @@ class IconProvider(
         val cacheKey = "$selectedPack:$packageName"
         val currentRequest = synchronized(latestRequestLock) { latestRequestByView[imageView] }
         if (currentRequest == cacheKey) {
+            iconCache.get(cacheKey)?.let { cachedDrawable ->
+                if (imageView.drawable !== cachedDrawable) {
+                    imageView.setImageDrawable(cachedDrawable)
+                }
+            }
             return
         }
         synchronized(latestRequestLock) {

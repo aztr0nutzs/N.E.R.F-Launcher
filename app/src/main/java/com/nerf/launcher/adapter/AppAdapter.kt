@@ -25,6 +25,7 @@ class AppAdapter(
     private val onAppLongPressed: (View, AppInfo) -> Unit
 ) : ListAdapter<AppInfo, AppAdapter.AppViewHolder>(DIFF_CALLBACK) {
     private val iconOnlyPayload = Any()
+    private val themeOnlyPayload = Any()
 
     init {
         setHasStableIds(true)
@@ -59,6 +60,12 @@ class AppAdapter(
 
         fun bindIconOnly(app: AppInfo) {
             iconProvider.loadIconInto(app.packageName, binding.appIcon)
+        }
+
+        fun bindThemeOnly() {
+            val theme = ThemeManager.resolveActiveTheme(binding.root.context)
+            binding.appName.setTextColor(theme.hudAppLabelColor)
+            binding.iconSocket.background = ThemeManager.createAppIconSocketBackground(binding.root.context, theme)
         }
 
         private fun animatePress(view: View, pressed: Boolean) {
@@ -112,6 +119,10 @@ class AppAdapter(
             holder.bindIconOnly(app)
             return
         }
+        if (payloads.contains(themeOnlyPayload)) {
+            holder.bindThemeOnly()
+            return
+        }
         holder.bind(app)
     }
 
@@ -139,7 +150,7 @@ class AppAdapter(
 
     fun refreshTheme() {
         if (itemCount > 0) {
-            notifyItemRangeChanged(0, itemCount)
+            notifyItemRangeChanged(0, itemCount, themeOnlyPayload)
         }
     }
 
@@ -148,7 +159,7 @@ class AppAdapter(
         val safeStart = start.coerceAtLeast(0)
         val safeEnd = endInclusive.coerceAtMost(itemCount - 1)
         if (safeStart > safeEnd) return
-        notifyItemRangeChanged(safeStart, safeEnd - safeStart + 1)
+        notifyItemRangeChanged(safeStart, safeEnd - safeStart + 1, themeOnlyPayload)
     }
 
     companion object {
