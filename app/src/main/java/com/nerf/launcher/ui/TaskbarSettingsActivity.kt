@@ -33,7 +33,11 @@ class TaskbarSettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val initialTheme = ThemeManager.resolveActiveTheme(this)
+        val initialConfig = ConfigRepository.get().config.value
+        val initialTheme = initialConfig
+            ?.let { ThemeManager.resolveConfigTheme(this, it) }
+            ?: ThemeManager.resolveActiveTheme(this)
+        lastThemeKey = initialConfig?.let(ThemeManager::themeKey)
 
         binding = ActivityTaskbarSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)

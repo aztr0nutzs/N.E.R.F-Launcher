@@ -87,6 +87,7 @@ class AssistantOverlayController(
             }
         }
         binding.assistantOverlayRoot.visibility = View.GONE
+        applyInitialTheme()
         observeTheme(lifecycleOwner)
         initializeSpeechRecognizer()
         assistantController.onTranscriptChanged = ::renderTranscript
@@ -94,6 +95,17 @@ class AssistantOverlayController(
         renderVoiceAvailability()
         configureVideoLoop()
         startIdleVisualLoop()
+    }
+
+    private fun applyInitialTheme() {
+        val config = ConfigRepository.get().config.value
+        val theme = if (config != null) {
+            lastThemeKey = ThemeManager.themeKey(config)
+            ThemeManager.resolveConfigTheme(binding.root.context, config)
+        } else {
+            ThemeManager.resolveActiveTheme(binding.root.context)
+        }
+        applyTheme(theme)
     }
 
     private fun observeTheme(lifecycleOwner: LifecycleOwner) {
@@ -452,7 +464,7 @@ class AssistantOverlayController(
     }
 
     private fun stateColor(state: AssistantState): Int {
-        val theme = activeTheme ?: ThemeManager.resolveActiveTheme(binding.root.context)
+        val theme = currentTheme()
         return when (state) {
             AssistantState.IDLE -> theme.hudInfoColor
             AssistantState.WAKE -> theme.hudWarningColor
@@ -629,7 +641,19 @@ class AssistantOverlayController(
     }
 
     private fun assistantErrorColor(): Int {
-        val theme = activeTheme ?: ThemeManager.resolveActiveTheme(binding.root.context)
+        val theme = currentTheme()
         return theme.assistantErrorColor
+    }
+
+    private fun currentTheme(): NerfTheme {
+        activeTheme?.let { return it }
+        val config = ConfigRepository.get().config.value
+        if (config != null) {
+            val resolved = ThemeManager.resolveConfigTheme(binding.root.context, config)
+            lastThemeKey = ThemeManager.themeKey(config)
+            activeTheme = resolved
+            return resolved
+        }
+        return ThemeManager.resolveActiveTheme(binding.root.context)
     }
 }
