@@ -19,10 +19,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingStart="8dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="6dp">
+        android:paddingStart="@dimen/nerf_space_8"
+        android:paddingTop="@dimen/nerf_space_8"
+        android:paddingEnd="@dimen/nerf_space_8"
+        android:paddingBottom="@dimen/nerf_space_6">
 
         <include
             android:id="@+id/hud_root"
@@ -33,18 +33,18 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/command_center"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="6dp"
+            android:layout_height="@dimen/nerf_space_0"
+            android:layout_marginTop="@dimen/nerf_space_6"
             android:layout_weight="1"
             android:background="@drawable/hud_frame_panel"
-            android:padding="4dp">
+            android:padding="@dimen/nerf_space_4">
 
             <LinearLayout
                 android:id="@+id/left_panel"
                 style="@style/Widget.NerfLauncher.Hud.FramedPanel"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginEnd="4dp"
+                android:layout_width="@dimen/nerf_space_0"
+                android:layout_height="@dimen/nerf_space_0"
+                android:layout_marginEnd="@dimen/nerf_space_4"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/core_panel"
@@ -62,27 +62,27 @@
                     android:id="@+id/module_app_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="@dimen/nerf_space_2"
                     android:text="@string/module_app_count_default"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/nerf_space_8"
                     android:text="@string/module_load_label"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
 
                 <com.nerf.launcher.ui.SegmentedBarView
                     android:id="@+id/apps_load_bar"
                     android:layout_width="match_parent"
-                    android:layout_height="12dp"
-                    android:layout_marginTop="4dp" />
+                    android:layout_height="@dimen/nerf_space_12"
+                    android:layout_marginTop="@dimen/nerf_space_4" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="@dimen/nerf_space_10"
                     android:text="@string/module_config_label"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
 
@@ -90,7 +90,7 @@
                     android:id="@+id/module_grid_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
+                    android:layout_marginTop="@dimen/nerf_space_3"
                     android:text="@string/module_grid_default"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
 
@@ -98,7 +98,7 @@
                     android:id="@+id/module_pinned_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
+                    android:layout_marginTop="@dimen/nerf_space_3"
                     android:text="@string/module_dock_default"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
 
@@ -106,13 +106,13 @@
                     android:id="@+id/quick_panel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="@dimen/nerf_space_10"
                     android:background="@drawable/quick_panel_background"
                     android:orientation="vertical"
-                    android:paddingStart="8dp"
-                    android:paddingTop="8dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="10dp">
+                    android:paddingStart="@dimen/nerf_space_8"
+                    android:paddingTop="@dimen/nerf_space_8"
+                    android:paddingEnd="@dimen/nerf_space_8"
+                    android:paddingBottom="@dimen/nerf_space_10">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -123,117 +123,117 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginTop="@dimen/nerf_space_2"
                         android:text="@string/quick_panel_subtitle"
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/nerf_space_8"
                         android:background="@drawable/quick_control_rail"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="3dp"
+                        android:paddingHorizontal="@dimen/nerf_space_6"
+                        android:paddingVertical="@dimen/nerf_space_3"
                         android:text="@string/quick_row_palette"
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
+                        android:layout_marginTop="@dimen/nerf_space_5"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/quick_theme_btn"
                             style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
-                            android:layout_width="0dp"
-                            android:layout_height="44dp"
-                            android:layout_marginEnd="4dp"
+                            android:layout_width="@dimen/nerf_space_0"
+                            android:layout_height="@dimen/nerf_size_44"
+                            android:layout_marginEnd="@dimen/nerf_space_4"
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_theme_cd"
                             app:icon="@drawable/ic_settings"
                             app:iconGravity="textStart"
-                            app:iconPadding="4dp"
-                            app:iconSize="18dp"
+                            app:iconPadding="@dimen/nerf_space_4"
+                            app:iconSize="@dimen/nerf_size_18"
                             android:text="@string/quick_theme_label"
-                            android:textSize="10sp" />
+                            android:textSize="@dimen/nerf_text_size_10" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/quick_icon_pack_btn"
                             style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
-                            android:layout_width="0dp"
-                            android:layout_height="44dp"
-                            android:layout_marginStart="4dp"
+                            android:layout_width="@dimen/nerf_space_0"
+                            android:layout_height="@dimen/nerf_size_44"
+                            android:layout_marginStart="@dimen/nerf_space_4"
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_icon_pack_cd"
                             app:icon="@drawable/ic_module"
                             app:iconGravity="textStart"
-                            app:iconPadding="4dp"
-                            app:iconSize="18dp"
+                            app:iconPadding="@dimen/nerf_space_4"
+                            app:iconSize="@dimen/nerf_size_18"
                             android:text="@string/quick_icon_pack_label"
-                            android:textSize="10sp" />
+                            android:textSize="@dimen/nerf_text_size_10" />
                     </LinearLayout>
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/nerf_space_8"
                         android:background="@drawable/quick_control_rail"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="3dp"
+                        android:paddingHorizontal="@dimen/nerf_space_6"
+                        android:paddingVertical="@dimen/nerf_space_3"
                         android:text="@string/quick_row_runtime"
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
+                        android:layout_marginTop="@dimen/nerf_space_5"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/quick_animation_btn"
                             style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
-                            android:layout_width="0dp"
-                            android:layout_height="44dp"
-                            android:layout_marginEnd="4dp"
+                            android:layout_width="@dimen/nerf_space_0"
+                            android:layout_height="@dimen/nerf_size_44"
+                            android:layout_marginEnd="@dimen/nerf_space_4"
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_animation_cd"
                             app:icon="@drawable/ic_power_up"
                             app:iconGravity="textStart"
-                            app:iconPadding="4dp"
-                            app:iconSize="18dp"
+                            app:iconPadding="@dimen/nerf_space_4"
+                            app:iconSize="@dimen/nerf_size_18"
                             android:text="@string/quick_animation_label"
-                            android:textSize="10sp" />
+                            android:textSize="@dimen/nerf_text_size_10" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/quick_taskbar_btn"
                             style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
-                            android:layout_width="0dp"
-                            android:layout_height="44dp"
-                            android:layout_marginStart="4dp"
+                            android:layout_width="@dimen/nerf_space_0"
+                            android:layout_height="@dimen/nerf_size_44"
+                            android:layout_marginStart="@dimen/nerf_space_4"
                             android:layout_weight="1"
                             android:background="@drawable/quick_toggle_orb"
                             android:contentDescription="@string/quick_taskbar_cd"
                             app:icon="@drawable/ic_settings"
                             app:iconGravity="textStart"
-                            app:iconPadding="4dp"
-                            app:iconSize="18dp"
+                            app:iconPadding="@dimen/nerf_space_4"
+                            app:iconSize="@dimen/nerf_size_18"
                             android:text="@string/quick_taskbar_label"
-                            android:textSize="10sp" />
+                            android:textSize="@dimen/nerf_text_size_10" />
                     </LinearLayout>
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="@dimen/nerf_space_8"
                         android:background="@drawable/quick_control_rail"
-                        android:paddingHorizontal="6dp"
-                        android:paddingVertical="3dp"
+                        android:paddingHorizontal="@dimen/nerf_space_6"
+                        android:paddingVertical="@dimen/nerf_space_3"
                         android:text="@string/quick_row_calibration"
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
 
@@ -241,14 +241,14 @@
                         android:id="@+id/quick_glow_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="@dimen/nerf_space_6"
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel" />
 
                     <SeekBar
                         android:id="@+id/quick_glow_seekbar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="1dp"
+                        android:layout_marginTop="@dimen/nerf_space_1"
                         android:max="100"
                         android:progressDrawable="@drawable/quickslider_progress_cool" />
 
@@ -256,7 +256,7 @@
                         android:id="@+id/quick_grid_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="@dimen/nerf_space_6"
                         android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel" />
 
                     <SeekBar
@@ -272,45 +272,45 @@
                     android:id="@+id/open_settings_tile"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/nerf_hud_button_height"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="@dimen/nerf_space_10"
                     android:text="@string/hud_settings_action"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/nerf_text_size_hud_button"
                     app:icon="@drawable/ic_settings"
                     app:iconGravity="textStart"
-                    app:iconPadding="6dp"
-                    app:iconSize="16dp" />
+                    app:iconPadding="@dimen/nerf_space_6"
+                    app:iconSize="@dimen/nerf_hud_icon_size" />
 
                 <com.google.android.material.button.MaterialButton
                     style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
                     android:id="@+id/reload_tile"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/nerf_hud_button_height"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/nerf_space_6"
                     android:text="@string/module_scan_apps_action"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/nerf_text_size_hud_button"
                     app:icon="@drawable/ic_network"
                     app:iconGravity="textStart"
-                    app:iconPadding="6dp"
-                    app:iconSize="16dp" />
+                    app:iconPadding="@dimen/nerf_space_6"
+                    app:iconSize="@dimen/nerf_hud_icon_size" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/lock_surface_tile"
                     style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/nerf_hud_button_height"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/nerf_space_6"
                     android:contentDescription="@string/lock_surface_action_cd"
                     android:text="@string/lock_surface_action"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/nerf_text_size_hud_button" />
             </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/core_panel"
                 style="@style/Widget.NerfLauncher.Hud.FramedPanel"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginHorizontal="4dp"
-                android:padding="6dp"
+                android:layout_width="@dimen/nerf_space_0"
+                android:layout_height="@dimen/nerf_space_0"
+                android:layout_marginHorizontal="@dimen/nerf_space_4"
+                android:padding="@dimen/nerf_space_6"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/right_panel"
                 app:layout_constraintStart_toEndOf="@+id/left_panel"
@@ -319,8 +319,8 @@
 
                 <ImageView
                     android:id="@+id/reactor_panel_art"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
+                    android:layout_width="@dimen/nerf_space_0"
+                    android:layout_height="@dimen/nerf_space_0"
                     android:alpha="0.22"
                     android:contentDescription="@null"
                     android:importantForAccessibility="no"
@@ -333,7 +333,7 @@
 
                 <TextView
                     android:id="@+id/reactor_mode_label"
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/nerf_space_0"
                     android:layout_height="wrap_content"
                     android:text="@string/reactor_home_title"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange"
@@ -343,8 +343,8 @@
 
                 <ImageView
                     android:id="@+id/reactor_brand_mark"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="@dimen/nerf_space_24"
+                    android:layout_height="@dimen/nerf_space_24"
                     android:alpha="0.36"
                     android:contentDescription="@string/nerf_brand_mark_cd"
                     android:importantForAccessibility="no"
@@ -355,9 +355,9 @@
 
                 <TextView
                     android:id="@+id/reactor_status_text"
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/nerf_space_0"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="@dimen/nerf_space_4"
                     android:text="@string/reactor_home_status_ready"
                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium.Cyan"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -366,9 +366,9 @@
 
                 <com.nerf.launcher.ui.reactor.ReactorModuleView
                     android:id="@+id/reactor_core"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_width="@dimen/nerf_space_0"
+                    android:layout_height="@dimen/nerf_space_0"
+                    android:layout_marginTop="@dimen/nerf_space_8"
                     android:contentDescription="@string/reactor_core_cd"
                     app:layout_constraintBottom_toTopOf="@+id/reactor_legend_panel"
                     app:layout_constraintDimensionRatio="1:1"
@@ -380,9 +380,9 @@
 
                 <FrameLayout
                     android:id="@+id/reactor_legend_panel"
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/nerf_space_0"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="@dimen/nerf_space_10"
                     android:background="@drawable/panel_background"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -392,7 +392,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="8dp">
+                        android:padding="@dimen/nerf_space_8">
 
                         <TextView
                             android:id="@+id/reactor_sync_value"
@@ -405,37 +405,37 @@
                             android:id="@+id/reactor_hint_text"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="@dimen/nerf_space_4"
                             android:text="@string/reactor_home_hint"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="@dimen/nerf_space_6"
                             android:text="@string/reactor_home_active_rails"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="@dimen/nerf_space_4"
                             android:orientation="horizontal">
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:layout_width="@dimen/nerf_space_0"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:drawablePadding="6dp"
+                                android:drawablePadding="@dimen/nerf_space_6"
                                 android:drawableStart="@drawable/ic_node_hunter"
                                 android:text="@string/reactor_home_action_top"
                                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:layout_width="@dimen/nerf_space_0"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:drawablePadding="6dp"
+                                android:drawablePadding="@dimen/nerf_space_6"
                                 android:drawableEnd="@drawable/ic_assistant"
                                 android:gravity="end"
                                 android:text="@string/reactor_home_action_right"
@@ -445,23 +445,23 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="3dp"
+                            android:layout_marginTop="@dimen/nerf_space_3"
                             android:orientation="horizontal">
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:layout_width="@dimen/nerf_space_0"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:drawablePadding="6dp"
+                                android:drawablePadding="@dimen/nerf_space_6"
                                 android:drawableStart="@drawable/ic_settings"
                                 android:text="@string/reactor_home_action_left"
                                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:layout_width="@dimen/nerf_space_0"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:drawablePadding="6dp"
+                                android:drawablePadding="@dimen/nerf_space_6"
                                 android:drawableEnd="@drawable/ic_network"
                                 android:gravity="end"
                                 android:text="@string/reactor_home_action_bottom"
@@ -474,9 +474,9 @@
             <LinearLayout
                 android:id="@+id/right_panel"
                 style="@style/Widget.NerfLauncher.Hud.FramedPanel"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginStart="4dp"
+                android:layout_width="@dimen/nerf_space_0"
+                android:layout_height="@dimen/nerf_space_0"
+                android:layout_marginStart="@dimen/nerf_space_4"
                 android:orientation="vertical"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -495,7 +495,7 @@
                     style="@style/Widget.NerfLauncher.Hud.StatCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/nerf_space_6"
                     android:background="@drawable/panel_background"
                     android:clickable="true"
                     android:focusable="true">
@@ -508,7 +508,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:drawablePadding="6dp"
+                            android:drawablePadding="@dimen/nerf_space_6"
                             android:drawableStart="@drawable/ic_power_up"
                             android:text="@string/modules_energy_label"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Orange" />
@@ -517,30 +517,30 @@
                             android:id="@+id/module_energy_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/nerf_space_2"
                             android:text="@string/modules_energy_placeholder"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge.Orange" />
 
                         <com.nerf.launcher.ui.SegmentedBarView
                             android:id="@+id/module_energy_bar"
                             android:layout_width="match_parent"
-                            android:layout_height="14dp"
-                            android:layout_marginTop="5dp" />
+                            android:layout_height="@dimen/nerf_space_14"
+                            android:layout_marginTop="@dimen/nerf_space_5" />
                     </LinearLayout>
                 </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/nerf_space_6"
                     android:orientation="horizontal">
 
                     <LinearLayout
                         android:id="@+id/module_storage_card"
                         style="@style/Widget.NerfLauncher.Hud.StatCard"
-                        android:layout_width="0dp"
+                        android:layout_width="@dimen/nerf_space_0"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
+                        android:layout_marginEnd="@dimen/nerf_space_4"
                         android:background="@drawable/module_stat_card2"
                         android:layout_weight="1"
                         android:clickable="true"
@@ -550,7 +550,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:drawablePadding="6dp"
+                            android:drawablePadding="@dimen/nerf_space_6"
                             android:drawableStart="@drawable/ic_module"
                             android:text="@string/modules_storage_label"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Cyan" />
@@ -559,23 +559,23 @@
                             android:id="@+id/module_storage_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/nerf_space_2"
                             android:text="@string/modules_storage_placeholder"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
 
                         <com.nerf.launcher.ui.SegmentedBarView
                             android:id="@+id/module_storage_bar"
                             android:layout_width="match_parent"
-                            android:layout_height="9dp"
-                            android:layout_marginTop="5dp" />
+                            android:layout_height="@dimen/nerf_space_9"
+                            android:layout_marginTop="@dimen/nerf_space_5" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/module_runtime_card"
                         style="@style/Widget.NerfLauncher.Hud.StatCard"
-                        android:layout_width="0dp"
+                        android:layout_width="@dimen/nerf_space_0"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
+                        android:layout_marginStart="@dimen/nerf_space_4"
                         android:layout_weight="1"
                         android:clickable="true"
                         android:focusable="true"
@@ -591,7 +591,7 @@
                             android:id="@+id/module_runtime_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/nerf_space_2"
                             android:text="@string/modules_runtime_placeholder"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
                     </LinearLayout>
@@ -600,15 +600,15 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/nerf_space_6"
                     android:orientation="horizontal">
 
                     <LinearLayout
                         android:id="@+id/module_state_card"
                         style="@style/Widget.NerfLauncher.Hud.StatCard"
-                        android:layout_width="0dp"
+                        android:layout_width="@dimen/nerf_space_0"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
+                        android:layout_marginEnd="@dimen/nerf_space_4"
                         android:layout_weight="1"
                         android:clickable="true"
                         android:focusable="true"
@@ -617,7 +617,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:drawablePadding="6dp"
+                            android:drawablePadding="@dimen/nerf_space_6"
                             android:drawableStart="@drawable/ic_settings"
                             android:text="@string/modules_state_label"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Lime" />
@@ -626,16 +626,16 @@
                             android:id="@+id/module_state_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/nerf_space_2"
                             android:text="@string/modules_state_active"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium.Lime" />
                     </LinearLayout>
 
                     <FrameLayout
                         style="@style/Widget.NerfLauncher.Hud.StatCard"
-                        android:layout_width="0dp"
+                        android:layout_width="@dimen/nerf_space_0"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
+                        android:layout_marginStart="@dimen/nerf_space_4"
                         android:layout_weight="1">
 
                         <LinearLayout
@@ -645,17 +645,17 @@
                             android:orientation="horizontal">
 
                             <com.nerf.launcher.ui.ReactorCoreView
-                                android:layout_width="58dp"
-                                android:layout_height="58dp"
+                                android:layout_width="@dimen/nerf_size_58"
+                                android:layout_height="@dimen/nerf_size_58"
                                 android:alpha="0.95"
                                 android:clickable="false"
                                 android:focusable="false"
                                 android:importantForAccessibility="no" />
 
                             <LinearLayout
-                                android:layout_width="0dp"
+                                android:layout_width="@dimen/nerf_space_0"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
+                                android:layout_marginStart="@dimen/nerf_space_8"
                                 android:layout_weight="1"
                                 android:orientation="vertical">
 
@@ -669,7 +669,7 @@
                                     android:id="@+id/module_reactor_value"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
+                                    android:layout_marginTop="@dimen/nerf_space_2"
                                     android:gravity="end"
                                     android:text="@string/reactor_home_sync_default"
                                     android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge" />
@@ -681,12 +681,12 @@
                 <LinearLayout
                     android:id="@+id/drawer_shell"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_height="@dimen/nerf_space_0"
+                    android:layout_marginTop="@dimen/nerf_space_8"
                     android:layout_weight="1"
                     android:background="@drawable/drawer_shell_background"
                     android:orientation="vertical"
-                    android:padding="8dp">
+                    android:padding="@dimen/nerf_space_8">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -695,7 +695,7 @@
                         android:orientation="horizontal">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="@dimen/nerf_space_0"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="@string/drawer_shell_title"
@@ -712,10 +712,10 @@
                         android:id="@+id/drawer_header"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="@dimen/nerf_space_6"
                         android:background="@drawable/drawer_shell_background"
                         android:orientation="vertical"
-                        android:padding="8dp">
+                        android:padding="@dimen/nerf_space_8">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -724,15 +724,15 @@
                             android:orientation="horizontal">
 
                             <TextView
-                                android:layout_width="0dp"
+                                android:layout_width="@dimen/nerf_space_0"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:text="@string/drawer_header_label"
                                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Magenta" />
 
                             <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="@dimen/nerf_hud_icon_size"
+                                android:layout_height="@dimen/nerf_hud_icon_size"
                                 android:alpha="0.86"
                                 android:contentDescription="@string/drawer_brand_mark_cd"
                                 android:src="@drawable/ic_brand_mark_main" />
@@ -742,7 +742,7 @@
                             android:id="@+id/drawer_result_count"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
+                            android:layout_marginTop="@dimen/nerf_space_2"
                             android:text="@string/drawer_result_count_default"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium.Cyan" />
 
@@ -751,19 +751,19 @@
                             style="@style/Widget.NerfLauncher.Drawer.SearchInput"
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/nerf_drawer_search_height"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="@dimen/nerf_space_8"
                             android:hint="@string/drawer_search_hint"
                             android:imeOptions="actionDone"
                             android:inputType="text"
                             android:maxLines="1"
-                            android:paddingStart="10dp"
-                            android:paddingEnd="10dp" />
+                            android:paddingStart="@dimen/nerf_space_10"
+                            android:paddingEnd="@dimen/nerf_space_10" />
 
                         <TextView
                             android:id="@+id/drawer_interaction_hint"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
+                            android:layout_marginTop="@dimen/nerf_space_6"
                             android:text="@string/drawer_interaction_hint"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary" />
                     </LinearLayout>
@@ -772,10 +772,10 @@
                         android:id="@+id/default_launcher_banner"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="@dimen/nerf_space_6"
                         android:background="@drawable/drawer_shell_background"
                         android:orientation="vertical"
-                        android:padding="8dp"
+                        android:padding="@dimen/nerf_space_8"
                         android:visibility="gone">
 
                         <TextView
@@ -789,7 +789,7 @@
                             android:id="@+id/default_launcher_message"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:layout_marginTop="@dimen/nerf_space_4"
                             android:text="@string/default_launcher_banner_message"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary" />
 
@@ -798,15 +798,15 @@
                             style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/nerf_hud_button_height"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="@dimen/nerf_space_8"
                             android:text="@string/default_launcher_banner_action"
-                            android:textSize="11sp" />
+                            android:textSize="@dimen/nerf_text_size_11" />
                     </LinearLayout>
 
                     <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_marginTop="6dp"
+                        android:layout_height="@dimen/nerf_space_0"
+                        android:layout_marginTop="@dimen/nerf_space_6"
                         android:layout_weight="1"
                         android:background="@drawable/drawer_shell_background">
 
@@ -815,10 +815,10 @@
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:clipToPadding="false"
-                            android:paddingStart="4dp"
-                            android:paddingTop="6dp"
-                            android:paddingEnd="4dp"
-                            android:paddingBottom="6dp"
+                            android:paddingStart="@dimen/nerf_space_4"
+                            android:paddingTop="@dimen/nerf_space_6"
+                            android:paddingEnd="@dimen/nerf_space_4"
+                            android:paddingBottom="@dimen/nerf_space_6"
                             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
                             app:spanCount="2" />
 
@@ -828,7 +828,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:gravity="center"
-                            android:paddingHorizontal="20dp"
+                            android:paddingHorizontal="@dimen/nerf_space_20"
                             android:text="@string/drawer_empty_state_no_apps"
                             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary"
                             android:visibility="gone" />
@@ -841,8 +841,8 @@
         <com.nerf.launcher.ui.TaskbarView
             android:id="@+id/taskbar_view"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="6dp"
+            android:layout_height="@dimen/nerf_size_56"
+            android:layout_marginTop="@dimen/nerf_space_6"
             android:gravity="center_vertical"
             android:orientation="horizontal" />
     </LinearLayout>
@@ -860,16 +860,16 @@
         android:focusable="true"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="24dp"
+        android:padding="@dimen/nerf_space_24"
         android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
+            android:layout_marginHorizontal="@dimen/nerf_space_24"
             android:background="@drawable/hud_frame_panel"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="@dimen/nerf_space_20">
 
             <TextView
                 android:id="@+id/lock_surface_label"
@@ -882,7 +882,7 @@
                 android:id="@+id/lock_surface_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/nerf_space_8"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueLarge.Cyan"
                 android:textStyle="bold" />
 
@@ -890,14 +890,14 @@
                 android:id="@+id/lock_surface_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="@dimen/nerf_space_2"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.ValueMedium" />
 
             <TextView
                 android:id="@+id/lock_surface_scope_note"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="@dimen/nerf_space_14"
                 android:text="@string/lock_surface_scope_note"
                 android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel.Secondary" />
 
@@ -906,10 +906,10 @@
                 style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/nerf_hud_button_height"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/nerf_space_12"
                 android:contentDescription="@string/lock_surface_unlock"
                 android:text="@string/lock_surface_unlock"
-                android:textSize="12sp" />
+                android:textSize="@dimen/nerf_text_size_hud_button" />
         </LinearLayout>
     </LinearLayout>
 
