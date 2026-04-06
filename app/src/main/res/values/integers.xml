@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="nerf_taskbar_settings_min_height_dp">40</integer>
+    <integer name="nerf_taskbar_settings_max_height_dp">96</integer>
+    <integer name="nerf_taskbar_settings_min_icon_size_dp">24</integer>
+    <integer name="nerf_taskbar_settings_max_icon_size_dp">72</integer>
+    <integer name="nerf_taskbar_settings_drag_update_throttle_ms">120</integer>
+    <integer name="nerf_taskbar_settings_drag_dp_step">2</integer>
+    <integer name="nerf_taskbar_settings_drag_percent_step">2</integer>
+</resources>
