@@ -57,6 +57,14 @@ class SystemModuleController(
         }
     }
 
+    private val powerSaveModeReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == PowerManager.ACTION_POWER_SAVE_MODE_CHANGED) {
+                publishSnapshot()
+            }
+        }
+    }
+
     private val refreshTick = object : Runnable {
         override fun run() {
             publishSnapshot()
@@ -72,6 +80,10 @@ class SystemModuleController(
             IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         )
         updateBatteryState(stickyIntent)
+        appContext.registerReceiver(
+            powerSaveModeReceiver,
+            IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
+        )
         refreshHandler.post(refreshTick)
     }
 
@@ -80,6 +92,7 @@ class SystemModuleController(
         started = false
         refreshHandler.removeCallbacks(refreshTick)
         appContext.unregisterReceiver(batteryReceiver)
+        appContext.unregisterReceiver(powerSaveModeReceiver)
     }
 
     fun setInputs(config: AppConfig?, filteredAppCount: Int, totalAppCount: Int) {

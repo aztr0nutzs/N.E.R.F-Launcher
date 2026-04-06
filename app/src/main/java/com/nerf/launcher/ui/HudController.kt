@@ -42,8 +42,6 @@ class HudController(
     private var lastObservedConfig: AppConfig? = null
 
     init {
-        startHudBreathing()
-
         setupTapAnimation(timeDisplay)
         setupTapAnimation(addWidgetBtn)
 
@@ -56,10 +54,12 @@ class HudController(
 
     fun start() {
         hudStatusMonitor.start()
+        startHudBreathing()
     }
 
     fun stop() {
         hudStatusMonitor.stop()
+        stopHudBreathing()
     }
 
     private fun setupTapAnimation(view: View) {
@@ -143,6 +143,12 @@ class HudController(
         }
     }
 
+    private fun stopHudBreathing() {
+        hudBreathingAnimator?.cancel()
+        hudBreathingAnimator = null
+        hudView.alpha = 1f
+    }
+
     private fun renderStatus(snapshot: HudStatusSnapshot) {
         batteryMeter.progress = snapshot.batteryPercent
         batteryPercent.text = "${snapshot.batteryPercent}%"
@@ -166,7 +172,6 @@ class HudController(
 
     fun release() {
         hudStatusMonitor.release()
-        hudBreathingAnimator?.cancel()
-        hudBreathingAnimator = null
+        stopHudBreathing()
     }
 }

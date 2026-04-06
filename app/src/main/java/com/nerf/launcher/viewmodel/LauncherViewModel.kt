@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.util.AppUtils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
@@ -17,12 +18,26 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private val _apps = MutableLiveData<List<AppInfo>>()
     val apps: LiveData<List<AppInfo>> = _apps
+    private var activeLoadJob: Job? = null
+    private var reloadRequested: Boolean = false
 
     /** Triggers an asynchronous load of all launchable apps. */
     fun loadApps() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val appList = AppUtils.loadInstalledApps(getApplication<Application>())
-            _apps.postValue(appList)
+        if (activeLoadJob?.isActive == true) {
+            reloadRequested = true
+            return
+        }
+
+        activeLoadJob = viewModelScope.launch(Dispatchers.IO) {
+            do {
+                reloadRequested = false
+                val appList = AppUtils.loadInstalledApps(getApplication<Application>())
+                _apps.postValue(appList)
+            } while (reloadRequested)
+        }.also { job ->
+            job.invokeOnCompletion {
+                activeLoadJob = null
+            }
         }
     }
 }
