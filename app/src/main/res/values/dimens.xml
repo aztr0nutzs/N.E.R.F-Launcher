@@ -15,4 +15,30 @@
     <dimen name="nerf_hud_button_height">40dp</dimen>
     <dimen name="nerf_hud_button_small_height">36dp</dimen>
     <dimen name="nerf_drawer_search_height">36dp</dimen>
+
+    <!-- Shared spacing tokens for launcher-owned UI surfaces -->
+    <dimen name="nerf_space_2">2dp</dimen>
+    <dimen name="nerf_space_4">4dp</dimen>
+    <dimen name="nerf_space_6">6dp</dimen>
+    <dimen name="nerf_space_8">8dp</dimen>
+    <dimen name="nerf_space_10">10dp</dimen>
+    <dimen name="nerf_space_12">12dp</dimen>
+    <dimen name="nerf_space_16">16dp</dimen>
+    <dimen name="nerf_space_20">20dp</dimen>
+
+    <!-- HUD tokens -->
+    <dimen name="nerf_hud_meter_height">12dp</dimen>
+    <dimen name="nerf_hud_brand_mark_size">18dp</dimen>
+    <dimen name="nerf_hud_action_button_width">96dp</dimen>
+    <dimen name="nerf_text_size_hud_button">12sp</dimen>
+    <dimen name="nerf_hud_icon_size">16dp</dimen>
+
+    <!-- Settings surface tokens -->
+    <dimen name="nerf_settings_cta_height">44dp</dimen>
+
+    <!-- Taskbar management tokens -->
+    <dimen name="nerf_taskbar_empty_state_text_size">13sp</dimen>
+    <dimen name="nerf_taskbar_row_title_text_size">14sp</dimen>
+    <dimen name="nerf_taskbar_row_package_text_size">12sp</dimen>
+    <dimen name="nerf_taskbar_row_button_min_height">36dp</dimen>
 </resources>

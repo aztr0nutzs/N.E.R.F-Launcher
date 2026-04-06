@@ -526,7 +526,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupScanlineSweep() {
-        binding.scanlineOverlay.alpha = 0.14f
+        binding.scanlineOverlay.alpha = fractionValue(R.fraction.nerf_alpha_scanline_base)
         binding.scanlineOverlay.post {
             scanlineSweepAnimator?.cancel()
             scanlineOpacityAnimator?.cancel()
@@ -541,7 +541,10 @@ class MainActivity : AppCompatActivity() {
                 repeatMode = ValueAnimator.RESTART
                 interpolator = LinearInterpolator()
             }
-            scanlineOpacityAnimator = ValueAnimator.ofFloat(0.11f, 0.17f).apply {
+            scanlineOpacityAnimator = ValueAnimator.ofFloat(
+                fractionValue(R.fraction.nerf_alpha_scanline_min),
+                fractionValue(R.fraction.nerf_alpha_scanline_max)
+            ).apply {
                 duration = scaledDuration(4_800L)
                 repeatCount = ValueAnimator.INFINITE
                 repeatMode = ValueAnimator.REVERSE
@@ -645,7 +648,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun View.applyPressFeedback(
-        downScale: Float = 0.975f,
+        downScale: Float = fractionValue(R.fraction.nerf_touch_scale_down_launcher_shell),
         downDuration: Long = 72L,
         upDuration: Long = 150L
     ) {
@@ -656,7 +659,7 @@ class MainActivity : AppCompatActivity() {
                     touchedView.animate()
                         .scaleX(downScale)
                         .scaleY(downScale)
-                        .alpha(0.94f)
+                        .alpha(fractionValue(R.fraction.nerf_touch_alpha_down_launcher_shell))
                         .setDuration(downDuration)
                         .setInterpolator(FastOutSlowInInterpolator())
                         .start()
@@ -676,6 +679,8 @@ class MainActivity : AppCompatActivity() {
             false
         }
     }
+
+    private fun fractionValue(fractionRes: Int): Float = resources.getFraction(fractionRes, 1, 1)
 
     private fun renderSystemModules(snapshot: SystemModuleSnapshot) {
         latestSystemSnapshot = snapshot

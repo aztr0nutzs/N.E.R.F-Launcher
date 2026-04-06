@@ -25,7 +25,7 @@
             android:id="@+id/date_display"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="@dimen/nerf_space_2"
             android:text="MON 01 JAN"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.Date" />
     </LinearLayout>
@@ -42,7 +42,7 @@
             android:id="@+id/battery_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="6dp"
+            android:layout_marginEnd="@dimen/nerf_space_6"
             android:text="ENERGY"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
             android:textColor="@color/theme_shared_hud_orange" />
@@ -50,14 +50,14 @@
         <com.nerf.launcher.ui.SegmentedBarView
             android:id="@+id/battery_meter"
             android:layout_width="0dp"
-            android:layout_height="12dp"
+            android:layout_height="@dimen/nerf_hud_meter_height"
             android:layout_weight="1" />
 
         <TextView
             android:id="@+id/battery_percent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
+            android:layout_marginStart="@dimen/nerf_space_6"
             android:text="50%"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.BatteryPercent" />
     </LinearLayout>
@@ -71,9 +71,9 @@
         android:orientation="horizontal">
 
         <ImageView
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:alpha="0.82"
+            android:layout_width="@dimen/nerf_hud_brand_mark_size"
+            android:layout_height="@dimen/nerf_hud_brand_mark_size"
+            android:alpha="@fraction/nerf_alpha_hud_brand_mark"
             android:contentDescription="@string/nerf_brand_mark_cd"
             android:src="@drawable/ic_brand_mark_main" />
 
@@ -81,7 +81,7 @@
             android:id="@+id/brand_signature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
+            android:layout_marginStart="@dimen/nerf_space_6"
             android:text="@string/hud_brand_signature"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
             android:textColor="@color/theme_shared_hud_panel_text_secondary" />
@@ -90,14 +90,14 @@
     <com.google.android.material.button.MaterialButton
         style="@style/Widget.NerfLauncher.Hud.ActionTileButton"
         android:id="@+id/add_widget_btn"
-        android:layout_width="96dp"
+        android:layout_width="@dimen/nerf_hud_action_button_width"
         android:layout_height="@dimen/nerf_hud_button_small_height"
         android:layout_marginStart="@dimen/nerf_section_gap"
         android:text="SETTINGS"
         android:textColor="@color/theme_shared_hud_lime"
-        android:textSize="12sp"
+        android:textSize="@dimen/nerf_text_size_hud_button"
         app:icon="@drawable/ic_settings"
         app:iconGravity="textStart"
-        app:iconPadding="6dp"
-        app:iconSize="16dp" />
+        app:iconPadding="@dimen/nerf_space_6"
+        app:iconSize="@dimen/nerf_hud_icon_size" />
 </LinearLayout>

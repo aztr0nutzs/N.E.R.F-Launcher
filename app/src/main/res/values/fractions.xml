@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="nerf_alpha_scanline_overlay_settings" type="fraction">30%</item>
+    <item name="nerf_alpha_hud_brand_mark" type="fraction">82%</item>
+
+    <item name="nerf_touch_scale_down_taskbar" type="fraction">96.5%</item>
+    <item name="nerf_touch_alpha_down_taskbar" type="fraction">92%</item>
+
+    <item name="nerf_touch_scale_down_hud" type="fraction">97.2%</item>
+    <item name="nerf_touch_alpha_down_hud" type="fraction">93%</item>
+    <item name="nerf_hud_breath_alpha_min" type="fraction">98.2%</item>
+    <item name="nerf_hud_breath_alpha_range" type="fraction">1.8%</item>
+
+    <item name="nerf_alpha_scanline_base" type="fraction">14%</item>
+    <item name="nerf_alpha_scanline_min" type="fraction">11%</item>
+    <item name="nerf_alpha_scanline_max" type="fraction">17%</item>
+
+    <item name="nerf_touch_scale_down_launcher_shell" type="fraction">97.5%</item>
+    <item name="nerf_touch_alpha_down_launcher_shell" type="fraction">94%</item>
+</resources>

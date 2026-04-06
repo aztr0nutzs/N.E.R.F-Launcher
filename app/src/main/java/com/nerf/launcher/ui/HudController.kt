@@ -68,9 +68,9 @@ class HudController(
                 MotionEvent.ACTION_DOWN -> {
                     v.animate().cancel()
                     v.animate()
-                        .scaleX(0.972f)
-                        .scaleY(0.972f)
-                        .alpha(0.93f)
+                        .scaleX(fractionValue(R.fraction.nerf_touch_scale_down_hud))
+                        .scaleY(fractionValue(R.fraction.nerf_touch_scale_down_hud))
+                        .alpha(fractionValue(R.fraction.nerf_touch_alpha_down_hud))
                         .setDuration(70L)
                         .setInterpolator(FastOutSlowInInterpolator())
                         .start()
@@ -137,7 +137,8 @@ class HudController(
             interpolator = FastOutSlowInInterpolator()
             addUpdateListener { animator ->
                 val phase = animator.animatedValue as Float
-                hudView.alpha = 0.982f + (phase * 0.018f)
+                hudView.alpha = fractionValue(R.fraction.nerf_hud_breath_alpha_min) +
+                    (phase * fractionValue(R.fraction.nerf_hud_breath_alpha_range))
             }
             start()
         }
@@ -174,4 +175,7 @@ class HudController(
         hudStatusMonitor.release()
         stopHudBreathing()
     }
+
+    private fun fractionValue(fractionRes: Int): Float =
+        activity.resources.getFraction(fractionRes, 1, 1)
 }
