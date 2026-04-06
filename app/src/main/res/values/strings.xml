@@ -100,6 +100,10 @@
     <string name="taskbar_unpin_action">Unpin from taskbar</string>
     <string name="taskbar_customize_action">Taskbar settings</string>
     <string name="taskbar_settings_pin_hint">Long-press any app in the grid to pin it. Long-press a taskbar icon to unpin.</string>
+    <string name="taskbar_settings_pinned_empty">No pinned apps yet.</string>
+    <string name="taskbar_settings_move_up">Move up</string>
+    <string name="taskbar_settings_move_down">Move down</string>
+    <string name="taskbar_settings_remove_pin">Remove</string>
     <string name="reactor_diagnostics_title">Reactor Diagnostics</string>
     <string name="reactor_subnet_sweep_start">N-Core: Initializing subnet sweep...</string>
     <string name="reactor_assistant_online">Reactor assistant online</string>

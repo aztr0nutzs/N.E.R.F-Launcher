@@ -6,9 +6,11 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.ColorUtils
+import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityTaskbarSettingsBinding
 import com.nerf.launcher.util.ConfigRepository
@@ -22,6 +24,9 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTaskbarSettingsBinding
     private lateinit var backgroundStyleAdapter: ThemedSpinnerAdapter
     private var isBindingState = false
+    private val pinnedPrimaryLabels = mutableListOf<TextView>()
+    private val pinnedSecondaryLabels = mutableListOf<TextView>()
+    private val pinnedActionButtons = mutableListOf<MaterialButton>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -97,7 +102,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             )
             applyTheme(theme)
             backgroundStyleAdapter.updateTheme(theme)
-            bindTaskbarSettings(config.taskbarSettings)
+            bindTaskbarSettings(config.taskbarSettings, theme)
         }
     }
 
@@ -149,6 +154,24 @@ class TaskbarSettingsActivity : AppCompatActivity() {
                 ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
             )
         }
+
+        applyPinnedManagementTheme(theme)
+    }
+
+    private fun applyPinnedManagementTheme(theme: NerfTheme) {
+        pinnedPrimaryLabels.forEach { it.setTextColor(theme.hudPanelTextPrimary) }
+        pinnedSecondaryLabels.forEach {
+            it.setTextColor(ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0xD0))
+        }
+
+        val buttonFill = android.content.res.ColorStateList.valueOf(
+            ColorUtils.setAlphaComponent(theme.primary, 0xD9)
+        )
+        val buttonText = android.content.res.ColorStateList.valueOf(theme.hudPanelTextPrimary)
+        pinnedActionButtons.forEach { button ->
+            button.backgroundTintList = buttonFill
+            button.setTextColor(buttonText)
+        }
     }
 
     private fun applyTextColorRecursively(root: View, color: Int) {
@@ -188,7 +211,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         )
     }
 
-    private fun bindTaskbarSettings(settings: TaskbarSettings) {
+    private fun bindTaskbarSettings(settings: TaskbarSettings, theme: NerfTheme) {
         isBindingState = true
 
         binding.taskbarEnabledSwitch.isChecked = settings.enabled
@@ -216,8 +239,110 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         val pinnedCount = settings.pinnedApps.size
         binding.pinnedAppsSummary.text = getString(R.string.taskbar_settings_pinned_summary, pinnedCount)
         binding.clearPinnedAppsButton.isEnabled = pinnedCount > 0
+        renderPinnedApps(settings.pinnedApps, theme)
 
         isBindingState = false
+    }
+
+    private fun renderPinnedApps(packageNames: List<String>, theme: NerfTheme) {
+        pinnedPrimaryLabels.clear()
+        pinnedSecondaryLabels.clear()
+        pinnedActionButtons.clear()
+
+        binding.pinnedAppsListContainer.removeAllViews()
+        if (packageNames.isEmpty()) {
+            val emptyState = TextView(this).apply {
+                text = getString(R.string.taskbar_settings_pinned_empty)
+                textSize = 13f
+                setPadding(0, 8.dp, 0, 0)
+            }
+            binding.pinnedAppsListContainer.addView(emptyState)
+            pinnedSecondaryLabels.add(emptyState)
+            applyPinnedManagementTheme(theme)
+            return
+        }
+
+        packageNames.forEachIndexed { index, packageName ->
+            val row = createPinnedAppRow(index, packageName, packageNames.size)
+            binding.pinnedAppsListContainer.addView(row)
+        }
+        applyPinnedManagementTheme(theme)
+    }
+
+    private fun createPinnedAppRow(index: Int, packageName: String, totalCount: Int): View {
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(0, if (index == 0) 8.dp else 12.dp, 0, 0)
+
+            val title = TextView(context).apply {
+                text = resolveLabel(packageName)
+                textSize = 14f
+            }
+            addView(title)
+            pinnedPrimaryLabels.add(title)
+
+            val packageText = TextView(context).apply {
+                text = packageName
+                textSize = 12f
+                setPadding(0, 2.dp, 0, 0)
+            }
+            addView(packageText)
+            pinnedSecondaryLabels.add(packageText)
+
+            val actions = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                setPadding(0, 8.dp, 0, 0)
+            }
+            actions.addView(createRowButton(R.string.taskbar_settings_move_up).apply {
+                isEnabled = index > 0
+                setOnClickListener { movePinnedApp(packageName, -1) }
+            })
+            actions.addView(createRowButton(R.string.taskbar_settings_move_down).apply {
+                isEnabled = index < totalCount - 1
+                setOnClickListener { movePinnedApp(packageName, 1) }
+            })
+            actions.addView(createRowButton(R.string.taskbar_settings_remove_pin).apply {
+                setOnClickListener { TaskbarController.removePinnedApp(packageName) }
+            })
+            addView(actions)
+        }
+    }
+
+    private fun createRowButton(labelRes: Int): MaterialButton {
+        return MaterialButton(this, null, com.google.android.material.R.attr.materialButtonOutlinedStyle).apply {
+            text = getString(labelRes)
+            isAllCaps = false
+            insetTop = 0
+            insetBottom = 0
+            minimumHeight = 36.dp
+            minHeight = 36.dp
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+            ).apply {
+                marginEnd = 8.dp
+            }
+            pinnedActionButtons.add(this)
+        }
+    }
+
+    private fun movePinnedApp(packageName: String, direction: Int) {
+        val currentPinnedApps = TaskbarController.getPinnedApps().toMutableList()
+        val currentIndex = currentPinnedApps.indexOf(packageName)
+        if (currentIndex < 0) return
+        val targetIndex = currentIndex + direction
+        if (targetIndex !in currentPinnedApps.indices) return
+        val movedPackage = currentPinnedApps.removeAt(currentIndex)
+        currentPinnedApps.add(targetIndex, movedPackage)
+        TaskbarController.savePinnedApps(currentPinnedApps)
+    }
+
+    private fun resolveLabel(packageName: String): String {
+        return runCatching {
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            packageManager.getApplicationLabel(appInfo).toString()
+        }.getOrDefault(packageName)
     }
 
     private fun updateTaskbarSettings(transform: TaskbarSettings.() -> TaskbarSettings) {
@@ -306,4 +431,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         val style: TaskbarBackgroundStyle,
         val labelRes: Int
     )
+
+    private val Int.dp: Int
+        get() = (this * resources.displayMetrics.density).toInt()
 }
