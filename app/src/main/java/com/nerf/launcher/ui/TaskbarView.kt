@@ -49,10 +49,10 @@ class TaskbarView @JvmOverloads constructor(
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         setPadding(
-            dimensionPixelSize(R.dimen.nerf_space_8),
-            dimensionPixelSize(R.dimen.nerf_space_6),
-            dimensionPixelSize(R.dimen.nerf_space_8),
-            dimensionPixelSize(R.dimen.nerf_space_6)
+            dimensionPixelSize(R.dimen.nerf_taskbar_shell_padding_horizontal),
+            dimensionPixelSize(R.dimen.nerf_taskbar_shell_padding_vertical),
+            dimensionPixelSize(R.dimen.nerf_taskbar_shell_padding_horizontal),
+            dimensionPixelSize(R.dimen.nerf_taskbar_shell_padding_vertical)
         )
         applyShellBackground(TaskbarBackgroundStyle.DARK, 1f, null)
         setOnLongClickListener {
@@ -185,7 +185,7 @@ class TaskbarView @JvmOverloads constructor(
             addView(
                 iconView,
                 LayoutParams(0, LayoutParams.MATCH_PARENT, 1f).apply {
-                    val horizontalMargin = dimensionPixelSize(R.dimen.nerf_space_4)
+                    val horizontalMargin = dimensionPixelSize(R.dimen.nerf_taskbar_icon_horizontal_margin)
                     setMargins(horizontalMargin, 0, horizontalMargin, 0)
                 }
             )
@@ -199,10 +199,10 @@ class TaskbarView @JvmOverloads constructor(
             setImageResource(R.drawable.ic_module)
             scaleType = ImageView.ScaleType.CENTER_INSIDE
             setPadding(
-                dimensionPixelSize(R.dimen.nerf_space_10),
-                dimensionPixelSize(R.dimen.nerf_space_8),
-                dimensionPixelSize(R.dimen.nerf_space_10),
-                dimensionPixelSize(R.dimen.nerf_space_8)
+                dimensionPixelSize(R.dimen.nerf_taskbar_icon_padding_horizontal),
+                dimensionPixelSize(R.dimen.nerf_taskbar_icon_padding_vertical),
+                dimensionPixelSize(R.dimen.nerf_taskbar_icon_padding_horizontal),
+                dimensionPixelSize(R.dimen.nerf_taskbar_icon_padding_vertical)
             )
             background = ContextCompat.getDrawable(context, R.drawable.dock_tile_background)
             contentDescription = context.getString(R.string.app_icon)
