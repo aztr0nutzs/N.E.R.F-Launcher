@@ -25,6 +25,13 @@
     <dimen name="nerf_space_12">12dp</dimen>
     <dimen name="nerf_space_16">16dp</dimen>
     <dimen name="nerf_space_20">20dp</dimen>
+    <dimen name="nerf_space_0">0dp</dimen>
+    <dimen name="nerf_space_1">1dp</dimen>
+    <dimen name="nerf_space_3">3dp</dimen>
+    <dimen name="nerf_space_5">5dp</dimen>
+    <dimen name="nerf_space_9">9dp</dimen>
+    <dimen name="nerf_space_14">14dp</dimen>
+    <dimen name="nerf_space_24">24dp</dimen>
 
     <!-- HUD tokens -->
     <dimen name="nerf_hud_meter_height">12dp</dimen>
@@ -32,6 +39,12 @@
     <dimen name="nerf_hud_action_button_width">96dp</dimen>
     <dimen name="nerf_text_size_hud_button">12sp</dimen>
     <dimen name="nerf_hud_icon_size">16dp</dimen>
+    <dimen name="nerf_size_18">18dp</dimen>
+    <dimen name="nerf_size_44">44dp</dimen>
+    <dimen name="nerf_size_56">56dp</dimen>
+    <dimen name="nerf_size_58">58dp</dimen>
+    <dimen name="nerf_text_size_10">10sp</dimen>
+    <dimen name="nerf_text_size_11">11sp</dimen>
 
     <!-- Settings surface tokens -->
     <dimen name="nerf_settings_cta_height">44dp</dimen>
