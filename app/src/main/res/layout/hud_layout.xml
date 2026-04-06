@@ -18,7 +18,7 @@
             android:id="@+id/time_display"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="12:00"
+            android:text="@string/hud_time_placeholder"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.Time" />
 
         <TextView
@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/nerf_space_2"
-            android:text="MON 01 JAN"
+            android:text="@string/hud_date_placeholder"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.Date" />
     </LinearLayout>
 
@@ -43,7 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/nerf_space_6"
-            android:text="ENERGY"
+            android:text="@string/modules_energy_label"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.SectionLabel"
             android:textColor="@color/theme_shared_hud_orange" />
 
@@ -58,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/nerf_space_6"
-            android:text="50%"
+            android:text="@string/hud_battery_percent_placeholder"
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.BatteryPercent" />
     </LinearLayout>
 
@@ -93,7 +93,7 @@
         android:layout_width="@dimen/nerf_hud_action_button_width"
         android:layout_height="@dimen/nerf_hud_button_small_height"
         android:layout_marginStart="@dimen/nerf_section_gap"
-        android:text="SETTINGS"
+        android:text="@string/hud_settings_action"
         android:textColor="@color/theme_shared_hud_lime"
         android:textSize="@dimen/nerf_text_size_hud_button"
         app:icon="@drawable/ic_settings"
