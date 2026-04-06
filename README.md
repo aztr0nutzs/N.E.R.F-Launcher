@@ -67,21 +67,28 @@ What still requires a real Android SDK environment:
 
 ## Validation steps after SDK setup
 
-After creating a local `local.properties` with `sdk.dir=...` (you can copy `local.properties.example`) or opening the project in Android Studio with a configured SDK, run:
+After creating a local `local.properties` with `sdk.dir=...` (you can copy `local.properties.example`) or exporting `ANDROID_HOME` to a valid SDK path, run build verification with the Gradle wrapper from the repo root:
 
 macOS/Linux:
 - `./gradlew help`
 - `./gradlew :app:assembleDebug`
+- `./gradlew :app:testDebugUnitTest`
 - `./gradlew :app:installDebug`
 
 Windows (PowerShell/cmd):
 - `.\gradlew.bat help`
 - `.\gradlew.bat :app:assembleDebug`
+- `.\gradlew.bat :app:testDebugUnitTest`
 - `.\gradlew.bat :app:installDebug`
 
 If release packaging needs to be checked as part of a release candidate, also run:
 - macOS/Linux: `./gradlew :app:assembleRelease`
 - Windows: `.\gradlew.bat :app:assembleRelease`
+
+Notes:
+- `:app:testDebugUnitTest` is local-JVM unit testing and still requires SDK resolution for this Android module.
+- `:app:connectedDebugAndroidTest` is optional and requires a running device/emulator in addition to SDK setup.
+- Keep `local.properties` uncommitted; it is intentionally machine-local and already ignored by Git.
 
 ## Minimal smoke-test checklist
 
