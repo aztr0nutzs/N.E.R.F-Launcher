@@ -18,6 +18,8 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.FileReader
 import java.net.InetAddress
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 // Expanded Data Model
 data class NetworkNode(
@@ -67,6 +69,8 @@ class LocalNetworkScanner(private val context: Context) {
     private suspend fun performSubnetScan(): List<NetworkNode> = withContext(Dispatchers.IO) {
         val activeNodes = mutableListOf<NetworkNode>()
         val deviceIp = getLocalIpAddress() ?: return@withContext emptyList()
+        val failedProbeCount = AtomicInteger(0)
+        val firstProbeFailure = AtomicReference<String?>(null)
 
         val subnet = deviceIp.substringBeforeLast(".")
 
@@ -76,13 +80,25 @@ class LocalNetworkScanner(private val context: Context) {
             async {
                 probeSemaphore.withPermit {
                     val ipToTest = "$subnet.$i"
-                    pingDevice(ipToTest)
+                    pingDevice(ipToTest) { failureSummary ->
+                        failedProbeCount.incrementAndGet()
+                        firstProbeFailure.compareAndSet(null, "ip=$ipToTest, reason=$failureSummary")
+                    }
                 }
             }
         }
 
         // Wait for all pings to complete
         val results = pingTasks.awaitAll().filterNotNull()
+        val failedCount = failedProbeCount.get()
+        if (failedCount > 0) {
+            val firstFailureSummary = firstProbeFailure.get()
+            Log.w(
+                TAG,
+                "Subnet probe completed with $failedCount failures. " +
+                    "First failure: ${firstFailureSummary ?: "unavailable"}"
+            )
+        }
 
         // Phase 2: Read ARP table to match MAC addresses to the discovered IPs
         val arpTable = readArpTable()
@@ -107,7 +123,10 @@ class LocalNetworkScanner(private val context: Context) {
         return@withContext activeNodes
     }
 
-    private fun pingDevice(ipAddress: String): NetworkNode? {
+    private fun pingDevice(
+        ipAddress: String,
+        onProbeFailure: (String) -> Unit
+    ): NetworkNode? {
         return try {
             val inetAddress = InetAddress.getByName(ipAddress)
             val startTime = System.currentTimeMillis()
@@ -128,7 +147,8 @@ class LocalNetworkScanner(private val context: Context) {
                 null
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Probe failed for $ipAddress", e)
+            val failureSummary = "${e.javaClass.simpleName}: ${e.message ?: "no detail"}"
+            onProbeFailure(failureSummary)
             null
         }
     }
@@ -156,7 +176,7 @@ class LocalNetworkScanner(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed reading ARP table", e)
+            Log.w(TAG, "Failed reading ARP table: ${e.javaClass.simpleName}: ${e.message ?: "no detail"}")
             // Fallback: If ARP is blocked, return empty map.
         }
         return arpMap

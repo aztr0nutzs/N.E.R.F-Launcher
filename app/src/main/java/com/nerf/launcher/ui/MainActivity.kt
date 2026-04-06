@@ -933,7 +933,7 @@ class MainActivity : AppCompatActivity() {
                     try {
                         lastNetworkScanResult = localNetworkScanner.scanLocalSubnet()
                     } catch (e: Exception) {
-                        Log.w(TAG, "Local network scan failed", e)
+                        Log.w(TAG, "Local network scan failed: ${e.javaClass.simpleName}: ${e.message ?: "no detail"}")
                         lastNetworkScanResult = emptyList()
                     } finally {
                         isNetworkScanRunning = false
