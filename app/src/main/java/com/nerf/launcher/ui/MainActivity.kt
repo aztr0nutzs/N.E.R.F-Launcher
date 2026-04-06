@@ -157,6 +157,11 @@ class MainActivity : AppCompatActivity() {
                 showAppContextMenu(anchor, app)
             }
         )
+        val initialTheme = ThemeManager.resolveActiveTheme(this)
+        adapter.updateThemeResources(
+            labelColor = initialTheme.hudAppLabelColor,
+            socketBackground = ThemeManager.createAppIconSocketBackground(this, initialTheme)
+        )
 
         binding.recyclerView.apply {
             layoutManager = GridLayoutManager(
@@ -223,8 +228,8 @@ class MainActivity : AppCompatActivity() {
             allApps
         } else {
             allApps.filter { app ->
-                app.appName.lowercase(Locale.getDefault()).contains(normalizedQuery) ||
-                        app.packageName.lowercase(Locale.getDefault()).contains(normalizedQuery)
+                app.normalizedAppName.contains(normalizedQuery) ||
+                    app.normalizedPackageName.contains(normalizedQuery)
             }
         }
         adapter.submitList(filtered)
@@ -285,6 +290,10 @@ class MainActivity : AppCompatActivity() {
                 )
                 applyLauncherShellTheme(activeTheme)
                 applyStatusBarTheme(config)
+                adapter.updateThemeResources(
+                    labelColor = activeTheme.hudAppLabelColor,
+                    socketBackground = ThemeManager.createAppIconSocketBackground(this, activeTheme)
+                )
                 refreshVisibleAppTheme()
             }
             if (gridChanged || previous == null) {
@@ -531,11 +540,6 @@ class MainActivity : AppCompatActivity() {
                 repeatCount = ValueAnimator.INFINITE
                 repeatMode = ValueAnimator.RESTART
                 interpolator = LinearInterpolator()
-                if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) &&
-                    !systemModuleController.isPowerSaveModeEnabled()
-                ) {
-                    start()
-                }
             }
             scanlineOpacityAnimator = ValueAnimator.ofFloat(0.11f, 0.17f).apply {
                 duration = scaledDuration(4_800L)
@@ -545,12 +549,8 @@ class MainActivity : AppCompatActivity() {
                 addUpdateListener { animator ->
                     binding.scanlineOverlay.alpha = animator.animatedValue as Float
                 }
-                if (lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) &&
-                    !systemModuleController.isPowerSaveModeEnabled()
-                ) {
-                    start()
-                }
             }
+            updateScanlineAnimationState()
         }
     }
 
@@ -738,6 +738,7 @@ class MainActivity : AppCompatActivity() {
             snapshot.reactorSync
         )
         reactorCoordinator.updateSyncPreview(snapshot.reactorSync)
+        updateScanlineAnimationState()
     }
 
     private fun handleAssistantLauncherCommand(
@@ -1146,16 +1147,31 @@ class MainActivity : AppCompatActivity() {
         if (isLockSurfaceVisible) {
             lockSurfaceClockHandler.post(lockSurfaceClockTick)
         }
-        if (systemModuleController.isPowerSaveModeEnabled()) return
-        scanlineSweepAnimator?.start()
-        scanlineOpacityAnimator?.start()
+        updateScanlineAnimationState()
     }
 
     override fun onPause() {
         lockSurfaceClockHandler.removeCallbacks(lockSurfaceClockTick)
+        pauseScanlineAnimation()
+        super.onPause()
+    }
+
+    private fun updateScanlineAnimationState() {
+        if (!lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) {
+            pauseScanlineAnimation()
+            return
+        }
+        if (systemModuleController.isPowerSaveModeEnabled()) {
+            pauseScanlineAnimation()
+            return
+        }
+        scanlineSweepAnimator?.start()
+        scanlineOpacityAnimator?.start()
+    }
+
+    private fun pauseScanlineAnimation() {
         scanlineSweepAnimator?.pause()
         scanlineOpacityAnimator?.pause()
-        super.onPause()
     }
 
     override fun onStart() {
