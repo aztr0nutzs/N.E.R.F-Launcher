@@ -204,11 +204,7 @@ class AiResponseRepository(private val context: Context) {
                 logDebug("Response bank loaded: ${it.size} categories, $total total lines.")
             }
         } catch (e: Exception) {
-            if (BuildConfig.DEBUG) {
-                Log.w(TAG, "Failed to load assistant response bank.")
-            } else {
-                Log.e(TAG, "Failed to load assistant response bank.")
-            }
+            logDebug("Failed to load assistant response bank.")
             null
         }
     }

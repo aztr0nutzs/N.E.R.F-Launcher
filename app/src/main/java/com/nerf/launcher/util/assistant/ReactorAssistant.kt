@@ -110,7 +110,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
             if (langResult == TextToSpeech.LANG_MISSING_DATA ||
                 langResult == TextToSpeech.LANG_NOT_SUPPORTED
             ) {
-                Log.w(TAG, "Locale.US not supported on this device.")
+                logDebug("Locale.US not supported on this device.")
             } else {
                 applyVoiceProfile(currentProfile)
                 tts?.setOnUtteranceProgressListener(buildProgressListener())
@@ -119,7 +119,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
                 logDebug("ReactorAssistant ready. Profile: ${currentProfile.label}")
             }
         } else {
-            Log.e(TAG, "TTS init failed. Status: $status")
+            logDebug("TTS init failed. Status: $status")
             onReadyChanged?.invoke(false)
         }
     }
