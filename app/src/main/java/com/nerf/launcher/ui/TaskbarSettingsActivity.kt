@@ -40,6 +40,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     private val transparencyPercentScale by lazy {
         integerValue(R.integer.nerf_taskbar_settings_transparency_percent_scale)
     }
+    private val transparencyPercentScaleFloat by lazy { transparencyPercentScale.toFloat() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,7 +112,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
                 commitStep = dragPercentStep,
                 commitValue = { progress ->
                     updateTaskbarSettings {
-                        copy(transparency = progress / transparencyPercentScale.toFloat())
+                        copy(transparency = transparencyFromPercent(progress))
                     }
                 }
             )
@@ -273,11 +274,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         binding.taskbarIconSizeSeekbar.progress = iconSizeDp - minIconSizeDp
         binding.taskbarIconSizeValue.text = getString(R.string.taskbar_settings_icon_size_value, iconSizeDp)
 
-        val transparencyPercent = (
-            settings.transparency
-                .coerceIn(TRANSPARENCY_MIN, TRANSPARENCY_MAX)
-                * transparencyPercentScale
-            ).toInt()
+        val transparencyPercent = transparencyToPercent(settings.transparency)
         binding.taskbarTransparencySeekbar.progress = transparencyPercent
         binding.taskbarTransparencyValue.text = getString(
             R.string.taskbar_settings_transparency_value,
@@ -405,6 +402,18 @@ class TaskbarSettingsActivity : AppCompatActivity() {
 
     private fun updateTaskbarSettings(transform: TaskbarSettings.() -> TaskbarSettings) {
         TaskbarController.updateSettings(transform)
+    }
+
+    private fun transparencyFromPercent(percent: Int): Float {
+        return percent / transparencyPercentScaleFloat
+    }
+
+    private fun transparencyToPercent(transparency: Float): Int {
+        return (
+            transparency
+                .coerceIn(TRANSPARENCY_MIN, TRANSPARENCY_MAX)
+                * transparencyPercentScaleFloat
+            ).toInt()
     }
 
     override fun onSupportNavigateUp(): Boolean {
