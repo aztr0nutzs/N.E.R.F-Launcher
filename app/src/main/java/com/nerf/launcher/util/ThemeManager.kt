@@ -9,6 +9,9 @@ import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.StateListDrawable
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.widget.SeekBar
+import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.ColorUtils
 import com.google.android.material.color.MaterialColors
@@ -42,6 +45,38 @@ object ThemeManager {
 
     fun cloneMutableDrawable(drawable: Drawable): Drawable {
         return drawable.constantState?.newDrawable()?.mutate() ?: drawable.mutate()
+    }
+
+    fun applyTextColorRecursively(root: View, color: Int) {
+        when (root) {
+            is TextView -> root.setTextColor(color)
+            is ViewGroup -> {
+                for (index in 0 until root.childCount) {
+                    applyTextColorRecursively(root.getChildAt(index), color)
+                }
+            }
+        }
+    }
+
+    fun createEnabledDisabledColorStateList(enabledColor: Int, disabledColor: Int): android.content.res.ColorStateList {
+        return android.content.res.ColorStateList(
+            arrayOf(
+                intArrayOf(android.R.attr.state_enabled),
+                intArrayOf()
+            ),
+            intArrayOf(enabledColor, disabledColor)
+        )
+    }
+
+    fun applySeekBarTint(
+        seekBar: SeekBar,
+        activeColor: Int,
+        backgroundColor: Int
+    ) {
+        val activeTint = android.content.res.ColorStateList.valueOf(activeColor)
+        seekBar.thumbTintList = activeTint
+        seekBar.progressTintList = activeTint
+        seekBar.progressBackgroundTintList = android.content.res.ColorStateList.valueOf(backgroundColor)
     }
 
     fun applyWindowAndToolbarTheme(
