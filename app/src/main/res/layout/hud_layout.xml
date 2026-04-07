@@ -18,7 +18,7 @@
             android:id="@+id/time_display"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/hud_time_placeholder"
+            android:text=""
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.Time" />
 
         <TextView
@@ -26,7 +26,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/nerf_space_2"
-            android:text="@string/hud_date_placeholder"
+            android:text=""
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.Date" />
     </LinearLayout>
 
@@ -58,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/nerf_space_6"
-            android:text="@string/hud_battery_percent_placeholder"
+            android:text=""
             android:textAppearance="@style/TextAppearance.NerfLauncher.Hud.BatteryPercent" />
     </LinearLayout>
 
