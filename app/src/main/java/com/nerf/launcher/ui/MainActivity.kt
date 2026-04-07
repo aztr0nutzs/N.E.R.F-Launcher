@@ -345,42 +345,46 @@ class MainActivity : AppCompatActivity() {
         binding.drawerSearchInput.setHintTextColor(theme.hudPanelTextSecondary)
 
         val quickOrbDrawable = ThemeManager.createQuickToggleOrbDrawable(this, theme)
-        binding.quickThemeBtn.background = ThemeManager.cloneMutableDrawable(quickOrbDrawable)
-        binding.quickIconPackBtn.background = ThemeManager.cloneMutableDrawable(quickOrbDrawable)
-        binding.quickAnimationBtn.background = ThemeManager.cloneMutableDrawable(quickOrbDrawable)
-        binding.quickTaskbarBtn.background = ThemeManager.cloneMutableDrawable(quickOrbDrawable)
+        listOf(
+            binding.quickThemeBtn,
+            binding.quickIconPackBtn,
+            binding.quickAnimationBtn,
+            binding.quickTaskbarBtn
+        ).forEach { button ->
+            button.background = ThemeManager.cloneMutableDrawable(quickOrbDrawable)
+        }
 
         val actionTileDrawable = ThemeManager.createHudActionTileDrawable(this, theme)
-        binding.openSettingsTile.background = ThemeManager.cloneMutableDrawable(actionTileDrawable)
-        binding.reloadTile.background = ThemeManager.cloneMutableDrawable(actionTileDrawable)
-        binding.lockSurfaceTile.background = ThemeManager.cloneMutableDrawable(actionTileDrawable)
-        binding.lockSurfaceUnlockButton.background =
-            ThemeManager.cloneMutableDrawable(actionTileDrawable)
+        listOf(
+            binding.openSettingsTile,
+            binding.reloadTile,
+            binding.lockSurfaceTile,
+            binding.lockSurfaceUnlockButton
+        ).forEach { tile ->
+            tile.background = ThemeManager.cloneMutableDrawable(actionTileDrawable)
+        }
 
-        binding.quickThemeBtn.setTextColor(theme.hudInfoColor)
-        binding.quickIconPackBtn.setTextColor(theme.hudSuccessColor)
-        binding.quickAnimationBtn.setTextColor(theme.hudWarningColor)
-        binding.quickTaskbarBtn.setTextColor(theme.hudAccentColor)
-        binding.quickGlowValue.setTextColor(theme.hudInfoColor)
-        binding.quickGridValue.setTextColor(theme.hudWarningColor)
-        binding.openSettingsTile.setTextColor(theme.hudInfoColor)
-        binding.reloadTile.setTextColor(theme.hudWarningColor)
-        binding.lockSurfaceTile.setTextColor(theme.hudAccentColor)
-        binding.lockSurfaceUnlockButton.setTextColor(theme.hudSuccessColor)
+        mapOf(
+            binding.quickThemeBtn to theme.hudInfoColor,
+            binding.quickIconPackBtn to theme.hudSuccessColor,
+            binding.quickAnimationBtn to theme.hudWarningColor,
+            binding.quickTaskbarBtn to theme.hudAccentColor,
+            binding.quickGlowValue to theme.hudInfoColor,
+            binding.quickGridValue to theme.hudWarningColor,
+            binding.openSettingsTile to theme.hudInfoColor,
+            binding.reloadTile to theme.hudWarningColor,
+            binding.lockSurfaceTile to theme.hudAccentColor,
+            binding.lockSurfaceUnlockButton to theme.hudSuccessColor
+        ).forEach { (view, color) ->
+            view.setTextColor(color)
+        }
 
-        val quickGlowTint = android.content.res.ColorStateList.valueOf(theme.hudInfoColor)
-        binding.quickGlowSeekbar.thumbTintList = quickGlowTint
-        binding.quickGlowSeekbar.progressTintList = quickGlowTint
-        binding.quickGlowSeekbar.progressBackgroundTintList = android.content.res.ColorStateList.valueOf(
-            androidx.core.graphics.ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
+        val seekbarBackground = androidx.core.graphics.ColorUtils.setAlphaComponent(
+            theme.hudPanelTextSecondary,
+            0x66
         )
-
-        val quickGridTint = android.content.res.ColorStateList.valueOf(theme.hudWarningColor)
-        binding.quickGridSeekbar.thumbTintList = quickGridTint
-        binding.quickGridSeekbar.progressTintList = quickGridTint
-        binding.quickGridSeekbar.progressBackgroundTintList = android.content.res.ColorStateList.valueOf(
-            androidx.core.graphics.ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
-        )
+        ThemeManager.applySeekBarTint(binding.quickGlowSeekbar, theme.hudInfoColor, seekbarBackground)
+        ThemeManager.applySeekBarTint(binding.quickGridSeekbar, theme.hudWarningColor, seekbarBackground)
     }
 
     private fun refreshVisibleAppIcons() {

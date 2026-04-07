@@ -163,46 +163,31 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             toolbar = binding.toolbar,
             theme = theme
         )
-        applyTextColorRecursively(binding.root, theme.hudPanelTextPrimary)
+        ThemeManager.applyTextColorRecursively(binding.root, theme.hudPanelTextPrimary)
 
         binding.clearPinnedAppsButton.let { button ->
-            val fill = android.content.res.ColorStateList(
-                arrayOf(
-                    intArrayOf(android.R.attr.state_enabled),
-                    intArrayOf()
-                ),
-                intArrayOf(
-                    theme.primary,
-                    ColorUtils.setAlphaComponent(theme.primary, 0x61)
+            button.backgroundTintList = ThemeManager.createEnabledDisabledColorStateList(
+                enabledColor = theme.primary,
+                disabledColor = ColorUtils.setAlphaComponent(theme.primary, 0x61)
+            )
+            button.setTextColor(
+                ThemeManager.createEnabledDisabledColorStateList(
+                    enabledColor = theme.hudPanelTextPrimary,
+                    disabledColor = ColorUtils.setAlphaComponent(theme.hudPanelTextPrimary, 0x61)
                 )
             )
-            val text = android.content.res.ColorStateList(
-                arrayOf(
-                    intArrayOf(android.R.attr.state_enabled),
-                    intArrayOf()
-                ),
-                intArrayOf(
-                    theme.hudPanelTextPrimary,
-                    ColorUtils.setAlphaComponent(theme.hudPanelTextPrimary, 0x61)
-                )
-            )
-            button.backgroundTintList = fill
-            button.setTextColor(text)
         }
 
         binding.taskbarEnabledSwitch.thumbTintList = createSwitchThumbTint(theme)
         binding.taskbarEnabledSwitch.trackTintList = createSwitchTrackTint(theme)
 
+        val seekBarBackground = ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
         listOf(
             binding.taskbarHeightSeekbar,
             binding.taskbarIconSizeSeekbar,
             binding.taskbarTransparencySeekbar
         ).forEach { seekBar ->
-            seekBar.thumbTintList = android.content.res.ColorStateList.valueOf(theme.primary)
-            seekBar.progressTintList = android.content.res.ColorStateList.valueOf(theme.primary)
-            seekBar.progressBackgroundTintList = android.content.res.ColorStateList.valueOf(
-                ColorUtils.setAlphaComponent(theme.hudPanelTextSecondary, 0x66)
-            )
+            ThemeManager.applySeekBarTint(seekBar, theme.primary, seekBarBackground)
         }
 
         applyPinnedManagementTheme(theme)
@@ -221,17 +206,6 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         pinnedActionButtons.forEach { button ->
             button.backgroundTintList = buttonFill
             button.setTextColor(buttonText)
-        }
-    }
-
-    private fun applyTextColorRecursively(root: View, color: Int) {
-        when (root) {
-            is TextView -> root.setTextColor(color)
-            is ViewGroup -> {
-                for (index in 0 until root.childCount) {
-                    applyTextColorRecursively(root.getChildAt(index), color)
-                }
-            }
         }
     }
 
