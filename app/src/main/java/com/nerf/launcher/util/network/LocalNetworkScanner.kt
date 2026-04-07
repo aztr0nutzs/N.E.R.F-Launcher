@@ -5,6 +5,7 @@ import android.util.Log
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
+import com.nerf.launcher.BuildConfig
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -70,7 +71,7 @@ class LocalNetworkScanner(private val context: Context) {
         val activeNodes = mutableListOf<NetworkNode>()
         val deviceIp = getLocalIpAddress() ?: return@withContext emptyList()
         val failedProbeCount = AtomicInteger(0)
-        val firstProbeFailure = AtomicReference<String?>(null)
+        val firstProbeFailureType = AtomicReference<String?>(null)
 
         val subnet = deviceIp.substringBeforeLast(".")
 
@@ -80,9 +81,9 @@ class LocalNetworkScanner(private val context: Context) {
             async {
                 probeSemaphore.withPermit {
                     val ipToTest = "$subnet.$i"
-                    pingDevice(ipToTest) { failureSummary ->
+                    pingDevice(ipToTest) { failureType ->
                         failedProbeCount.incrementAndGet()
-                        firstProbeFailure.compareAndSet(null, "ip=$ipToTest, reason=$failureSummary")
+                        firstProbeFailureType.compareAndSet(null, failureType)
                     }
                 }
             }
@@ -91,12 +92,11 @@ class LocalNetworkScanner(private val context: Context) {
         // Wait for all pings to complete
         val results = pingTasks.awaitAll().filterNotNull()
         val failedCount = failedProbeCount.get()
-        if (failedCount > 0) {
-            val firstFailureSummary = firstProbeFailure.get()
-            Log.w(
+        if (failedCount > 0 && BuildConfig.DEBUG) {
+            Log.d(
                 TAG,
-                "Subnet probe completed with $failedCount failures. " +
-                    "First failure: ${firstFailureSummary ?: "unavailable"}"
+                "Subnet probe completed with $failedCount probe misses. " +
+                    "First failure type: ${firstProbeFailureType.get() ?: "unavailable"}"
             )
         }
 
@@ -147,8 +147,7 @@ class LocalNetworkScanner(private val context: Context) {
                 null
             }
         } catch (e: Exception) {
-            val failureSummary = "${e.javaClass.simpleName}: ${e.message ?: "no detail"}"
-            onProbeFailure(failureSummary)
+            onProbeFailure(e.javaClass.simpleName)
             null
         }
     }
@@ -176,7 +175,9 @@ class LocalNetworkScanner(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "Failed reading ARP table: ${e.javaClass.simpleName}: ${e.message ?: "no detail"}")
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "ARP table unavailable; skipping MAC enrichment (${e.javaClass.simpleName}).")
+            }
             // Fallback: If ARP is blocked, return empty map.
         }
         return arpMap

@@ -27,6 +27,7 @@ import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.nerf.launcher.adapter.AppAdapter
+import com.nerf.launcher.BuildConfig
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityMainBinding
 import com.nerf.launcher.model.AppInfo
@@ -933,7 +934,11 @@ class MainActivity : AppCompatActivity() {
                     try {
                         lastNetworkScanResult = localNetworkScanner.scanLocalSubnet()
                     } catch (e: Exception) {
-                        Log.w(TAG, "Local network scan failed: ${e.javaClass.simpleName}: ${e.message ?: "no detail"}")
+                        if (BuildConfig.DEBUG) {
+                            Log.w(TAG, "Local network scan failed (${e.javaClass.simpleName}).")
+                        } else {
+                            Log.w(TAG, "Local network scan failed.")
+                        }
                         lastNetworkScanResult = emptyList()
                     } finally {
                         isNetworkScanRunning = false
