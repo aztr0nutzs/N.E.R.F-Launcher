@@ -37,6 +37,9 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     private val dragUpdateThrottleMs by lazy { longIntegerValue(R.integer.nerf_taskbar_settings_drag_update_throttle_ms) }
     private val dragDpStep by lazy { integerValue(R.integer.nerf_taskbar_settings_drag_dp_step) }
     private val dragPercentStep by lazy { integerValue(R.integer.nerf_taskbar_settings_drag_percent_step) }
+    private val transparencyPercentScale by lazy {
+        integerValue(R.integer.nerf_taskbar_settings_transparency_percent_scale)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,7 +99,7 @@ class TaskbarSettingsActivity : AppCompatActivity() {
             )
         )
 
-        binding.taskbarTransparencySeekbar.max = 100
+        binding.taskbarTransparencySeekbar.max = transparencyPercentScale
         binding.taskbarTransparencySeekbar.setOnSeekBarChangeListener(
             createThrottledSeekBarListener(
                 onProgress = { progress ->
@@ -107,7 +110,9 @@ class TaskbarSettingsActivity : AppCompatActivity() {
                 },
                 commitStep = dragPercentStep,
                 commitValue = { progress ->
-                    updateTaskbarSettings { copy(transparency = progress / 100f) }
+                    updateTaskbarSettings {
+                        copy(transparency = progress / transparencyPercentScale.toFloat())
+                    }
                 }
             )
         )
@@ -268,7 +273,11 @@ class TaskbarSettingsActivity : AppCompatActivity() {
         binding.taskbarIconSizeSeekbar.progress = iconSizeDp - minIconSizeDp
         binding.taskbarIconSizeValue.text = getString(R.string.taskbar_settings_icon_size_value, iconSizeDp)
 
-        val transparencyPercent = (settings.transparency.coerceIn(0f, 1f) * 100).toInt()
+        val transparencyPercent = (
+            settings.transparency
+                .coerceIn(TRANSPARENCY_MIN, TRANSPARENCY_MAX)
+                * transparencyPercentScale
+            ).toInt()
         binding.taskbarTransparencySeekbar.progress = transparencyPercent
         binding.taskbarTransparencyValue.text = getString(
             R.string.taskbar_settings_transparency_value,
@@ -464,6 +473,8 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     }
 
     companion object {
+        private const val TRANSPARENCY_MIN = 0f
+        private const val TRANSPARENCY_MAX = 1f
         private val BACKGROUND_LABELS = mapOf(
             TaskbarBackgroundStyle.DARK to R.string.taskbar_settings_background_dark,
             TaskbarBackgroundStyle.LIGHT to R.string.taskbar_settings_background_light,
