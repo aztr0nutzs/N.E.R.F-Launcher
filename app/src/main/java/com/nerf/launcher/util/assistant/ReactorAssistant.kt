@@ -110,7 +110,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
             if (langResult == TextToSpeech.LANG_MISSING_DATA ||
                 langResult == TextToSpeech.LANG_NOT_SUPPORTED
             ) {
-                Log.e(TAG, "Locale.US not supported on this device.")
+                Log.w(TAG, "Locale.US not supported on this device.")
             } else {
                 applyVoiceProfile(currentProfile)
                 tts?.setOnUtteranceProgressListener(buildProgressListener())
@@ -256,7 +256,9 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
         if (result == TextToSpeech.ERROR) {
             utteranceTexts.remove(id)
             onSpeechError?.invoke(text)
-            Log.e(TAG, "TTS speak() returned ERROR.")
+            if (BuildConfig.DEBUG) {
+                Log.w(TAG, "TTS speak() returned ERROR.")
+            }
             return false
         }
         return true
@@ -296,7 +298,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
             override fun onError(utteranceId: String?, errorCode: Int) {
                 val text = utteranceId?.let { utteranceTexts.remove(it) }
                 if (BuildConfig.DEBUG) {
-                    Log.e(TAG, "TTS error code $errorCode.")
+                    Log.w(TAG, "TTS runtime error.")
                 }
                 onSpeechError?.invoke(text)
             }

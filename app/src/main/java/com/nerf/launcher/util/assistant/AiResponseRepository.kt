@@ -205,7 +205,7 @@ class AiResponseRepository(private val context: Context) {
             }
         } catch (e: Exception) {
             if (BuildConfig.DEBUG) {
-                Log.e(TAG, "Failed to load assistant response bank (${e.javaClass.simpleName}).", e)
+                Log.w(TAG, "Failed to load assistant response bank.")
             } else {
                 Log.e(TAG, "Failed to load assistant response bank.")
             }

@@ -93,11 +93,7 @@ class LocalNetworkScanner(private val context: Context) {
         val results = pingTasks.awaitAll().filterNotNull()
         val failedCount = failedProbeCount.get()
         if (failedCount > 0 && BuildConfig.DEBUG) {
-            Log.d(
-                TAG,
-                "Subnet probe completed with $failedCount probe misses. " +
-                    "First failure type: ${firstProbeFailureType.get() ?: "unavailable"}"
-            )
+            Log.d(TAG, "Subnet probe completed with $failedCount probe misses.")
         }
 
         // Phase 2: Read ARP table to match MAC addresses to the discovered IPs
@@ -176,7 +172,7 @@ class LocalNetworkScanner(private val context: Context) {
             }
         } catch (e: Exception) {
             if (BuildConfig.DEBUG) {
-                Log.d(TAG, "ARP table unavailable; skipping MAC enrichment (${e.javaClass.simpleName}).")
+                Log.d(TAG, "ARP table unavailable; skipping MAC enrichment.")
             }
             // Fallback: If ARP is blocked, return empty map.
         }
