@@ -239,7 +239,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
     private fun speakInternal(text: String, interrupt: Boolean): Boolean {
         if (releaseState.get()) return false
         if (!_isReady.get()) {
-            Log.w(TAG, "TTS not ready — discarding: \"${text.take(60)}\"")
+            logDebug("TTS not ready; dropping speak request.")
             return false
         }
         if (text.isBlank()) return false
@@ -256,7 +256,7 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
         if (result == TextToSpeech.ERROR) {
             utteranceTexts.remove(id)
             onSpeechError?.invoke(text)
-            Log.e(TAG, "TTS speak() returned ERROR for: \"${text.take(60)}\"")
+            Log.e(TAG, "TTS speak() returned ERROR.")
             return false
         }
         return true
@@ -295,7 +295,9 @@ class ReactorAssistant(private val context: Context) : TextToSpeech.OnInitListen
 
             override fun onError(utteranceId: String?, errorCode: Int) {
                 val text = utteranceId?.let { utteranceTexts.remove(it) }
-                Log.e(TAG, "TTS error code $errorCode on utterance $utteranceId")
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "TTS error code $errorCode.")
+                }
                 onSpeechError?.invoke(text)
             }
         }

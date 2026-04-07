@@ -196,7 +196,7 @@ class AiResponseRepository(private val context: Context) {
                 if (jsonObject.has(category.name)) {
                     parseCategoryEntries(jsonObject.getJSONArray(category.name))
                 } else {
-                    Log.w(TAG, "Category '${category.name}' missing from response JSON. Using fallback.")
+                    logDebug("Category '${category.name}' missing from response JSON. Using fallback.")
                     listOf(ResponseEntry(fallbackResponse(category, PersonalityMood.SNARKY)))
                 }
             }.also {
@@ -226,7 +226,7 @@ class AiResponseRepository(private val context: Context) {
                 when (val item = array.get(index)) {
                     is String -> add(ResponseEntry(text = item.trim()).normalized())
                     is JSONObject -> add(parseEntryObject(item).normalized())
-                    else -> Log.w(TAG, "Ignoring unsupported response entry type at index $index")
+                    else -> logDebug("Ignoring unsupported response entry type at index $index")
                 }
             }
         }.filter { it.text.isNotBlank() }
