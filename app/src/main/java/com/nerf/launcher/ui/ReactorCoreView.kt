@@ -13,6 +13,7 @@ import android.view.animation.LinearInterpolator
 import androidx.core.graphics.ColorUtils
 import com.nerf.launcher.R
 import com.nerf.launcher.util.NerfTheme
+import com.nerf.launcher.util.ThemeManager
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.min

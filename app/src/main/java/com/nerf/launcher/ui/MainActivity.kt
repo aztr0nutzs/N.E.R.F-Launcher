@@ -13,6 +13,7 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.util.Log
 import androidx.activity.viewModels
@@ -116,6 +117,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        logUiState("after_set_content")
+        binding.hudShell.post { stabilizeShellLayout() }
 
         iconProvider = IconProvider(applicationContext, IconCache(50))
         localNetworkScanner = LocalNetworkScanner(applicationContext)
@@ -129,7 +132,22 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupDrawerSearch()
         setupDefaultLauncherBanner()
+        ConfigRepository.get().config.value?.let { config ->
+            val initialTheme = ThemeManager.resolveConfigTheme(this, config)
+            applyLauncherShellTheme(initialTheme)
+            applyStatusBarTheme(config)
+            if (BuildConfig.DEBUG) {
+                Log.d(
+                    TAG,
+                    "Initial config theme=${config.themeName} grid=${config.gridSize} glow=${config.glowIntensity} iconPack=${config.iconPack}"
+                )
+            }
+        }
         observeViewModel()
+        binding.root.post {
+            stabilizeShellLayout()
+            logUiState("first_layout_pass")
+        }
 
         hudController = HudController(this, binding.hudRoot.root, this)
         binding.taskbarView.setIconProvider(iconProvider)
@@ -150,6 +168,10 @@ class MainActivity : AppCompatActivity() {
             showLockSurface()
         }
         viewModel.loadApps()
+        binding.root.postDelayed({
+            stabilizeShellLayout()
+            logUiState("post_startup")
+        }, 750L)
     }
 
     private fun setupRecyclerView() {
@@ -225,6 +247,13 @@ class MainActivity : AppCompatActivity() {
             applyDrawerFilter(binding.drawerSearchInput.text?.toString().orEmpty())
             binding.moduleAppCount.text = getString(com.nerf.launcher.R.string.hud_apps_count, apps.size)
             binding.appsLoadBar.progress = ((apps.size / 48f) * 100f).toInt().coerceIn(10, 100)
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "apps_observed count=${apps.size} filtered=$filteredAppCount")
+            }
+            binding.root.post {
+                stabilizeShellLayout()
+                logUiState("apps_observed")
+            }
         }
     }
 
@@ -261,6 +290,12 @@ class MainActivity : AppCompatActivity() {
         binding.drawerEmptyState.visibility = if (emptyMessage == null) View.GONE else View.VISIBLE
 
         systemModuleController.setInputs(ConfigRepository.get().config.value, filteredAppCount, allApps.size)
+        if (BuildConfig.DEBUG) {
+            Log.d(
+                TAG,
+                "drawer_filter query='$trimmedQuery' all=${allApps.size} filtered=${filtered.size} emptyVisible=${binding.drawerEmptyState.visibility == View.VISIBLE}"
+            )
+        }
     }
 
     private fun setupDefaultLauncherBanner() {
@@ -320,6 +355,170 @@ class MainActivity : AppCompatActivity() {
             }
             systemModuleController.setInputs(config, filteredAppCount, allApps.size)
             lastObservedConfig = config
+            if (BuildConfig.DEBUG) {
+                Log.d(
+                    TAG,
+                    "config_observed theme=${config.themeName} grid=${config.gridSize} glow=${config.glowIntensity} taskbarEnabled=${config.taskbarSettings.enabled}"
+                )
+            }
+            binding.root.post {
+                stabilizeShellLayout()
+                logUiState("config_observed")
+            }
+        }
+    }
+
+    private fun stabilizeShellLayout() {
+        val shellWidth = binding.hudShell.width
+        val shellHeight = binding.hudShell.height
+        if (shellWidth <= 0 || shellHeight <= 0) return
+
+        val headerHeight = binding.hudRoot.root.height.takeIf { it > 0 }
+            ?: binding.hudRoot.root.measuredHeight
+        val taskbarHeight = if (binding.taskbarView.visibility == View.VISIBLE) {
+            maxOf(binding.taskbarView.height, binding.taskbarView.layoutParams?.height ?: 0)
+        } else {
+            0
+        }
+
+        val commandParams = binding.commandCenter.layoutParams as? ViewGroup.MarginLayoutParams ?: return
+        val taskbarParams = binding.taskbarView.layoutParams as? ViewGroup.MarginLayoutParams
+
+        val availableWidth = (
+            shellWidth -
+                binding.hudShell.paddingStart -
+                binding.hudShell.paddingEnd
+            ).coerceAtLeast(0)
+        val availableHeight = (
+            shellHeight -
+                binding.hudShell.paddingTop -
+                binding.hudShell.paddingBottom -
+                headerHeight -
+                commandParams.topMargin -
+                (taskbarParams?.topMargin ?: 0) -
+                taskbarHeight
+            ).coerceAtLeast(0)
+
+        var changed = false
+        if (commandParams.width != availableWidth) {
+            commandParams.width = availableWidth
+            changed = true
+        }
+        if (commandParams.height != availableHeight) {
+            commandParams.height = availableHeight
+            changed = true
+        }
+        if (changed) {
+            binding.commandCenter.layoutParams = commandParams
+        }
+        stabilizeDrawerLayout()
+    }
+
+    private fun stabilizeDrawerLayout() {
+        val rightPanel = binding.rightPanel
+        if (rightPanel.width <= 0 || rightPanel.height <= 0) return
+
+        val lastFixedRow = rightPanel.findViewById<View>(R.id.module_secondary_row) ?: return
+        val drawerParams = binding.drawerShell.layoutParams as? ViewGroup.MarginLayoutParams ?: return
+        val drawerWidth = (
+            rightPanel.width -
+                rightPanel.paddingStart -
+                rightPanel.paddingEnd
+            ).coerceAtLeast(0)
+        val drawerTop = lastFixedRow.bottom + drawerParams.topMargin
+        val drawerHeight = (
+            rightPanel.height -
+                rightPanel.paddingBottom -
+                drawerTop
+            ).coerceAtLeast(0)
+
+        if (BuildConfig.DEBUG && drawerHeight == 0) {
+            val energyCard = binding.moduleEnergyCard
+            val primaryRow = rightPanel.findViewById<View>(R.id.module_primary_row)
+            val titleView = rightPanel.findViewById<View>(R.id.right_panel_title)
+            Log.d(
+                TAG,
+                "drawer_metrics right=${rightPanel.width}x${rightPanel.height} " +
+                    "title=${titleView?.top}:${titleView?.height} " +
+                    "energy=${energyCard.top}:${energyCard.height} " +
+                    "primary=${primaryRow?.top}:${primaryRow?.height} " +
+                    "secondary=${lastFixedRow.top}:${lastFixedRow.height} bottom=${lastFixedRow.bottom} " +
+                    "drawerTop=$drawerTop drawerMarginTop=${drawerParams.topMargin}"
+            )
+        }
+
+        var drawerChanged = false
+        if (drawerParams.width != drawerWidth) {
+            drawerParams.width = drawerWidth
+            drawerChanged = true
+        }
+        if (drawerParams.height != drawerHeight) {
+            drawerParams.height = drawerHeight
+            drawerChanged = true
+        }
+        if (drawerChanged) {
+            binding.drawerShell.layoutParams = drawerParams
+        }
+
+        if (drawerHeight <= 0) return
+
+        val titleRow = binding.drawerShell.findViewById<View>(R.id.drawer_shell_title_row) ?: return
+        val header = binding.drawerHeader
+        val banner = binding.defaultLauncherBanner
+        val contentContainer =
+            binding.drawerShell.findViewById<View>(R.id.drawer_content_container) ?: return
+        val headerParams = header.layoutParams as? ViewGroup.MarginLayoutParams ?: return
+        val bannerParams = banner.layoutParams as? ViewGroup.MarginLayoutParams ?: return
+        val contentParams = contentContainer.layoutParams as? ViewGroup.MarginLayoutParams ?: return
+
+        val reservedHeight = buildList {
+            add(binding.drawerShell.paddingTop)
+            add(binding.drawerShell.paddingBottom)
+            add(titleRow.height)
+            add(headerParams.topMargin)
+            add(header.height)
+            if (banner.visibility == View.VISIBLE) {
+                add(bannerParams.topMargin)
+                add(banner.height)
+            }
+            add(contentParams.topMargin)
+        }.sum()
+
+        val contentHeight = (drawerHeight - reservedHeight).coerceAtLeast(0)
+        val contentWidth = (
+            drawerWidth -
+                binding.drawerShell.paddingStart -
+                binding.drawerShell.paddingEnd
+            ).coerceAtLeast(0)
+
+        if (BuildConfig.DEBUG && (contentHeight == 0 || binding.recyclerView.height == 0)) {
+            Log.d(
+                TAG,
+                "drawer_content_metrics drawer=${binding.drawerShell.width}x${binding.drawerShell.height} " +
+                    "titleRow=${titleRow.height} header=${header.height} banner=${if (banner.visibility == View.VISIBLE) banner.height else 0} " +
+                    "reserved=$reservedHeight contentTarget=${contentWidth}x$contentHeight " +
+                    "contentActual=${contentContainer.width}x${contentContainer.height} recycler=${binding.recyclerView.width}x${binding.recyclerView.height}"
+            )
+        }
+
+        var contentChanged = false
+        if (contentParams.width != contentWidth) {
+            contentParams.width = contentWidth
+            contentChanged = true
+        }
+        if (contentParams.height != contentHeight) {
+            contentParams.height = contentHeight
+            contentChanged = true
+        }
+        if (contentChanged) {
+            contentContainer.layoutParams = contentParams
+        }
+
+        val recyclerParams = binding.recyclerView.layoutParams
+        if (recyclerParams.width != contentWidth || recyclerParams.height != contentHeight) {
+            recyclerParams.width = contentWidth
+            recyclerParams.height = contentHeight
+            binding.recyclerView.layoutParams = recyclerParams
         }
     }
 
@@ -480,10 +679,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupSurfaceTransitions() {
         val animatedPanels = listOf(binding.leftPanel, binding.corePanel, binding.rightPanel)
         animatedPanels.forEachIndexed { index, view ->
-            view.alpha = 0f
+            view.alpha = 1f
             view.translationY = 16f
             view.animate()
-                .alpha(1f)
                 .translationY(0f)
                 .setStartDelay((index * 56L) + 48L)
                 .setDuration(scaledDuration(310L))
@@ -495,11 +693,10 @@ class MainActivity : AppCompatActivity() {
                 .start()
         }
 
-        binding.drawerShell.alpha = 0f
+        binding.drawerShell.alpha = 1f
         binding.drawerShell.translationY = 20f
         binding.drawerShell.translationX = 10f
         binding.drawerShell.animate()
-            .alpha(1f)
             .translationY(0f)
             .translationX(0f)
             .setStartDelay(185L)
@@ -687,6 +884,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fractionValue(fractionRes: Int): Float = resources.getFraction(fractionRes, 1, 1)
+
+    private fun logUiState(stage: String) {
+        if (!BuildConfig.DEBUG) return
+
+        fun vis(view: View): String = when (view.visibility) {
+            View.VISIBLE -> "V"
+            View.INVISIBLE -> "I"
+            View.GONE -> "G"
+            else -> view.visibility.toString()
+        }
+
+        Log.d(
+            TAG,
+            "ui_stage=$stage " +
+                "root=${binding.rootContainer.width}x${binding.rootContainer.height}:${vis(binding.rootContainer)} a=${binding.rootContainer.alpha} " +
+                "hud=${binding.hudShell.width}x${binding.hudShell.height}:${vis(binding.hudShell)} a=${binding.hudShell.alpha} " +
+                "command=${binding.commandCenter.width}x${binding.commandCenter.height}:${vis(binding.commandCenter)} " +
+                "left=${binding.leftPanel.width}x${binding.leftPanel.height}:${vis(binding.leftPanel)} a=${binding.leftPanel.alpha} " +
+                "core=${binding.corePanel.width}x${binding.corePanel.height}:${vis(binding.corePanel)} a=${binding.corePanel.alpha} " +
+                "right=${binding.rightPanel.width}x${binding.rightPanel.height}:${vis(binding.rightPanel)} a=${binding.rightPanel.alpha} " +
+                "drawer=${binding.drawerShell.width}x${binding.drawerShell.height}:${vis(binding.drawerShell)} a=${binding.drawerShell.alpha} " +
+                "recycler=${binding.recyclerView.width}x${binding.recyclerView.height}:${vis(binding.recyclerView)} count=${if (this::adapter.isInitialized) adapter.itemCount else -1} " +
+                "empty=${binding.drawerEmptyState.width}x${binding.drawerEmptyState.height}:${vis(binding.drawerEmptyState)} " +
+                "assistant=${vis(binding.assistantOverlay.assistantOverlayRoot)} " +
+                "lock=${vis(binding.lockSurfaceRoot)}"
+        )
+    }
 
     private fun renderSystemModules(snapshot: SystemModuleSnapshot) {
         latestSystemSnapshot = snapshot
@@ -884,8 +1108,8 @@ class MainActivity : AppCompatActivity() {
                         AssistantActionResult.LauncherCommandDetails.SystemState(
                             batteryPercent = it.batteryPercent,
                             storageUsagePercent = it.storageUsagePercent,
-                            uptimeDays = it.uptimeDays,
-                            uptimeHours = it.uptimeHours,
+                            uptimeDays = it.uptimeDays.toLong(),
+                            uptimeHours = it.uptimeHours.toLong(),
                             isPowerSaveMode = it.isPowerSaveMode
                         )
                     }

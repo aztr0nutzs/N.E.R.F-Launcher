@@ -73,7 +73,7 @@
         <ImageView
             android:layout_width="@dimen/nerf_hud_brand_mark_size"
             android:layout_height="@dimen/nerf_hud_brand_mark_size"
-            android:alpha="@fraction/nerf_alpha_hud_brand_mark"
+            android:alpha="0.82"
             android:contentDescription="@string/nerf_brand_mark_cd"
             android:src="@drawable/ic_brand_mark_main" />
 

@@ -43,6 +43,10 @@
     <dimen name="nerf_size_44">44dp</dimen>
     <dimen name="nerf_size_56">56dp</dimen>
     <dimen name="nerf_size_58">58dp</dimen>
+    <dimen name="nerf_size_88">88dp</dimen>
+    <dimen name="nerf_size_96">96dp</dimen>
+    <dimen name="nerf_size_112">112dp</dimen>
+    <dimen name="nerf_size_160">160dp</dimen>
     <dimen name="nerf_text_size_10">10sp</dimen>
     <dimen name="nerf_text_size_11">11sp</dimen>
 

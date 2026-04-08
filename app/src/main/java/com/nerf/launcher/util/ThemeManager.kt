@@ -94,7 +94,7 @@ object ThemeManager {
     }
 
     fun resolveTaskbarIconTint(context: Context, theme: NerfTheme): Int {
-        return if (ColorUtils.isColorLight(theme.primary)) {
+        return if (com.nerf.launcher.util.ColorUtils.isColorLight(theme.primary)) {
             MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSecondary, theme.hudPanelTextPrimary)
         } else {
             theme.hudPanelTextPrimary
