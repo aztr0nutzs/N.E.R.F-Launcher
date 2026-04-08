@@ -16,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.util.Log
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -55,6 +56,7 @@ import com.nerf.launcher.util.assistant.AssistantController
 import com.nerf.launcher.util.assistant.AssistantSessionManager
 import com.nerf.launcher.util.network.LocalNetworkScanner
 import com.nerf.launcher.util.network.NetworkNode
+import com.nerf.launcher.state.LauncherViewModel as ComposeLauncherViewModel
 import com.nerf.launcher.viewmodel.LauncherViewModel
 import android.view.animation.LinearInterpolator
 import androidx.lifecycle.lifecycleScope
@@ -78,6 +80,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: LauncherViewModel by viewModels()
+    private val composeViewModel: ComposeLauncherViewModel by viewModels()
     private lateinit var adapter: AppAdapter
     private lateinit var iconProvider: IconProvider
     private lateinit var hudController: HudController
@@ -100,6 +103,7 @@ class MainActivity : AppCompatActivity() {
     private var isNetworkScanRunning: Boolean = false
     private var lastNetworkScanResult: List<NetworkNode>? = null
     private var networkScanJob: Job? = null
+    private var composeUiActive: Boolean = false
     private val recordAudioPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -115,63 +119,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        logUiState("after_set_content")
-        binding.hudShell.post { stabilizeShellLayout() }
-
-        iconProvider = IconProvider(applicationContext, IconCache(50))
-        localNetworkScanner = LocalNetworkScanner(applicationContext)
-        systemModuleController = SystemModuleController(applicationContext) { snapshot ->
-            renderSystemModules(snapshot)
+        composeUiActive = true
+        setContent {
+            NerfLauncherRoot(viewModel = composeViewModel)
         }
-        setupAssistantOverlay()
-        setupReactorCoordinator()
-        bindAssistantStateSync()
-
-        setupRecyclerView()
-        setupDrawerSearch()
-        setupDefaultLauncherBanner()
-        ConfigRepository.get().config.value?.let { config ->
-            val initialTheme = ThemeManager.resolveConfigTheme(this, config)
-            applyLauncherShellTheme(initialTheme)
-            applyStatusBarTheme(config)
-            if (BuildConfig.DEBUG) {
-                Log.d(
-                    TAG,
-                    "Initial config theme=${config.themeName} grid=${config.gridSize} glow=${config.glowIntensity} iconPack=${config.iconPack}"
-                )
-            }
-        }
-        observeViewModel()
-        binding.root.post {
-            stabilizeShellLayout()
-            logUiState("first_layout_pass")
-        }
-
-        hudController = HudController(this, binding.hudRoot.root, this)
-        binding.taskbarView.setIconProvider(iconProvider)
-        binding.taskbarView.setLifecycleOwner(this)
-
-        binding.lockSurfaceTile.setOnClickListener {
-            showLockSurface()
-        }
-        setupPressFeedbacks()
-        setupLockSurface()
-
-        setupQuickControls()
-        setupConfigObservers()
-        setupSystemModules()
-        setupSurfaceTransitions()
-        setupScanlineSweep()
-        if (savedInstanceState?.getBoolean(STATE_LOCK_SURFACE_VISIBLE) == true) {
-            showLockSurface()
-        }
-        viewModel.loadApps()
-        binding.root.postDelayed({
-            stabilizeShellLayout()
-            logUiState("post_startup")
-        }, 750L)
     }
 
     private fun setupRecyclerView() {
@@ -1411,6 +1362,9 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
+        if (composeUiActive) {
+            return
+        }
         if (assistantOverlayController.isShowing()) {
             assistantOverlayController.hide()
             return
@@ -1424,6 +1378,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (composeUiActive) {
+            return
+        }
         updateDefaultLauncherBannerVisibility()
         if (isLockSurfaceVisible) {
             lockSurfaceClockHandler.post(lockSurfaceClockTick)
@@ -1432,6 +1389,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
+        if (composeUiActive) {
+            super.onPause()
+            return
+        }
         lockSurfaceClockHandler.removeCallbacks(lockSurfaceClockTick)
         pauseScanlineAnimation()
         super.onPause()
@@ -1457,11 +1418,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        if (composeUiActive) {
+            return
+        }
         hudController.start()
         systemModuleController.start()
     }
 
     override fun onStop() {
+        if (composeUiActive) {
+            super.onStop()
+            return
+        }
         hudController.stop()
         systemModuleController.stop()
         super.onStop()
@@ -1469,6 +1437,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (composeUiActive) {
+            return
+        }
         scanlineSweepAnimator?.cancel()
         scanlineOpacityAnimator?.cancel()
         scanlineSweepAnimator = null
