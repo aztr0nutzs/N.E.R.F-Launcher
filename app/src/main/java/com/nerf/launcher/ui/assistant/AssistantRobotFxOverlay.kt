@@ -23,29 +23,41 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import com.nerf.launcher.util.assistant.AssistantState
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.sin
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  AssistantRobotFxOverlay
 //
-//  All state-driven Canvas effects anchored to the overlay map via [imageRect].
+//  State-driven Canvas effects anchored to overlay map regions via [imageRect].
 //
 //  Effects:
-//    A. Visor glow — responsive to assistant state (LISTENING, SPEAKING, etc.)
-//    B. Reactor pulse — ambient ring glow around reactorOuter
-//    C. Reactor sector highlight — coloured arc for the selected sector
-//    D. Reactor core burst — radial flash on core tap
-//    E. Hand node radial glow — pulses when hand projection is active
-//    F. Top module scan sweeps — horizontal sweeps over energyModule / statusModule
-//    G. Focused input glow — border glow on inputShell
-//    H. Dock selection glow — halo under selected dock button
-//    I. Dock center pulse — when the NERF center logo is active
-//    J. Left action stack highlight — glow behind active left button
-//    K. Listening mic pulse — ring pulse on inputMic / dockMic
-//    L. Error vignette — edge flicker on ERROR state
-//    M. Scan sweep — full-body vertical sweep on idle/wake/thinking/listening
+//    A. Visor glow       — state-responsive, anchored to visorZone width axis
+//    B. Reactor ambient  — pulsing radial around reactorOuter center
+//    C. Sector arc       — FIXED-position arc at the spec sector boundaries (no drift)
+//    D. Core burst       — expanding ring on ReactorCoreTapped
+//    E. Hand node glow   — radial on handNode when projection is active
+//    F. Module scan      — horizontal light sweep across energy/status modules
+//    G. Input focus glow — border glow on inputShell
+//    H. Dock button glow — radial halo on active dock button
+//    I. Dock center pulse— ring pulse on dockCenterCore
+//    J. Left stack glow  — radial behind active left-stack button
+//    K. Mic listening    — pulsing ring on inputMic
+//    L. Error vignette   — edge flicker on ERROR state
+//    M. Body scan sweep  — vertical sweep within robotBody bounds
+//
+//  CORRECTION NOTE (sector arcs):
+//    Sector arcs are anchored to STRICTLY FIXED angles derived from
+//    ReactorSector.arcStartAngle. The previous ringAngle drift offset
+//    (ringAngle * 0.05f) has been removed — it caused arcs to drift 18° off
+//    the artwork sector boundaries over a full animation cycle.
+//
+//  CORRECTION NOTE (visor glow radius):
+//    Radius is now derived from visorZone.width / 2f only (not averaged with
+//    height). The visorZone is a horizontal eye-slot; the old average caused
+//    the glow to bleed down onto the chest panel.
+//
+//  CORRECTION NOTE (body scan sweep):
+//    Sweep bounds are now clamped to the robotBody NormRect instead of the
+//    hardcoded 0.15f–0.85f image-height fraction.
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -64,16 +76,13 @@ fun AssistantRobotFxOverlay(
     activeLeftAction: LeftAction?,
     modifier: Modifier = Modifier
 ) {
-    val map = AssistantOverlayMap
+    val t = rememberInfiniteTransition(label = "robotFx")
 
-    val it = rememberInfiniteTransition(label = "robotFx")
+    // ── Animation drivers ────────────────────────────────────────────────────
 
-    // ── Animation values ─────────────────────────────────────────────────────
-
-    // Visor glow pulse — amplitude depends on state
-    val visorPulse by it.animateFloat(
+    val visorPulse by t.animateFloat(
         initialValue = 0.10f,
-        targetValue  = when (state) {
+        targetValue = when (state) {
             AssistantState.LISTENING              -> 0.48f
             AssistantState.SPEAKING,
             AssistantState.RESPONDING             -> 0.40f
@@ -83,7 +92,7 @@ fun AssistantRobotFxOverlay(
             else                                  -> 0.18f
         },
         animationSpec = infiniteRepeatable(
-            animation    = tween(
+            animation = tween(
                 durationMillis = when (state) {
                     AssistantState.LISTENING -> 750
                     AssistantState.SPEAKING  -> 480
@@ -98,10 +107,9 @@ fun AssistantRobotFxOverlay(
         label = "visorPulse"
     )
 
-    // Core reactor ambient pulse
-    val corePulse by it.animateFloat(
+    val corePulse by t.animateFloat(
         initialValue = 0.06f,
-        targetValue  = when (state) {
+        targetValue = when (state) {
             AssistantState.THINKING               -> 0.44f
             AssistantState.RESPONDING             -> 0.38f
             AssistantState.SPEAKING               -> 0.30f
@@ -109,11 +117,11 @@ fun AssistantRobotFxOverlay(
             else                                  -> 0.14f
         },
         animationSpec = infiniteRepeatable(
-            animation    = tween(
+            animation = tween(
                 durationMillis = when (state) {
-                    AssistantState.THINKING  -> 900
+                    AssistantState.THINKING   -> 900
                     AssistantState.RESPONDING -> 650
-                    else                     -> 2600
+                    else                      -> 2600
                 },
                 easing = FastOutSlowInEasing
             ),
@@ -122,19 +130,18 @@ fun AssistantRobotFxOverlay(
         label = "corePulse"
     )
 
-    // Sector ring rotation angle — slow spin
-    val sectorRingAngle by it.animateFloat(
+    // Decorative slow-spinning micro-ring (NOT used to offset arc positions).
+    val ringSpinAngle by t.animateFloat(
         initialValue = 0f,
         targetValue  = 360f,
         animationSpec = infiniteRepeatable(
-            animation  = tween(12000, easing = LinearEasing),
+            animation  = tween(14000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
-        label = "sectorRing"
+        label = "ringSpinAngle"
     )
 
-    // Core burst ring expansion
-    val burstRing by it.animateFloat(
+    val burstRing by t.animateFloat(
         initialValue = 0f,
         targetValue  = 1f,
         animationSpec = infiniteRepeatable(
@@ -144,8 +151,7 @@ fun AssistantRobotFxOverlay(
         label = "coreBurst"
     )
 
-    // Top module scan sweep (horizontal across energyModule / statusModule)
-    val scanX by it.animateFloat(
+    val scanX by t.animateFloat(
         initialValue = 0f,
         targetValue  = 1f,
         animationSpec = infiniteRepeatable(
@@ -155,8 +161,7 @@ fun AssistantRobotFxOverlay(
         label = "moduleScan"
     )
 
-    // Listening mic ring pulse
-    val micPulse by it.animateFloat(
+    val micPulse by t.animateFloat(
         initialValue = 0f,
         targetValue  = 1f,
         animationSpec = infiniteRepeatable(
@@ -166,12 +171,11 @@ fun AssistantRobotFxOverlay(
         label = "micPulse"
     )
 
-    // Full-body vertical scan sweep
-    val bodyScanPos by it.animateFloat(
+    val bodyScanPos by t.animateFloat(
         initialValue = 0f,
         targetValue  = 1f,
         animationSpec = infiniteRepeatable(
-            animation  = tween(
+            animation = tween(
                 durationMillis = when (state) {
                     AssistantState.THINKING, AssistantState.WAKE -> 2800
                     AssistantState.LISTENING                     -> 3600
@@ -184,8 +188,7 @@ fun AssistantRobotFxOverlay(
         label = "bodyScan"
     )
 
-    // Error flicker
-    val errorFlicker by it.animateFloat(
+    val errorFlicker by t.animateFloat(
         initialValue = 0f,
         targetValue  = 1f,
         animationSpec = infiniteRepeatable(
@@ -195,8 +198,7 @@ fun AssistantRobotFxOverlay(
         label = "errorFlicker"
     )
 
-    // Dock center pulse ring
-    val dockCenterPulse by it.animateFloat(
+    val dockCenterPulse by t.animateFloat(
         initialValue = 0f,
         targetValue  = 1f,
         animationSpec = infiniteRepeatable(
@@ -213,15 +215,16 @@ fun AssistantRobotFxOverlay(
     val errorColor  = Color(palette.errorGlow)
     val accentColor = Color(palette.controlAccent)
 
-    val showError     = state == AssistantState.ERROR
-    val showBodyScan  = state == AssistantState.IDLE || state == AssistantState.WAKE ||
-                        state == AssistantState.THINKING || state == AssistantState.LISTENING
-    val showVisor     = state != AssistantState.MUTED && state != AssistantState.SHUTTING_DOWN
-    val showCoreGlow  = state.isActive || isChestCoreActive || activeSector != null
+    val showError    = state == AssistantState.ERROR
+    val showBodyScan = state == AssistantState.IDLE || state == AssistantState.WAKE ||
+                       state == AssistantState.THINKING || state == AssistantState.LISTENING
+    val showVisor    = state != AssistantState.MUTED && state != AssistantState.SHUTTING_DOWN
+    val showCoreGlow = state.isActive || isChestCoreActive || activeSector != null
 
     Box(modifier = modifier) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            // ── A. Visor glow ──────────────────────────────────────────────
+
+            // A. Visor glow
             if (showVisor) {
                 drawVisorGlow(
                     imageRect = imageRect,
@@ -230,7 +233,7 @@ fun AssistantRobotFxOverlay(
                 )
             }
 
-            // ── B. Reactor ambient ring glow ───────────────────────────────
+            // B. Reactor ambient ring glow
             if (showCoreGlow) {
                 drawReactorAmbientGlow(
                     imageRect = imageRect,
@@ -239,27 +242,23 @@ fun AssistantRobotFxOverlay(
                 )
             }
 
-            // ── C. Reactor sector highlight arc ────────────────────────────
+            // C. Reactor sector arc — FIXED position, no angular drift
             activeSector?.let { sector ->
                 drawSectorArc(
-                    imageRect = imageRect,
-                    sector    = sector,
-                    color     = accentColor,
-                    alpha     = 0.55f + corePulse * 0.30f,
-                    ringAngle = sectorRingAngle
+                    imageRect    = imageRect,
+                    sector       = sector,
+                    color        = accentColor,
+                    alpha        = 0.55f + corePulse * 0.30f,
+                    spinDotAngle = ringSpinAngle   // used only for decorative dots, not the arc
                 )
             }
 
-            // ── D. Reactor core burst ──────────────────────────────────────
+            // D. Core burst
             if (isReactorCoreBurst) {
-                drawCoreBurst(
-                    imageRect = imageRect,
-                    color     = coreColor,
-                    progress  = burstRing
-                )
+                drawCoreBurst(imageRect = imageRect, color = coreColor, progress = burstRing)
             }
 
-            // ── E. Hand node radial glow ───────────────────────────────────
+            // E. Hand node glow
             if (isHandProjectionActive) {
                 drawRegionRadialGlow(
                     normRect  = AssistantOverlayMap.handNode,
@@ -269,7 +268,7 @@ fun AssistantRobotFxOverlay(
                 )
             }
 
-            // ── F. Top module scan sweeps ──────────────────────────────────
+            // F. Top module scan sweeps (counter-phase so they don't sync)
             drawModuleScanSweep(
                 normRect  = AssistantOverlayMap.energyModule,
                 imageRect = imageRect,
@@ -280,10 +279,10 @@ fun AssistantRobotFxOverlay(
                 normRect  = AssistantOverlayMap.statusModule,
                 imageRect = imageRect,
                 color     = accentColor,
-                progress  = 1f - scanX    // offset so they don't sweep in sync
+                progress  = (scanX + 0.5f) % 1f   // 180° phase offset
             )
 
-            // ── G. Input focused glow ──────────────────────────────────────
+            // G. Input focus glow
             if (isInputFocused) {
                 drawRegionBorderGlow(
                     normRect  = AssistantOverlayMap.inputShell,
@@ -293,21 +292,21 @@ fun AssistantRobotFxOverlay(
                 )
             }
 
-            // ── H. Dock button selection glow ──────────────────────────────
+            // H. Dock button selection glow
             activeDockAction?.let { action ->
-                val dockRect = AssistantOverlayMap.dockButtons
+                AssistantOverlayMap.dockButtons
                     .firstOrNull { it.first == action }?.second
-                dockRect?.let {
-                    drawRegionRadialGlow(
-                        normRect  = it,
-                        imageRect = imageRect,
-                        color     = accentColor,
-                        alpha     = 0.40f + corePulse * 0.20f
-                    )
-                }
+                    ?.let { nr ->
+                        drawRegionRadialGlow(
+                            normRect  = nr,
+                            imageRect = imageRect,
+                            color     = accentColor,
+                            alpha     = 0.40f + corePulse * 0.20f
+                        )
+                    }
             }
 
-            // ── I. Dock center pulse ───────────────────────────────────────
+            // I. Dock center pulse
             if (isDockCenterActive) {
                 drawRegionRadialGlow(
                     normRect  = AssistantOverlayMap.dockCenterCore,
@@ -317,28 +316,27 @@ fun AssistantRobotFxOverlay(
                 )
             }
 
-            // ── J. Left action stack highlight ─────────────────────────────
+            // J. Left action stack glow
             activeLeftAction?.let { action ->
-                val leftRect = AssistantOverlayMap.leftActionStack
+                AssistantOverlayMap.leftActionStack
                     .firstOrNull { it.first == action }?.second
-                leftRect?.let {
-                    drawRegionRadialGlow(
-                        normRect  = it,
-                        imageRect = imageRect,
-                        color     = accentColor,
-                        alpha     = 0.35f + corePulse * 0.25f
-                    )
-                }
+                    ?.let { nr ->
+                        drawRegionRadialGlow(
+                            normRect  = nr,
+                            imageRect = imageRect,
+                            color     = accentColor,
+                            alpha     = 0.35f + corePulse * 0.25f
+                        )
+                    }
             }
 
-            // ── K. Listening mic pulse ─────────────────────────────────────
+            // K. Listening mic ring + dock mic glow
             if (isListening) {
                 drawMicListeningRing(
                     imageRect = imageRect,
                     color     = Color(0xFF73FF7C),
                     pulse     = micPulse
                 )
-                // Also pulse dock mic if dock mic was used
                 drawRegionRadialGlow(
                     normRect  = AssistantOverlayMap.dockMic,
                     imageRect = imageRect,
@@ -347,15 +345,12 @@ fun AssistantRobotFxOverlay(
                 )
             }
 
-            // ── L. Error vignette ──────────────────────────────────────────
+            // L. Error vignette
             if (showError) {
-                drawErrorVignette(
-                    color     = errorColor,
-                    intensity = errorFlicker * 0.18f
-                )
+                drawErrorVignette(color = errorColor, intensity = errorFlicker * 0.18f)
             }
 
-            // ── M. Full-body scan sweep ────────────────────────────────────
+            // M. Body scan sweep — bounds from robotBody NormRect
             if (showBodyScan && !showError) {
                 drawBodyScanSweep(
                     imageRect = imageRect,
@@ -368,38 +363,45 @@ fun AssistantRobotFxOverlay(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Drawing functions — all operating in screen-pixel space
+//  Drawing functions (screen-pixel space)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** A. Visor glow: radial glow centred on the visorZone. */
+/**
+ * A. Visor glow.
+ *
+ * CORRECTION: radius derives from [visorZone].width / 2f only.
+ * The visorZone is a wide, short horizontal slot. Using the averaged
+ * (width+height)/2 made the glow too tall, bleeding onto the chest panel.
+ */
 private fun DrawScope.drawVisorGlow(imageRect: Rect, color: Color, alpha: Float) {
     val visor = AssistantOverlayMap.visorZone.toPx(imageRect)
     val cx    = (visor.left + visor.right)  / 2f
     val cy    = (visor.top  + visor.bottom) / 2f
-    val r     = (visor.width + visor.height) / 2f * 0.72f
+    // Radius = half the slot width, capped so it stays within the face zone.
+    val r     = visor.width / 2f * 0.80f
 
     drawCircle(
         brush = Brush.radialGradient(
             colors = listOf(
                 color.copy(alpha = alpha),
-                color.copy(alpha = alpha * 0.38f),
+                color.copy(alpha = alpha * 0.40f),
                 Color.Transparent
             ),
             center = Offset(cx, cy),
             radius = r
         ),
-        radius = r,
-        center = Offset(cx, cy),
+        radius    = r,
+        center    = Offset(cx, cy),
         blendMode = BlendMode.Screen
     )
 }
 
-/** B. Reactor ambient ring glow: radial centred on reactorOuter. */
+/** B. Reactor ambient ring glow. */
 private fun DrawScope.drawReactorAmbientGlow(imageRect: Rect, color: Color, alpha: Float) {
     val outer = AssistantOverlayMap.reactorOuter.toPx(imageRect)
     val cx    = (outer.left + outer.right)  / 2f
     val cy    = (outer.top  + outer.bottom) / 2f
-    val r     = (outer.width + outer.height) / 2f * 0.80f
+    val r     = minOf(outer.width, outer.height) / 2f * 1.05f   // slight halo beyond the ring
 
     drawCircle(
         brush = Brush.radialGradient(
@@ -411,38 +413,41 @@ private fun DrawScope.drawReactorAmbientGlow(imageRect: Rect, color: Color, alph
             center = Offset(cx, cy),
             radius = r
         ),
-        radius     = r,
-        center     = Offset(cx, cy),
-        blendMode  = BlendMode.Screen
+        radius    = r,
+        center    = Offset(cx, cy),
+        blendMode = BlendMode.Screen
     )
 }
 
-/** C. Reactor sector arc highlight. */
+/**
+ * C. Reactor sector arc highlight.
+ *
+ * CORRECTION: arc start angle is taken directly from [ReactorSector.arcStartAngle]
+ * with NO rotation offset applied. The previous `ringAngle * 0.05f` drift caused
+ * the arc to slide 18° off the artwork sector boundary every 12 seconds.
+ *
+ * [spinDotAngle] (0°→360°, slow) is kept for future decorative use (e.g. a small
+ * dot orbiting the ring) but does NOT influence the arc position.
+ */
 private fun DrawScope.drawSectorArc(
     imageRect: Rect,
     sector: ReactorSector,
     color: Color,
     alpha: Float,
-    ringAngle: Float
+    spinDotAngle: Float   // reserved for future decorative dots; unused by arc
 ) {
     val outer  = AssistantOverlayMap.reactorOuter.toPx(imageRect)
     val cx     = (outer.left  + outer.right)  / 2f
     val cy     = (outer.top   + outer.bottom) / 2f
-    val radius = (outer.width + outer.height) / 2f * 0.68f
+    // Radius at the mid-point of the active ring band.
+    val radius = minOf(outer.width, outer.height) / 2f * 0.82f
+    val strokeW= minOf(outer.width, outer.height) * 0.09f   // ~9% of ring diameter
 
-    // Sector spans 90° (315→45, 45→135, 135→225, 225→315)
-    // Android drawArc uses degrees where 0° = 3 o'clock, clockwise.
-    val sweepDeg = 86f   // slightly less than 90° so arcs don't touch at corners
-    val startDeg = when (sector) {
-        ReactorSector.STABILITY_MONITOR -> -45f + ringAngle * 0.05f   // slight rotation drift
-        ReactorSector.INTERFACE_CONFIG  ->  45f + ringAngle * 0.05f
-        ReactorSector.RECALIBRATION     -> 135f + ringAngle * 0.05f
-        ReactorSector.SYS_NET_DIAG      -> 225f + ringAngle * 0.05f
-    }
+    // Fixed start angle from the enum — matches artwork sector boundaries exactly.
+    val startDeg = sector.arcStartAngle
+    val sweepDeg = sector.arcSweepAngle
 
-    // Stroke width = ~12% of reactor outer width
-    val strokeW = outer.width * 0.12f
-
+    // Primary arc
     drawArc(
         color      = color.copy(alpha = alpha),
         startAngle = startDeg,
@@ -454,39 +459,43 @@ private fun DrawScope.drawSectorArc(
         blendMode  = BlendMode.Screen
     )
 
-    // Glow halo behind the arc
+    // Soft glow halo slightly outside the arc stroke
+    val haloR = radius + strokeW * 0.5f
     drawArc(
-        color      = color.copy(alpha = alpha * 0.30f),
+        color      = color.copy(alpha = alpha * 0.28f),
         startAngle = startDeg,
         sweepAngle = sweepDeg,
         useCenter  = false,
-        topLeft    = Offset(cx - radius - strokeW, cy - radius - strokeW),
-        size       = Size((radius + strokeW) * 2f, (radius + strokeW) * 2f),
-        style      = Stroke(width = strokeW * 2.8f, cap = StrokeCap.Round),
+        topLeft    = Offset(cx - haloR, cy - haloR),
+        size       = Size(haloR * 2f, haloR * 2f),
+        style      = Stroke(width = strokeW * 2.6f, cap = StrokeCap.Round),
         blendMode  = BlendMode.Screen
     )
 }
 
-/** D. Reactor core burst: expanding ring on core tap. */
+/** D. Reactor core burst — expanding ring on core tap. */
 private fun DrawScope.drawCoreBurst(imageRect: Rect, color: Color, progress: Float) {
-    val reactorCenter = AssistantOverlayMap.reactorPhysics.centerNorm
-    val cx = imageRect.left + reactorCenter.x * imageRect.width
-    val cy = imageRect.top  + reactorCenter.y * imageRect.height
+    val center = AssistantOverlayMap.reactorPhysics.centerNorm
+    val cx = imageRect.left + center.x * imageRect.width
+    val cy = imageRect.top  + center.y * imageRect.height
 
-    val maxR = AssistantOverlayMap.reactorOuter.toPx(imageRect).width * 0.85f
-    val r    = maxR * progress
-    val a    = (1f - progress).coerceIn(0f, 1f)
+    val maxR = AssistantOverlayMap.reactorOuter.toPx(imageRect).let {
+        minOf(it.width, it.height)
+    } * 0.90f
+
+    val r = maxR * progress
+    val a = (1f - progress).coerceIn(0f, 1f)
 
     drawCircle(
         color     = color.copy(alpha = a * 0.65f),
         radius    = r,
         center    = Offset(cx, cy),
-        style     = Stroke(width = 4f * (1f - progress) + 1f),
+        style     = Stroke(width = 3.5f * (1f - progress) + 1f),
         blendMode = BlendMode.Screen
     )
 }
 
-/** E / J / partial dock: general radial glow centred on a NormRect. */
+/** E / H / I / J: general radial glow centred on a NormRect. */
 private fun DrawScope.drawRegionRadialGlow(
     normRect: NormRect,
     imageRect: Rect,
@@ -496,7 +505,7 @@ private fun DrawScope.drawRegionRadialGlow(
     val px = normRect.toPx(imageRect)
     val cx = (px.left + px.right)  / 2f
     val cy = (px.top  + px.bottom) / 2f
-    val r  = maxOf(px.width, px.height) * 0.70f
+    val r  = maxOf(px.width, px.height) * 0.72f
 
     drawCircle(
         brush = Brush.radialGradient(
@@ -514,43 +523,50 @@ private fun DrawScope.drawRegionRadialGlow(
     )
 }
 
-/** F. Top module scan sweep: horizontal light line crossing the module. */
+/**
+ * F. Top module scan sweep.
+ * The sweep is clamped to [px.left, px.right] to prevent bleeding outside
+ * the module bounds.
+ */
 private fun DrawScope.drawModuleScanSweep(
     normRect: NormRect,
     imageRect: Rect,
     color: Color,
     progress: Float
 ) {
-    val px     = normRect.toPx(imageRect)
-    val x      = px.left + px.width * progress
-    val height = px.height
+    val px = normRect.toPx(imageRect)
+    val x  = px.left + px.width * progress.coerceIn(0f, 1f)
 
     drawLine(
         brush = Brush.verticalGradient(
-            colors  = listOf(Color.Transparent, color.copy(0.22f), Color.Transparent),
-            startY  = px.top,
-            endY    = px.bottom
+            colors = listOf(Color.Transparent, color.copy(0.24f), Color.Transparent),
+            startY = px.top,
+            endY   = px.bottom
         ),
-        start     = Offset(x, px.top),
-        end       = Offset(x, px.bottom),
+        start       = Offset(x, px.top),
+        end         = Offset(x, px.bottom),
         strokeWidth = 2.5f,
-        blendMode = BlendMode.Screen
+        blendMode   = BlendMode.Screen
     )
-    // Soft glow halo on the sweep line
+    // Halo glow band around the sweep line
+    val haloHalf = px.height.coerceAtMost(px.width * 0.12f)
     drawRect(
         brush = Brush.horizontalGradient(
-            colors  = listOf(
+            colors = listOf(
                 Color.Transparent,
                 color.copy(0.08f),
-                color.copy(0.15f),
+                color.copy(0.16f),
                 color.copy(0.08f),
                 Color.Transparent
             ),
-            startX  = (x - height).coerceAtLeast(px.left),
-            endX    = (x + height).coerceAtMost(px.right)
+            startX = (x - haloHalf).coerceAtLeast(px.left),
+            endX   = (x + haloHalf).coerceAtMost(px.right)
         ),
-        topLeft   = Offset((x - height).coerceAtLeast(px.left), px.top),
-        size      = Size((height * 2f).coerceAtMost(px.width), height),
+        topLeft   = Offset((x - haloHalf).coerceAtLeast(px.left), px.top),
+        size      = Size(
+            (haloHalf * 2f).coerceAtMost(px.right - px.left),
+            px.height
+        ),
         blendMode = BlendMode.Screen
     )
 }
@@ -575,19 +591,19 @@ private fun DrawScope.drawRegionBorderGlow(
             startY = px.top,
             endY   = px.bottom
         ),
-        topLeft = Offset(px.left, px.top),
-        size    = Size(px.width, px.height),
+        topLeft   = Offset(px.left, px.top),
+        size      = Size(px.width, px.height),
         blendMode = BlendMode.Screen
     )
 }
 
-/** K. Listening mic ring — pulsing concentric ring around the inputMic region. */
+/** K. Listening mic ring — pulsing concentric ring on inputMic. */
 private fun DrawScope.drawMicListeningRing(imageRect: Rect, color: Color, pulse: Float) {
-    val micPx  = AssistantOverlayMap.inputMic.toPx(imageRect)
-    val cx     = (micPx.left + micPx.right)  / 2f
-    val cy     = (micPx.top  + micPx.bottom) / 2f
-    val baseR  = maxOf(micPx.width, micPx.height) / 2f
-    val r      = baseR * (1.4f + pulse * 1.6f)
+    val micPx = AssistantOverlayMap.inputMic.toPx(imageRect)
+    val cx    = (micPx.left + micPx.right)  / 2f
+    val cy    = (micPx.top  + micPx.bottom) / 2f
+    val baseR = maxOf(micPx.width, micPx.height) / 2f
+    val r     = baseR * (1.4f + pulse * 1.6f)
 
     drawCircle(
         color     = color.copy(alpha = (1f - pulse) * 0.55f),
@@ -598,7 +614,7 @@ private fun DrawScope.drawMicListeningRing(imageRect: Rect, color: Color, pulse:
     )
 }
 
-/** L. Error vignette: edge-to-centre darkening. */
+/** L. Error vignette — edge-to-centre darkening. */
 private fun DrawScope.drawErrorVignette(color: Color, intensity: Float) {
     drawRect(
         brush = Brush.radialGradient(
@@ -613,13 +629,20 @@ private fun DrawScope.drawErrorVignette(color: Color, intensity: Float) {
     )
 }
 
-/** M. Full-body vertical scan sweep. */
+/**
+ * M. Full-body vertical scan sweep.
+ *
+ * CORRECTION: sweep bounds are now derived from the [robotBody] NormRect
+ * (top → bottom of the robot) instead of fixed 0.15f–0.85f image-height
+ * fractions. This ensures the sweep tracks the artwork robot body on all
+ * themes and screen aspect ratios.
+ */
 private fun DrawScope.drawBodyScanSweep(imageRect: Rect, position: Float, color: Color) {
-    // Sweep within the robot body zone (15% to 85% of image height)
-    val yMin = imageRect.top  + imageRect.height * 0.15f
-    val yMax = imageRect.top  + imageRect.height * 0.85f
+    val body = AssistantOverlayMap.robotBody.toPx(imageRect)
+    val yMin = body.top
+    val yMax = body.bottom
     val y    = yMin + (yMax - yMin) * position
-    val sh   = imageRect.height * 0.007f
+    val sh   = (yMax - yMin) * 0.007f
 
     drawRect(
         brush = Brush.verticalGradient(
@@ -633,19 +656,20 @@ private fun DrawScope.drawBodyScanSweep(imageRect: Rect, position: Float, color:
             startY = y - sh * 3f,
             endY   = y + sh * 3f
         ),
-        topLeft   = Offset(imageRect.left, y - sh * 3f),
-        size      = Size(imageRect.width, sh * 6f),
+        topLeft   = Offset(body.left, y - sh * 3f),
+        size      = Size(body.width, sh * 6f),
         blendMode = BlendMode.Screen
     )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  AssistantState helper — determines whether state is "active"
+//  AssistantState helper
 // ─────────────────────────────────────────────────────────────────────────────
 
-private val AssistantState.isActive: Boolean get() = when (this) {
-    AssistantState.IDLE,
-    AssistantState.MUTED,
-    AssistantState.SHUTTING_DOWN -> false
-    else -> true
-}
+private val AssistantState.isActive: Boolean
+    get() = when (this) {
+        AssistantState.IDLE,
+        AssistantState.MUTED,
+        AssistantState.SHUTTING_DOWN -> false
+        else                         -> true
+    }

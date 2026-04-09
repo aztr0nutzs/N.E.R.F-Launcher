@@ -9,6 +9,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -18,27 +19,27 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.foundation.gestures.detectTapGestures
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  AssistantScreen
 //
-//  Top-level composable. Architecture:
+//  Layer stack (bottom → top, i.e. index 0 is drawn first):
 //
-//    ┌──────────────────────────────────────────────┐
-//    │  Layer 0 : Full-screen backplate image       │  ContentScale.Fit
-//    │  Layer 1 : Robot state FX (Canvas)           │  mapped to imageRect
-//    │  Layer 2 : Global gesture capture            │  imageRect hit-test
-//    │  Layer 3 : Chat pane (clipped to region)     │
-//    │  Layer 4 : Controls overlay (input/dock)     │
-//    │  Layer 5 : Top bar & theme switcher          │
-//    └──────────────────────────────────────────────┘
+//    0  Artwork backplate      ContentScale.Fit, no interaction
+//    1  Robot FX Canvas        Canvas layer, anchored to imageRect
+//    2  Robot gesture capture  pointerInput — robot-body zones only
+//    3  Chat pane              LazyColumn clipped to transcriptRegion
+//    4  Controls overlay       Input row · dock · left stack (own clickable)
+//    5  Top bar                Theme picker · dismiss
 //
-//  KEY DESIGN DECISION:
-//    The backplate is rendered with ContentScale.Fit so its aspect ratio is
-//    preserved. All overlay coordinates are mapped through [imageRect] which
-//    is computed once from the actual on-screen size. This means every region
-//    and hotspot is pixel-accurate regardless of screen size or density.
+//  INTERACTION SPLIT:
+//  ─ Layer 2 handles ONLY reactor core/sector and hand-node taps.
+//    It does NOT claim input for any control-widget region — those are fully
+//    owned by Layer 4's per-widget clickable modifiers.
+//  ─ In Compose Box, later children (higher index) are on top and receive
+//    input first. So Layer 4 consumes its taps before they reach Layer 2.
+//  ─ For any tap in the upper robot-body area (not covered by Layer 4 widgets),
+//    Layer 2 catches and dispatches it.
 //
 //  Source image size: 1177 × 2048 px (portrait).
 // ─────────────────────────────────────────────────────────────────────────────
@@ -52,10 +53,10 @@ fun AssistantScreen(
     modifier: Modifier = Modifier
 ) {
     AssistantScreen(
-        uiState = viewModel.uiState,
-        onEvent = viewModel::onEvent,
+        uiState            = viewModel.uiState,
+        onEvent            = viewModel::onEvent,
         onInputTextChanged = viewModel::onInputTextChanged,
-        modifier = modifier
+        modifier           = modifier
     )
 }
 
@@ -70,32 +71,32 @@ fun AssistantScreen(
     val palette = theme.palette
 
     AnimatedVisibility(
-        visible = uiState.isVisible,
-        enter   = fadeIn(tween(280, easing = FastOutSlowInEasing)),
-        exit    = fadeOut(tween(200)),
+        visible  = uiState.isVisible,
+        enter    = fadeIn(tween(280, easing = FastOutSlowInEasing)),
+        exit     = fadeOut(tween(200)),
         modifier = modifier
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val density = LocalDensity.current
+            val density    = LocalDensity.current
             val containerW = with(density) { maxWidth.toPx() }
             val containerH = with(density) { maxHeight.toPx() }
 
-            // ── Compute the displayed image rect once ──────────────────────
-            // ContentScale.Fit preserves aspect ratio; the image may be
-            // letterboxed or pillarboxed inside the container.
+            // Compute the displayed image rect once and share it with every layer.
+            // ContentScale.Fit → uniform scale, centred. The image may be
+            // pillarboxed (portrait phone) or letterboxed (landscape / tablet).
             val imageRect = remember(containerW, containerH) {
                 AssistantOverlayHitTest.computeImageRect(containerW, containerH, IMAGE_W, IMAGE_H)
             }
 
             // ── Layer 0: Artwork backplate ─────────────────────────────────
             Image(
-                painter          = painterResource(id = theme.backplateRes),
+                painter            = painterResource(id = theme.backplateRes),
                 contentDescription = "Assistant theme: ${theme.displayName}",
-                contentScale     = ContentScale.Fit,
-                modifier         = Modifier.fillMaxSize()
+                contentScale       = ContentScale.Fit,
+                modifier           = Modifier.fillMaxSize()
             )
 
-            // ── Layer 1: Robot state FX (Canvas) ──────────────────────────
+            // ── Layer 1: Robot FX (Canvas, no input) ─────────────────────
             AssistantRobotFxOverlay(
                 state                  = uiState.robotState,
                 imageRect              = imageRect,
@@ -112,15 +113,14 @@ fun AssistantScreen(
                 modifier               = Modifier.fillMaxSize()
             )
 
-            // ── Layer 2: Global gesture capture ───────────────────────────
-            // Intercepts ALL taps and classifies them via the hit-test engine.
+            // ── Layer 2: Robot-body gesture capture ───────────────────────
+            // Handles ONLY reactor and hand-node taps. All control-area
+            // taps are consumed by Layer 4 before they reach here.
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .pointerInput(imageRect) {
-                        detectTapGestures { tapOffset ->
-                            handleTap(tapOffset, imageRect, onEvent)
-                        }
+                        detectTapGestures { offset -> handleRobotTap(offset, imageRect, onEvent) }
                     }
             )
 
@@ -135,6 +135,9 @@ fun AssistantScreen(
             )
 
             // ── Layer 4: Controls overlay ─────────────────────────────────
+            // All interactive controls for input, dock, and left stack live
+            // here. Each widget uses its own clickable modifier so Compose
+            // handles focus, ripple, and event ownership correctly.
             AssistantControlsOverlayMapped(
                 uiState            = uiState,
                 imageRect          = imageRect,
@@ -143,7 +146,7 @@ fun AssistantScreen(
                 modifier           = Modifier.fillMaxSize()
             )
 
-            // ── Layer 5: Top bar (theme + dismiss) ────────────────────────
+            // ── Layer 5: Top bar ──────────────────────────────────────────
             AssistantTopBar(
                 palette       = palette,
                 themeName     = theme.displayName,
@@ -159,56 +162,30 @@ fun AssistantScreen(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Tap dispatch
+//  Robot-body tap dispatch (reactor + hand node only)
 // ─────────────────────────────────────────────────────────────────────────────
 
-private fun handleTap(
+/**
+ * Dispatch a tap in the robot-body zone to the appropriate [AssistantEvent].
+ *
+ * Control-widget events (input, dock, left stack) are NOT handled here —
+ * they fire from the controls overlay's own clickable modifiers.
+ */
+private fun handleRobotTap(
     tapOffset: Offset,
     imageRect: Rect,
     onEvent: (AssistantEvent) -> Unit
 ) {
-    val hit = AssistantOverlayHitTest.classify(tapOffset, imageRect) ?: return
-
-    when (hit) {
-        // Reactor
+    when (val hit = AssistantOverlayHitTest.classify(tapOffset, imageRect)) {
         HitRegion.ReactorCore ->
             onEvent(AssistantEvent.ReactorCoreTapped)
 
         is HitRegion.ReactorSector ->
             onEvent(AssistantEvent.ReactorSectorTapped(hit.sector))
 
-        // Robot body
         HitRegion.HandNode ->
             onEvent(AssistantEvent.HandProjectionTapped)
 
-        // Input accessories — individual logical buttons in the input shell
-        HitRegion.InputMic ->
-            onEvent(AssistantEvent.MicTapped)
-
-        HitRegion.InputEmoji ->
-            Unit    // emoji picker — no-op for now; extend as needed
-
-        HitRegion.InputText ->
-            onEvent(AssistantEvent.InputFocused)   // inform ViewModel; actual focus handled by TextField
-
-        HitRegion.Send ->
-            onEvent(AssistantEvent.SubmitText(""))  // ViewModel reads from uiState.inputText
-
-        HitRegion.ToggleModule ->
-            onEvent(AssistantEvent.ToggleModuleTapped)
-
-        HitRegion.Transcript, HitRegion.ChatPanel ->
-            Unit    // scroll is handled internally by LazyColumn
-
-        // Left action stack
-        is HitRegion.LeftAction ->
-            onEvent(AssistantEvent.LeftActionTapped(hit.action))
-
-        // Dock
-        HitRegion.DockCenter ->
-            onEvent(AssistantEvent.DockCenterTapped)
-
-        is HitRegion.Dock ->
-            onEvent(AssistantEvent.DockActionTapped(hit.action))
+        null -> Unit   // tap outside all robot-body zones — ignore
     }
 }
