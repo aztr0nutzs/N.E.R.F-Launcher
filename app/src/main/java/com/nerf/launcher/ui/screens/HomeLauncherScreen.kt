@@ -38,7 +38,6 @@ import com.nerf.launcher.state.LauncherUtilityAction
 import com.nerf.launcher.state.LauncherViewModel
 import com.nerf.launcher.theme.LauncherAccent
 import com.nerf.launcher.theme.LauncherGlowLevel
-import com.nerf.launcher.theme.LauncherTheme
 import com.nerf.launcher.ui.components.ChromeFrame
 import com.nerf.launcher.ui.components.DockTile
 import com.nerf.launcher.ui.components.PanelCard
@@ -90,57 +89,55 @@ fun HomeLauncherScreen(
     onReactorHapticEvent: (ReactorHapticEvent) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    LauncherTheme {
-        ChromeFrame(
-            title = uiState.headerTitle,
-            subtitle = uiState.headerSubtitle,
-            eyebrow = uiState.headerEyebrow,
-            accent = uiState.selectedMode.accent,
-            modifier = modifier,
-            topBarContent = {
-                ModeBadge(mode = uiState.selectedMode)
-                Spacer(Modifier.width(12.dp))
-                uiState.utilityActions.forEachIndexed { index, action ->
-                    UtilityPill(
-                        action = action,
-                        onClick = { onUtilityActionTap(action) }
-                    )
-                    if (index != uiState.utilityActions.lastIndex) {
-                        Spacer(Modifier.width(10.dp))
-                    }
-                }
-            },
-            dockContent = {
-                uiState.dockItems.forEachIndexed { index, item ->
-                    DockTile(
-                        label = item.label,
-                        supportingText = item.supportingText,
-                        accent = item.accent,
-                        selected = item.mode == uiState.selectedMode,
-                        onClick = { onDockItemTap(item.mode) },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        ReactorGlyph(
-                            glyph = item.glyph,
-                            accent = item.accent
-                        )
-                    }
-                    if (index != uiState.dockItems.lastIndex) {
-                        Spacer(Modifier.width(14.dp))
-                    }
+    ChromeFrame(
+        title = uiState.headerTitle,
+        subtitle = uiState.headerSubtitle,
+        eyebrow = uiState.headerEyebrow,
+        accent = uiState.selectedMode.accent,
+        modifier = modifier,
+        topBarContent = {
+            ModeBadge(mode = uiState.selectedMode)
+            Spacer(Modifier.width(12.dp))
+            uiState.utilityActions.forEachIndexed { index, action ->
+                UtilityPill(
+                    action = action,
+                    onClick = { onUtilityActionTap(action) }
+                )
+                if (index != uiState.utilityActions.lastIndex) {
+                    Spacer(Modifier.width(10.dp))
                 }
             }
-        ) {
-            HomeCommandDeck(
-                uiState = uiState,
-                onModeSelected = onModeSelected,
-                onReactorInteractionStateChange = onReactorInteractionStateChange,
-                onReactorCoreTap = onReactorCoreTap,
-                onReactorSegmentTap = onReactorSegmentTap,
-                onReactorSegmentLongPress = onReactorSegmentLongPress,
-                onReactorHapticEvent = onReactorHapticEvent
-            )
+        },
+        dockContent = {
+            uiState.dockItems.forEachIndexed { index, item ->
+                DockTile(
+                    label = item.label,
+                    supportingText = item.supportingText,
+                    accent = item.accent,
+                    selected = item.mode == uiState.selectedMode,
+                    onClick = { onDockItemTap(item.mode) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    ReactorGlyph(
+                        glyph = item.glyph,
+                        accent = item.accent
+                    )
+                }
+                if (index != uiState.dockItems.lastIndex) {
+                    Spacer(Modifier.width(14.dp))
+                }
+            }
         }
+    ) {
+        HomeCommandDeck(
+            uiState = uiState,
+            onModeSelected = onModeSelected,
+            onReactorInteractionStateChange = onReactorInteractionStateChange,
+            onReactorCoreTap = onReactorCoreTap,
+            onReactorSegmentTap = onReactorSegmentTap,
+            onReactorSegmentLongPress = onReactorSegmentLongPress,
+            onReactorHapticEvent = onReactorHapticEvent
+        )
     }
 }
 

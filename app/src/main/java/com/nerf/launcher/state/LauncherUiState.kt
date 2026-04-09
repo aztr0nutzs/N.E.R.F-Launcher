@@ -7,6 +7,7 @@ import com.nerf.launcher.ui.reactor.ReactorDefaults
 import com.nerf.launcher.ui.reactor.ReactorInteractionState
 import com.nerf.launcher.ui.reactor.ReactorModel
 import com.nerf.launcher.ui.reactor.ReactorSegmentModel
+import com.nerf.launcher.util.AppConfig
 
 enum class LauncherMode(
     val displayName: String,
@@ -129,10 +130,21 @@ data class LauncherUiState(
 )
 
 object LauncherUiStateFactory {
+
+    /**
+     * Build a full [LauncherUiState].
+     *
+     * @param config Optional live [AppConfig] from [ConfigRepository]. When present,
+     *   config-driven fields (active theme name, grid size, pinned app count, taskbar
+     *   state) are reflected in the status modules. When null (first frame before the
+     *   repository is ready), sensible placeholder values are used — no crash, no
+     *   separate code path.
+     */
     fun create(
         selectedMode: LauncherMode = LauncherMode.Hub,
         interactionState: ReactorInteractionState = ReactorInteractionState(),
-        statusMessage: String = selectedMode.summary
+        statusMessage: String = selectedMode.summary,
+        config: AppConfig? = null
     ): LauncherUiState {
         return LauncherUiState(
             headerTitle = "N.E.R.F. LAUNCHER",
@@ -143,7 +155,7 @@ object LauncherUiStateFactory {
             statusMessage = statusMessage,
             reactor = buildHomeReactor(selectedMode),
             reactorInteractionState = interactionState,
-            statusModules = buildModules(),
+            statusModules = buildModules(config),
             dockItems = buildDockItems(),
             utilityActions = LauncherUtilityAction.entries
         )
@@ -195,55 +207,81 @@ object LauncherUiStateFactory {
         )
     }
 
-    private fun buildModules(): List<LauncherStatusModule> = listOf(
-        LauncherStatusModule(
-            id = "module_systems",
-            mode = LauncherMode.Systems,
-            title = "SYSTEM TRIAD",
-            value = "03 LINKS",
-            detail = "SYS, NET, and DIAG channels remain phase-locked to the reactor wheel.",
-            footer = "Latency 04 ms",
-            accent = LauncherMode.Systems.accent
-        ),
-        LauncherStatusModule(
-            id = "module_stability",
-            mode = LauncherMode.StabilityMonitor,
-            title = "STABILITY MONITOR",
-            value = "99.982%",
-            detail = "Thermal cage, pressure shell, and uptime harmonics are holding steady.",
-            footer = "Variance 0.018",
-            accent = LauncherMode.StabilityMonitor.accent
-        ),
-        LauncherStatusModule(
-            id = "module_recal",
-            mode = LauncherMode.ReCalibration,
-            title = "RE-CALIBRATION",
-            value = "02 TASKS",
-            detail = "Queued trim passes for dock geometry and shell pacing remain available.",
-            footer = "Next pass 00:42",
-            accent = LauncherMode.ReCalibration.accent
-        ),
-        LauncherStatusModule(
-            id = "module_config",
-            mode = LauncherMode.InterfaceConfig,
-            title = "INTERFACE CONFIG",
-            value = "PROFILE A3",
-            detail = "Overlay routing, command bindings, and chrome banks are synced.",
-            footer = "Theme Reactor-Black",
-            accent = LauncherMode.InterfaceConfig.accent
+    /**
+     * Build the four status modules.
+     *
+     * Modules whose content is purely structural (Systems, StabilityMonitor) keep
+     * their static display values — they represent launcher-mode identity, not live
+     * device data.
+     *
+     * Modules whose content is user-configurable (ReCalibration, InterfaceConfig)
+     * reflect real [AppConfig] values when available:
+     *  - InterfaceConfig → active theme name, grid size
+     *  - ReCalibration   → taskbar enabled state, pinned app count
+     */
+    private fun buildModules(config: AppConfig?): List<LauncherStatusModule> {
+        // InterfaceConfig module: reflects active theme and grid size.
+        val themeName   = config?.themeName ?: "—"
+        val gridSize    = config?.gridSize?.toString() ?: "—"
+
+        // ReCalibration module: reflects taskbar state and pinned-app count.
+        val taskbarState = when {
+            config == null               -> "—"
+            config.taskbarSettings.enabled -> "DOCK ON"
+            else                         -> "DOCK OFF"
+        }
+        val pinnedCount = config?.taskbarSettings?.pinnedApps?.size?.toString() ?: "—"
+
+        return listOf(
+            LauncherStatusModule(
+                id      = "module_systems",
+                mode    = LauncherMode.Systems,
+                title   = "SYSTEM TRIAD",
+                value   = "03 LINKS",
+                detail  = "SYS, NET, and DIAG channels remain phase-locked to the reactor wheel.",
+                footer  = "Latency 04 ms",
+                accent  = LauncherMode.Systems.accent
+            ),
+            LauncherStatusModule(
+                id      = "module_stability",
+                mode    = LauncherMode.StabilityMonitor,
+                title   = "STABILITY MONITOR",
+                value   = "99.982%",
+                detail  = "Thermal cage, pressure shell, and uptime harmonics are holding steady.",
+                footer  = "Variance 0.018",
+                accent  = LauncherMode.StabilityMonitor.accent
+            ),
+            LauncherStatusModule(
+                id      = "module_recal",
+                mode    = LauncherMode.ReCalibration,
+                title   = "RE-CALIBRATION",
+                value   = taskbarState,
+                detail  = "Queued trim passes for dock geometry and shell pacing remain available.",
+                footer  = "$pinnedCount pinned",
+                accent  = LauncherMode.ReCalibration.accent
+            ),
+            LauncherStatusModule(
+                id      = "module_config",
+                mode    = LauncherMode.InterfaceConfig,
+                title   = "INTERFACE CONFIG",
+                value   = themeName.uppercase(),
+                detail  = "Overlay routing, command bindings, and chrome banks are synced.",
+                footer  = "Grid $gridSize × $gridSize",
+                accent  = LauncherMode.InterfaceConfig.accent
+            )
         )
-    )
+    }
 
     private fun buildDockItems(): List<LauncherDockItem> = LauncherMode.entries.map { mode ->
         LauncherDockItem(
             mode = mode,
             label = mode.dockLabel,
             supportingText = when (mode) {
-                LauncherMode.Hub -> "Primary"
-                LauncherMode.Systems -> "SYS/NET/DIAG"
+                LauncherMode.Hub              -> "Primary"
+                LauncherMode.Systems          -> "SYS/NET/DIAG"
                 LauncherMode.StabilityMonitor -> "Shielding"
-                LauncherMode.ReCalibration -> "Trim Pass"
-                LauncherMode.InterfaceConfig -> "Profiles"
+                LauncherMode.ReCalibration    -> "Trim Pass"
+                LauncherMode.InterfaceConfig  -> "Profiles"
             },
             glyph = mode.glyph,
             accent = mode.accent
