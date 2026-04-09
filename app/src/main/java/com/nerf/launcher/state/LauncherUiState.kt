@@ -83,6 +83,11 @@ enum class LauncherUtilityAction(
         label = "LOCK",
         accent = LauncherAccent.Magenta,
         note = "Chrome frame lock grid engaged."
+    ),
+    Assistant(
+        label = "A.I.",
+        accent = LauncherAccent.Green,
+        note = "Opening assistant link."
     )
 }
 
@@ -118,7 +123,9 @@ data class LauncherUiState(
     val reactorInteractionState: ReactorInteractionState,
     val statusModules: List<LauncherStatusModule>,
     val dockItems: List<LauncherDockItem>,
-    val utilityActions: List<LauncherUtilityAction>
+    val utilityActions: List<LauncherUtilityAction>,
+    /** True for exactly one frame when the user taps the Assistant utility action. */
+    val assistantRequested: Boolean = false
 )
 
 object LauncherUiStateFactory {

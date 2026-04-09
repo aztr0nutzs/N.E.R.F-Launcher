@@ -25,7 +25,21 @@ class LauncherViewModel : ViewModel() {
     }
 
     fun onUtilityActionTap(action: LauncherUtilityAction) {
-        rebuild(statusMessage = action.note)
+        if (action == LauncherUtilityAction.Assistant) {
+            uiState = uiState.copy(
+                assistantRequested = true,
+                statusMessage = action.note
+            )
+        } else {
+            rebuild(statusMessage = action.note)
+        }
+    }
+
+    /** Called by LauncherAppRoot after it has consumed the assistantRequested flag. */
+    fun clearAssistantRequest() {
+        if (uiState.assistantRequested) {
+            uiState = uiState.copy(assistantRequested = false)
+        }
     }
 
     fun onReactorCoreTap() {
