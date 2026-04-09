@@ -54,20 +54,50 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun onEvent(event: AssistantEvent) {
         when (event) {
-            is AssistantEvent.SubmitText -> submitText(event.text)
-            AssistantEvent.MicTapped -> onMicTapped()
-            AssistantEvent.RepeatLast -> repeatLast()
-            AssistantEvent.InterruptSpeaking -> interruptSpeaking()
-            AssistantEvent.ChestCoreTapped -> toggleChestCore()
-            AssistantEvent.HandProjectionTapped -> toggleHandProjection()
-            is AssistantEvent.SideModuleTapped -> toggleSideModule(event.side)
+            is AssistantEvent.SubmitText          -> submitText(event.text)
+            AssistantEvent.MicTapped              -> onMicTapped()
+            AssistantEvent.RepeatLast             -> repeatLast()
+            AssistantEvent.InterruptSpeaking      -> interruptSpeaking()
+
+            // Input focus
+            AssistantEvent.InputFocused           -> uiState = uiState.copy(isInputFocused = true)
+            AssistantEvent.InputUnfocused         -> uiState = uiState.copy(isInputFocused = false)
+
+            // Reactor
+            AssistantEvent.ReactorCoreTapped      -> onReactorCoreTapped()
+            is AssistantEvent.ReactorSectorTapped -> onReactorSectorTapped(event.sector)
+
+            // Robot body
+            AssistantEvent.ChestCoreTapped        -> onReactorCoreTapped()   // alias
+            AssistantEvent.HandProjectionTapped   -> toggleHandProjection()
+            is AssistantEvent.SideModuleTapped    -> toggleSideModule(event.side)
+
+            // Left action stack
+            is AssistantEvent.LeftActionTapped    -> onLeftActionTapped(event.action)
+
+            // Dock
+            is AssistantEvent.DockActionTapped    -> onDockActionTapped(event.action)
+            AssistantEvent.DockCenterTapped       -> onDockCenterTapped()
+
+            // Toggle module
+            AssistantEvent.ToggleModuleTapped     -> uiState = uiState.copy(
+                isToggleModuleOn = !uiState.isToggleModuleOn
+            )
+
+            // Quick launcher commands
             is AssistantEvent.LauncherCommandTapped -> executeLauncherCommand(event.command)
-            is AssistantEvent.SwitchTheme -> switchTheme(event.themeId)
-            AssistantEvent.CycleTheme -> cycleTheme()
-            AssistantEvent.CycleMood -> cycleMood()
-            AssistantEvent.Dismiss -> dismiss()
-            AssistantEvent.ToggleChatPane -> toggleChatPane()
-            is AssistantEvent.ToggleSidePanel -> toggleSidePanelDirect(event.side)
+
+            // Theme
+            is AssistantEvent.SwitchTheme         -> switchTheme(event.themeId)
+            AssistantEvent.CycleTheme             -> cycleTheme()
+
+            // Mood
+            AssistantEvent.CycleMood              -> cycleMood()
+
+            // Overlay
+            AssistantEvent.Dismiss                -> dismiss()
+            AssistantEvent.ToggleChatPane         -> toggleChatPane()
+            is AssistantEvent.ToggleSidePanel     -> toggleSidePanelDirect(event.side)
         }
     }
 
@@ -100,9 +130,10 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
             latestResponse = snapshot.response ?: uiState.latestResponse,
             interactionCount = snapshot.interactionCount,
             bankStatusLabel = if (controller.isResponseBankLoaded()) "RESPONSE BANK LOADED" else "RESPONSE BANK FALLBACK",
-            // Auto-deactivate chest core and hand projection when state changes to idle
+            // Auto-deactivate overlays when state returns to idle
             isChestCoreActive = if (snapshot.state == AssistantState.IDLE) false else uiState.isChestCoreActive,
-            isHandProjectionActive = if (snapshot.state == AssistantState.IDLE) false else uiState.isHandProjectionActive
+            isHandProjectionActive = if (snapshot.state == AssistantState.IDLE) false else uiState.isHandProjectionActive,
+            isReactorCoreBurst = false   // burst is one-shot; clear on state change
         )
     }
 
@@ -144,11 +175,15 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
         uiState = uiState.copy(isListening = false)
     }
 
-    private fun toggleChestCore() {
+    // ── Reactor ──────────────────────────────────────────────────────────────
+
+    private fun onReactorCoreTapped() {
         val wasActive = uiState.isChestCoreActive
         uiState = uiState.copy(
             isChestCoreActive = !wasActive,
-            isHandProjectionActive = false  // Only one overlay at a time
+            isHandProjectionActive = false,     // mutual exclusion
+            isReactorCoreBurst = !wasActive,    // one-shot FX burst on activation
+            activeSector = null                  // deselect any sector
         )
         if (!wasActive) {
             controller.speakCategory(
@@ -157,11 +192,38 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    private fun onReactorSectorTapped(sector: ReactorSector) {
+        val isAlreadyActive = uiState.activeSector == sector
+        uiState = uiState.copy(
+            activeSector = if (isAlreadyActive) null else sector,
+            isChestCoreActive = false   // deactivate core when a sector is selected
+        )
+        if (!isAlreadyActive) {
+            // Map reactor sector to a response category
+            when (sector) {
+                ReactorSector.STABILITY_MONITOR -> controller.speakCategory(
+                    com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
+                )
+                ReactorSector.INTERFACE_CONFIG -> controller.speakCategory(
+                    com.nerf.launcher.util.assistant.AiResponseRepository.Category.THEME_SWITCH
+                )
+                ReactorSector.RECALIBRATION -> controller.speakCategory(
+                    com.nerf.launcher.util.assistant.AiResponseRepository.Category.SCANNING
+                )
+                ReactorSector.SYS_NET_DIAG -> controller.speakCategory(
+                    com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
+                )
+            }
+        }
+    }
+
+    // ── Hand Projection ───────────────────────────────────────────────────────
+
     private fun toggleHandProjection() {
         val wasActive = uiState.isHandProjectionActive
         uiState = uiState.copy(
             isHandProjectionActive = !wasActive,
-            isChestCoreActive = false  // Only one overlay at a time
+            isChestCoreActive = false
         )
         if (!wasActive) {
             controller.speakCategory(
@@ -169,6 +231,8 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
             )
         }
     }
+
+    // ── Side Modules ─────────────────────────────────────────────────────────
 
     private fun toggleSideModule(side: AssistantEvent.SideModuleTapped.Side) {
         when (side) {
@@ -179,13 +243,55 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    private fun toggleSidePanelDirect(side: AssistantEvent.SideModuleTapped.Side) {
-        toggleSideModule(side)
+    private fun toggleSidePanelDirect(side: AssistantEvent.SideModuleTapped.Side) = toggleSideModule(side)
+
+    // ── Left Action Stack ─────────────────────────────────────────────────────
+
+    private fun onLeftActionTapped(action: LeftAction) {
+        val isAlreadyActive = uiState.activeLeftAction == action
+        uiState = uiState.copy(activeLeftAction = if (isAlreadyActive) null else action)
+        when (action) {
+            LeftAction.POWER    -> controller.speakCategory(
+                com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
+            )
+            LeftAction.NETWORK  -> controller.speakCategory(
+                com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
+            )
+            LeftAction.ALERTS   -> controller.speakCategory(
+                com.nerf.launcher.util.assistant.AiResponseRepository.Category.SCANNING
+            )
+            LeftAction.SETTINGS -> executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_SETTINGS)
+        }
     }
+
+    // ── Dock ─────────────────────────────────────────────────────────────────
+
+    private fun onDockActionTapped(action: DockAction) {
+        val isAlreadyActive = uiState.activeDockAction == action
+        uiState = uiState.copy(activeDockAction = if (isAlreadyActive) null else action)
+        when (action) {
+            DockAction.SETTINGS -> executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_SETTINGS)
+            DockAction.MAP      -> executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_DIAGNOSTICS)
+            DockAction.MODULES  -> executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_NODE_HUNTER)
+            DockAction.MIC      -> onMicTapped()
+            DockAction.PROFILE  -> controller.speakCategory(
+                com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
+            )
+        }
+    }
+
+    private fun onDockCenterTapped() {
+        uiState = uiState.copy(isDockCenterActive = !uiState.isDockCenterActive)
+        controller.wakeAssistant()
+    }
+
+    // ── Launcher Commands ─────────────────────────────────────────────────────
 
     private fun executeLauncherCommand(command: AssistantAction.LauncherCommand) {
         controller.executeLauncherCommand(command)
     }
+
+    // ── Theme ─────────────────────────────────────────────────────────────────
 
     private fun switchTheme(themeId: AssistantThemeId) {
         activeThemeId = themeId
@@ -203,6 +309,8 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
             com.nerf.launcher.util.assistant.AiResponseRepository.Category.THEME_SWITCH
         )
     }
+
+    // ── Misc ──────────────────────────────────────────────────────────────────
 
     private fun cycleMood() {
         controller.cycleMood()

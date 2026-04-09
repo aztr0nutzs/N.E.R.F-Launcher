@@ -59,7 +59,38 @@ data class AssistantUiState(
     val isVisible: Boolean = false,
 
     /** Current text in the input field (for controlled input). */
-    val inputText: String = ""
+    val inputText: String = "",
+
+    // ── Reactor State ────────────────────────────────────────────────────────
+
+    /** Which reactor sector is currently highlighted (null = none). */
+    val activeSector: ReactorSector? = null,
+
+    /** True while the reactor core ring was recently tapped (triggers FX burst). */
+    val isReactorCoreBurst: Boolean = false,
+
+    // ── Left Action Stack State ──────────────────────────────────────────────
+
+    /** Which left-stack button is currently toggled on. */
+    val activeLeftAction: LeftAction? = null,
+
+    // ── Dock State ───────────────────────────────────────────────────────────
+
+    /** Which dock button is currently selected / glowing. */
+    val activeDockAction: DockAction? = null,
+
+    /** Whether the dock center (NERF logo) is pulsing. */
+    val isDockCenterActive: Boolean = false,
+
+    // ── Input Focus State ────────────────────────────────────────────────────
+
+    /** Whether the input shell currently has focus (for glow). */
+    val isInputFocused: Boolean = false,
+
+    // ── Toggle Module State ──────────────────────────────────────────────────
+
+    /** Toggle module on/off state. */
+    val isToggleModuleOn: Boolean = false
 )
 
 /**

@@ -9,22 +9,15 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -33,508 +26,369 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nerf.launcher.util.assistant.AssistantAction
-import com.nerf.launcher.util.assistant.AssistantState
-import com.nerf.launcher.util.assistant.PersonalityMood
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  AssistantControlsOverlay
+//  AssistantControlsOverlayMapped
 //
-//  The input/send/mic controls, quick action dock, and status indicators
-//  rendered as an overlay aligned to the artwork's control regions.
+//  Precise-positioned interactive controls mapped to the backplate regions
+//  via [imageRect]. Every widget is placed at exact normalized coordinates.
+//
+//  Regions covered:
+//    • inputShell / inputTextRegion — text input
+//    • inputMic — mic button
+//    • inputEmoji — emoji (stub)
+//    • sendButton — SEND
+//    • dartCount — dart count display
+//    • toggleModule — toggle switch
+//    • dockHousing + dockSettings/Map/Modules/dockCenterCore/dockMic/dockProfile —
+//        bottom dock buttons
+//    • leftPower / leftNetwork / leftAlerts / leftSettings — left action stack
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-fun AssistantControlsOverlay(
+fun AssistantControlsOverlayMapped(
     uiState: AssistantUiState,
+    imageRect: Rect,
     onEvent: (AssistantEvent) -> Unit,
     onInputTextChanged: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val palette = uiState.activeTheme.palette
-    val accentColor = Color(palette.controlAccent)
-    val surfaceColor = Color(palette.controlSurface)
-    val textPrimary = Color(palette.textPrimary)
-    val textSecondary = Color(palette.textSecondary)
-    val dockSurface = Color(palette.dockSurface)
+    val accent  = Color(palette.controlAccent)
+    val surface = Color(palette.controlSurface)
+    val textPri = Color(palette.textPrimary)
+    val textSec = Color(palette.textSecondary)
+    val dock    = Color(palette.dockSurface)
+
+    val density = LocalDensity.current
 
     AnimatedVisibility(
-        visible = uiState.isVisible,
-        enter = fadeIn() + slideInVertically { it / 3 },
-        exit = fadeOut() + slideOutVertically { it / 3 },
+        visible  = uiState.isVisible,
+        enter    = fadeIn(tween(300)),
+        exit     = fadeOut(tween(200)),
         modifier = modifier
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Bottom
-        ) {
-            // ── Status bar ────────────────────────────────────────────────
-            StatusBar(
-                state = uiState.robotState,
-                mood = uiState.mood,
-                bankStatus = uiState.bankStatusLabel,
-                interactionCount = uiState.interactionCount,
-                accentColor = accentColor,
-                textPrimary = textPrimary,
-                textSecondary = textSecondary,
-                surfaceColor = surfaceColor,
-                onMoodTap = { onEvent(AssistantEvent.CycleMood) },
+        Box(modifier = Modifier.fillMaxSize()) {
+
+            // ── Input shell + text region ──────────────────────────────────
+            val inputShellPx = AssistantOverlayMap.inputShell.toPx(imageRect)
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
+                    .offset {
+                        IntOffset(inputShellPx.left.toInt(), inputShellPx.top.toInt())
+                    }
+                    .size(
+                        width  = with(density) { inputShellPx.width.toDp() },
+                        height = with(density) { inputShellPx.height.toDp() }
+                    )
+                    .clip(CutCornerShape(4.dp))
+                    .background(surface)
+                    .border(
+                        width = if (uiState.isInputFocused) 1.dp else 0.5.dp,
+                        color = accent.copy(alpha = if (uiState.isInputFocused) 0.70f else 0.25f),
+                        shape = CutCornerShape(4.dp)
+                    ),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                BasicTextField(
+                    value           = uiState.inputText,
+                    onValueChange   = onInputTextChanged,
+                    textStyle       = TextStyle(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Medium,
+                        fontSize   = 11.sp,
+                        color      = textPri
+                    ),
+                    cursorBrush   = SolidColor(accent),
+                    singleLine    = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction      = ImeAction.Send
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSend = { onEvent(AssistantEvent.SubmitText(uiState.inputText)) }
+                    ),
+                    decorationBox = { inner ->
+                        Box(modifier = Modifier.padding(horizontal = 8.dp)) {
+                            if (uiState.inputText.isEmpty()) {
+                                Text(
+                                    text       = "Type command…",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize   = 10.sp,
+                                    color      = textSec.copy(alpha = 0.45f)
+                                )
+                            }
+                            inner()
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 6.dp)
+                )
+            }
+
+            // ── Mic button ────────────────────────────────────────────────
+            SmallIconButton(
+                label      = if (uiState.isListening) "●" else "🎙",
+                imageRect  = imageRect,
+                normRect   = AssistantOverlayMap.inputMic,
+                color      = if (uiState.isListening) Color(0xFF73FF7C) else accent,
+                surface    = surface,
+                onClick    = { onEvent(AssistantEvent.MicTapped) }
             )
 
-            Spacer(Modifier.height(6.dp))
-
-            // ── Input row ─────────────────────────────────────────────────
-            InputRow(
-                inputText = uiState.inputText,
-                onInputTextChanged = onInputTextChanged,
-                onSubmit = { onEvent(AssistantEvent.SubmitText(uiState.inputText)) },
-                accentColor = accentColor,
-                surfaceColor = surfaceColor,
-                textPrimary = textPrimary,
-                textSecondary = textSecondary,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
+            // ── Emoji button (stub) ────────────────────────────────────────
+            SmallIconButton(
+                label     = "☺",
+                imageRect = imageRect,
+                normRect  = AssistantOverlayMap.inputEmoji,
+                color     = accent.copy(alpha = 0.60f),
+                surface   = surface,
+                onClick   = { /* emoji picker stub */ }
             )
 
-            Spacer(Modifier.height(6.dp))
-
-            // ── Voice controls row ────────────────────────────────────────
-            VoiceControlsRow(
-                isVoiceAvailable = uiState.isVoiceAvailable,
-                isListening = uiState.isListening,
-                state = uiState.robotState,
-                accentColor = accentColor,
-                surfaceColor = surfaceColor,
-                textPrimary = textPrimary,
-                onMicTap = { onEvent(AssistantEvent.MicTapped) },
-                onRepeatTap = { onEvent(AssistantEvent.RepeatLast) },
-                onInterruptTap = { onEvent(AssistantEvent.InterruptSpeaking) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
+            // ── SEND button ────────────────────────────────────────────────
+            val sendPx = AssistantOverlayMap.sendButton.toPx(imageRect)
+            MappedButton(
+                label     = "SEND",
+                pxRect    = sendPx,
+                color     = accent,
+                surface   = surface,
+                onClick   = { onEvent(AssistantEvent.SubmitText(uiState.inputText)) }
             )
 
-            Spacer(Modifier.height(8.dp))
-
-            // ── Quick action dock ─────────────────────────────────────────
-            QuickActionDock(
-                accentColor = accentColor,
-                dockSurface = dockSurface,
-                textPrimary = textPrimary,
-                onEvent = onEvent,
+            // ── Dart count display ─────────────────────────────────────────
+            val dartPx = AssistantOverlayMap.dartCount.toPx(imageRect)
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 6.dp)
-            )
+                    .offset { IntOffset(dartPx.left.toInt(), dartPx.top.toInt()) }
+                    .size(
+                        width  = with(density) { dartPx.width.toDp() },
+                        height = with(density) { dartPx.height.toDp() }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text       = "DARTS: ${uiState.interactionCount}",
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize   = 9.sp,
+                    letterSpacing = 1.2.sp,
+                    color      = accent.copy(alpha = 0.85f)
+                )
+            }
 
-            Spacer(Modifier.height(8.dp))
+            // ── Toggle module ──────────────────────────────────────────────
+            val togglePx = AssistantOverlayMap.toggleModule.toPx(imageRect)
+            Box(
+                modifier = Modifier
+                    .offset { IntOffset(togglePx.left.toInt(), togglePx.top.toInt()) }
+                    .size(
+                        width  = with(density) { togglePx.width.toDp() },
+                        height = with(density) { togglePx.height.toDp() }
+                    )
+                    .clip(RoundedCornerShape(50))
+                    .background(if (uiState.isToggleModuleOn) accent.copy(0.20f) else surface)
+                    .border(
+                        width = 1.dp,
+                        color = accent.copy(alpha = if (uiState.isToggleModuleOn) 0.80f else 0.30f),
+                        shape = RoundedCornerShape(50)
+                    )
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication        = null
+                    ) { onEvent(AssistantEvent.ToggleModuleTapped) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text       = if (uiState.isToggleModuleOn) "ON" else "OFF",
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize   = 8.sp,
+                    letterSpacing = 1.0.sp,
+                    color      = if (uiState.isToggleModuleOn) accent else textSec
+                )
+            }
+
+            // ── Left action stack ──────────────────────────────────────────
+            AssistantOverlayMap.leftActionStack.forEach { (action, normRect) ->
+                val px = normRect.toPx(imageRect)
+                val isActive = uiState.activeLeftAction == action
+                MappedButton(
+                    label   = action.label,
+                    pxRect  = px,
+                    color   = if (isActive) accent else accent.copy(0.60f),
+                    surface = if (isActive) accent.copy(0.14f) else surface,
+                    onClick = { onEvent(AssistantEvent.LeftActionTapped(action)) }
+                )
+            }
+
+            // ── Bottom dock buttons ────────────────────────────────────────
+            AssistantOverlayMap.dockButtons.forEach { (action, normRect) ->
+                val px       = normRect.toPx(imageRect)
+                val isActive = uiState.activeDockAction == action
+                MappedButton(
+                    label   = action.label,
+                    pxRect  = px,
+                    color   = if (isActive) accent else accent.copy(0.65f),
+                    surface = if (isActive) accent.copy(0.14f) else dock,
+                    onClick = { onEvent(AssistantEvent.DockActionTapped(action)) }
+                )
+            }
+
+            // ── Dock center core (NERF logo button) ────────────────────────
+            val dockCenterPx = AssistantOverlayMap.dockCenterCore.toPx(imageRect)
+            DockCenterButton(
+                pxRect    = dockCenterPx,
+                isActive  = uiState.isDockCenterActive,
+                accent    = accent,
+                surface   = dock,
+                onClick   = { onEvent(AssistantEvent.DockCenterTapped) }
+            )
         }
     }
 }
 
-// ── Status Bar ───────────────────────────────────────────────────────────────
+// ── Shared button composables ─────────────────────────────────────────────────
 
 @Composable
-private fun StatusBar(
-    state: AssistantState,
-    mood: PersonalityMood,
-    bankStatus: String,
-    interactionCount: Int,
-    accentColor: Color,
-    textPrimary: Color,
-    textSecondary: Color,
-    surfaceColor: Color,
-    onMoodTap: () -> Unit,
-    modifier: Modifier = Modifier
+private fun MappedButton(
+    label: String,
+    pxRect: androidx.compose.ui.geometry.Rect,
+    color: Color,
+    surface: Color,
+    onClick: () -> Unit
 ) {
-    val statusColor = stateDisplayColor(state, accentColor)
-    val infiniteTransition = rememberInfiniteTransition(label = "statusPulse")
-    val statusAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.7f,
-        targetValue = 1f,
+    val density = LocalDensity.current
+    Box(
+        modifier = Modifier
+            .offset { IntOffset(pxRect.left.toInt(), pxRect.top.toInt()) }
+            .size(
+                width  = with(density) { pxRect.width.toDp() },
+                height = with(density) { pxRect.height.toDp() }
+            )
+            .clip(CutCornerShape(4.dp))
+            .background(surface)
+            .border(0.5.dp, color.copy(alpha = 0.40f), CutCornerShape(4.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication        = null,
+                onClick           = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text          = label,
+            fontFamily    = FontFamily.Monospace,
+            fontWeight    = FontWeight.Bold,
+            fontSize      = 8.sp,
+            letterSpacing = 1.0.sp,
+            color         = color,
+            textAlign     = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun SmallIconButton(
+    label: String,
+    imageRect: Rect,
+    normRect: NormRect,
+    color: Color,
+    surface: Color,
+    onClick: () -> Unit
+) {
+    val px      = normRect.toPx(imageRect)
+    val density = LocalDensity.current
+    Box(
+        modifier = Modifier
+            .offset { IntOffset(px.left.toInt(), px.top.toInt()) }
+            .size(
+                width  = with(density) { px.width.toDp() },
+                height = with(density) { px.height.toDp() }
+            )
+            .clip(RoundedCornerShape(50))
+            .background(surface)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication        = null,
+                onClick           = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text       = label,
+            fontSize   = 9.sp,
+            color      = color,
+            textAlign  = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun DockCenterButton(
+    pxRect: androidx.compose.ui.geometry.Rect,
+    isActive: Boolean,
+    accent: Color,
+    surface: Color,
+    onClick: () -> Unit
+) {
+    val density = LocalDensity.current
+    val it      = rememberInfiniteTransition(label = "dockCenterBtn")
+    val pulse by it.animateFloat(
+        initialValue = 0.5f,
+        targetValue  = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
+            animation  = tween(1200, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "statusDotPulse"
+        label = "dockBtnPulse"
     )
 
-    Row(
-        modifier = modifier
-            .clip(CutCornerShape(6.dp))
-            .background(surfaceColor)
-            .border(0.5.dp, accentColor.copy(alpha = 0.2f), CutCornerShape(6.dp))
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Status indicator dot
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(statusColor.copy(alpha = statusAlpha))
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = stateDisplayLabel(state),
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            fontSize = 9.sp,
-            letterSpacing = 1.4.sp,
-            color = statusColor
-        )
-        Spacer(Modifier.weight(1f))
-        // Mood indicator (tappable)
-        Text(
-            text = "PROFILE ${mood.label.uppercase()}",
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            fontSize = 8.sp,
-            letterSpacing = 1.2.sp,
-            color = accentColor.copy(alpha = 0.8f),
-            modifier = Modifier
-                .clip(CutCornerShape(4.dp))
-                .clickable { onMoodTap() }
-                .padding(horizontal = 4.dp, vertical = 2.dp)
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = "#$interactionCount",
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Medium,
-            fontSize = 8.sp,
-            color = textSecondary
-        )
-    }
-}
-
-// ── Input Row ────────────────────────────────────────────────────────────────
-
-@Composable
-private fun InputRow(
-    inputText: String,
-    onInputTextChanged: (String) -> Unit,
-    onSubmit: () -> Unit,
-    accentColor: Color,
-    surfaceColor: Color,
-    textPrimary: Color,
-    textSecondary: Color,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Text input field
-        BasicTextField(
-            value = inputText,
-            onValueChange = onInputTextChanged,
-            textStyle = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-                color = textPrimary
-            ),
-            cursorBrush = SolidColor(accentColor),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences,
-                imeAction = ImeAction.Send
-            ),
-            keyboardActions = KeyboardActions(onSend = { onSubmit() }),
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(38.dp)
-                        .clip(CutCornerShape(6.dp))
-                        .background(surfaceColor)
-                        .border(0.5.dp, accentColor.copy(alpha = 0.25f), CutCornerShape(6.dp))
-                        .padding(horizontal = 10.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    if (inputText.isEmpty()) {
-                        Text(
-                            text = "Type assistant command",
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 11.sp,
-                            color = textSecondary.copy(alpha = 0.5f)
-                        )
-                    }
-                    innerTextField()
-                }
-            },
-            modifier = Modifier.weight(1f)
-        )
-
-        Spacer(Modifier.width(6.dp))
-
-        // Send button
-        Box(
-            modifier = Modifier
-                .height(38.dp)
-                .width(60.dp)
-                .clip(CutCornerShape(6.dp))
-                .background(accentColor.copy(alpha = 0.12f))
-                .border(1.dp, accentColor.copy(alpha = 0.5f), CutCornerShape(6.dp))
-                .clickable { onSubmit() },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "SEND",
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                fontSize = 10.sp,
-                letterSpacing = 1.2.sp,
-                color = accentColor
-            )
-        }
-    }
-}
-
-// ── Voice Controls Row ───────────────────────────────────────────────────────
-
-@Composable
-private fun VoiceControlsRow(
-    isVoiceAvailable: Boolean,
-    isListening: Boolean,
-    state: AssistantState,
-    accentColor: Color,
-    surfaceColor: Color,
-    textPrimary: Color,
-    onMicTap: () -> Unit,
-    onRepeatTap: () -> Unit,
-    onInterruptTap: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        // Mic button
-        ControlPill(
-            label = if (!isVoiceAvailable) "NO MIC" else if (isListening) "● LIVE" else "MIC",
-            color = if (isListening) Color(0xFF73FF7C) else accentColor,
-            surfaceColor = surfaceColor,
-            enabled = isVoiceAvailable,
-            onClick = onMicTap,
-            modifier = Modifier.weight(1f)
-        )
-
-        // Repeat last
-        ControlPill(
-            label = "REPEAT",
-            color = accentColor,
-            surfaceColor = surfaceColor,
-            enabled = true,
-            onClick = onRepeatTap,
-            modifier = Modifier.weight(1f)
-        )
-
-        // Interrupt / stop voice
-        ControlPill(
-            label = "STOP",
-            color = Color(0xFFFF9F43),
-            surfaceColor = surfaceColor,
-            enabled = state.isSpeaking || isListening,
-            onClick = onInterruptTap,
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
-
-// ── Quick Action Dock ────────────────────────────────────────────────────────
-
-@Composable
-private fun QuickActionDock(
-    accentColor: Color,
-    dockSurface: Color,
-    textPrimary: Color,
-    onEvent: (AssistantEvent) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .clip(CutCornerShape(8.dp))
-            .background(dockSurface)
-            .border(0.5.dp, accentColor.copy(alpha = 0.15f), CutCornerShape(8.dp))
-            .padding(8.dp)
-    ) {
-        Text(
-            text = "QUICK ACTIONS",
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            fontSize = 9.sp,
-            letterSpacing = 1.6.sp,
-            color = accentColor.copy(alpha = 0.7f),
-            modifier = Modifier.padding(bottom = 6.dp)
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            DockActionButton(
-                label = "SETTINGS",
-                accentColor = Color(0xFF27E7FF),
-                surfaceColor = dockSurface,
-                onClick = {
-                    onEvent(AssistantEvent.LauncherCommandTapped(
-                        AssistantAction.LauncherCommand.OPEN_SETTINGS
-                    ))
-                },
-                modifier = Modifier.weight(1f)
-            )
-            DockActionButton(
-                label = "DIAG",
-                accentColor = Color(0xFFFF9F43),
-                surfaceColor = dockSurface,
-                onClick = {
-                    onEvent(AssistantEvent.LauncherCommandTapped(
-                        AssistantAction.LauncherCommand.OPEN_DIAGNOSTICS
-                    ))
-                },
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(Modifier.height(4.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            DockActionButton(
-                label = "NODES",
-                accentColor = Color(0xFF73FF7C),
-                surfaceColor = dockSurface,
-                onClick = {
-                    onEvent(AssistantEvent.LauncherCommandTapped(
-                        AssistantAction.LauncherCommand.OPEN_NODE_HUNTER
-                    ))
-                },
-                modifier = Modifier.weight(1f)
-            )
-            DockActionButton(
-                label = "LOCK",
-                accentColor = Color(0xFFFF47D0),
-                surfaceColor = dockSurface,
-                onClick = {
-                    onEvent(AssistantEvent.LauncherCommandTapped(
-                        AssistantAction.LauncherCommand.SHOW_LOCK_SURFACE
-                    ))
-                },
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-// ── Shared Pill / Button Components ──────────────────────────────────────────
-
-@Composable
-private fun ControlPill(
-    label: String,
-    color: Color,
-    surfaceColor: Color,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val alpha = if (enabled) 1f else 0.35f
     Box(
-        modifier = modifier
-            .height(34.dp)
-            .clip(CutCornerShape(6.dp))
-            .background(surfaceColor)
-            .border(0.5.dp, color.copy(alpha = 0.35f * alpha), CutCornerShape(6.dp))
-            .then(if (enabled) Modifier.clickable { onClick() } else Modifier),
+        modifier = Modifier
+            .offset { IntOffset(pxRect.left.toInt(), pxRect.top.toInt()) }
+            .size(
+                width  = with(density) { pxRect.width.toDp() },
+                height = with(density) { pxRect.height.toDp() }
+            )
+            .clip(RoundedCornerShape(50))
+            .background(if (isActive) accent.copy(0.20f) else surface.copy(0.50f))
+            .border(
+                width = if (isActive) (1.5 * pulse).dp else 1.dp,
+                color = accent.copy(alpha = if (isActive) pulse * 0.80f else 0.35f),
+                shape = RoundedCornerShape(50)
+            )
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication        = null,
+                onClick           = onClick
+            ),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = label,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            fontSize = 9.sp,
-            letterSpacing = 1.2.sp,
-            color = color.copy(alpha = alpha),
-            textAlign = TextAlign.Center
+            text          = "N",
+            fontFamily    = FontFamily.Monospace,
+            fontWeight    = FontWeight.Bold,
+            fontSize      = 14.sp,
+            letterSpacing = 2.sp,
+            color         = accent.copy(alpha = if (isActive) 1f else 0.65f)
         )
     }
-}
-
-@Composable
-private fun DockActionButton(
-    label: String,
-    accentColor: Color,
-    surfaceColor: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .height(36.dp)
-            .clip(CutCornerShape(6.dp))
-            .background(accentColor.copy(alpha = 0.06f))
-            .border(0.5.dp, accentColor.copy(alpha = 0.3f), CutCornerShape(6.dp))
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold,
-            fontSize = 9.sp,
-            letterSpacing = 1.4.sp,
-            color = accentColor,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-private fun stateDisplayLabel(state: AssistantState): String = when (state) {
-    AssistantState.IDLE -> "STANDBY"
-    AssistantState.WAKE -> "WAKING"
-    AssistantState.LISTENING -> "LISTENING"
-    AssistantState.THINKING -> "RESOLVING"
-    AssistantState.RESPONDING -> "RESPONDING"
-    AssistantState.SPEAKING -> "SPEAKING"
-    AssistantState.MUTED -> "MUTED"
-    AssistantState.ERROR -> "FAULT"
-    AssistantState.REBOOTING -> "REBOOTING"
-    AssistantState.SHUTTING_DOWN -> "SHUTDOWN"
-}
-
-private fun stateDisplayColor(state: AssistantState, accent: Color): Color = when (state) {
-    AssistantState.IDLE -> accent.copy(alpha = 0.6f)
-    AssistantState.WAKE -> Color(0xFFFFD84D)
-    AssistantState.LISTENING -> Color(0xFF73FF7C)
-    AssistantState.THINKING -> Color(0xFFFFD84D)
-    AssistantState.RESPONDING -> accent
-    AssistantState.SPEAKING -> accent
-    AssistantState.MUTED -> Color(0xFF667983)
-    AssistantState.ERROR -> Color(0xFFFF6A6A)
-    AssistantState.REBOOTING -> Color(0xFFFFD84D)
-    AssistantState.SHUTTING_DOWN -> Color(0xFFFF6A6A)
 }

@@ -1,7 +1,6 @@
 package com.nerf.launcher.ui.assistant
 
 import com.nerf.launcher.util.assistant.AssistantAction
-import com.nerf.launcher.util.assistant.PersonalityMood
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  AssistantEvent
@@ -16,7 +15,7 @@ sealed interface AssistantEvent {
     /** User submitted text from the input field. */
     data class SubmitText(val text: String) : AssistantEvent
 
-    /** User tapped the microphone button. */
+    /** User tapped the microphone button (input row or dock mic). */
     data object MicTapped : AssistantEvent
 
     /** User tapped "Repeat Last". */
@@ -25,8 +24,19 @@ sealed interface AssistantEvent {
     /** User tapped "Stop Voice" / interrupt. */
     data object InterruptSpeaking : AssistantEvent
 
-    // ── Hotspot Interactions ─────────────────────────────────────────────────
-    /** User tapped the chest/core zone. */
+    // ── Input Focus ──────────────────────────────────────────────────────────
+    data object InputFocused  : AssistantEvent
+    data object InputUnfocused : AssistantEvent
+
+    // ── Reactor Interactions ─────────────────────────────────────────────────
+    /** User tapped the reactor core (inner tap zone). */
+    data object ReactorCoreTapped : AssistantEvent
+
+    /** User tapped a reactor ring sector. */
+    data class ReactorSectorTapped(val sector: ReactorSector) : AssistantEvent
+
+    // ── Robot Body Hotspots ──────────────────────────────────────────────────
+    /** User tapped the chest/core zone (legacy — maps to ReactorCoreTapped). */
     data object ChestCoreTapped : AssistantEvent
 
     /** User tapped the hand projection zone. */
@@ -36,6 +46,16 @@ sealed interface AssistantEvent {
     data class SideModuleTapped(val side: Side) : AssistantEvent {
         enum class Side { LEFT, RIGHT }
     }
+
+    // ── Left Action Stack ────────────────────────────────────────────────────
+    data class LeftActionTapped(val action: LeftAction) : AssistantEvent
+
+    // ── Bottom Dock ──────────────────────────────────────────────────────────
+    data class DockActionTapped(val action: DockAction) : AssistantEvent
+    data object DockCenterTapped : AssistantEvent
+
+    // ── Toggle Module ────────────────────────────────────────────────────────
+    data object ToggleModuleTapped : AssistantEvent
 
     // ── Quick Actions ────────────────────────────────────────────────────────
     /** User tapped a quick action from the dock. */
