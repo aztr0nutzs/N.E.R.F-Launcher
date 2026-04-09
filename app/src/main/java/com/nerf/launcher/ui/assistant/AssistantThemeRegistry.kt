@@ -1,19 +1,16 @@
 package com.nerf.launcher.ui.assistant
 
 import androidx.annotation.DrawableRes
-import androidx.compose.ui.geometry.Rect
 import com.nerf.launcher.R
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  AssistantThemeRegistry
 //
-//  Defines each assistant theme's artwork resource, accent palette, and
-//  normalized overlay hotspot bounds.
+//  Defines each assistant theme's artwork resource and accent palette.
 //
-//  IMPORTANT: The hotspot values in [AssistantHotspots] are LEGACY fields kept
-//  for backward-compat with AssistantOverlayController (ViewBinding).
-//  The Compose overlay system now uses [AssistantOverlayMap] exclusively.
-//  Hotspot values here are aligned to the canonical map coordinates.
+//  All overlay region positions are sourced from [AssistantOverlayMap]
+//  directly by the Compose overlay system. No per-theme hotspot data is
+//  needed or stored here.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -22,14 +19,12 @@ import com.nerf.launcher.R
  * @param id Stable identifier for persistence and switching.
  * @param displayName Human-readable label shown in the theme picker strip.
  * @param backplateRes Drawable resource ID for the full-screen artwork backplate.
- * @param hotspots Region bounds for interactive overlay panes (legacy compat).
  * @param palette Theme-specific accent colors for overlays and effects.
  */
 data class AssistantThemeConfig(
     val id: AssistantThemeId,
     val displayName: String,
     @DrawableRes val backplateRes: Int,
-    val hotspots: AssistantHotspots,
     val palette: AssistantThemePalette
 )
 
@@ -41,29 +36,6 @@ enum class AssistantThemeId {
     NERF_ORANGE,
     BLUEPRINT_STONE
 }
-
-/**
- * Normalized (0f–1f) rectangular bounds for each interactive overlay zone.
- * These are kept for legacy ViewBinding paths. Compose uses AssistantOverlayMap.
- *
- * Rects are encoded as (left, top, right, bottom) fractions of the backplate.
- */
-data class AssistantHotspots(
-    /** Chat transcript / panel outer region. */
-    val chatPane: Rect,
-    /** Bottom dock housing row. */
-    val dockRow: Rect,
-    /** Microphone / voice input button region. */
-    val micButton: Rect,
-    /** Reactor outer zone (maps to AssistantOverlayMap.reactorOuter). */
-    val chestCore: Rect,
-    /** Hand node zone (maps to AssistantOverlayMap.handNode). */
-    val handProjection: Rect,
-    /** Optional side telemetry module (left). */
-    val sideModuleLeft: Rect? = null,
-    /** Optional side telemetry module (right). */
-    val sideModuleRight: Rect? = null
-)
 
 /**
  * Theme-specific accent colors for assistant overlay elements.
@@ -86,22 +58,6 @@ data class AssistantThemePalette(
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Canonical hotspots (aligned to AssistantOverlayMap)
-//
-//  These are used for the legacy AssistantOverlayController path.
-//  For Compose, all overlay positions come from AssistantOverlayMap directly.
-// ─────────────────────────────────────────────────────────────────────────────
-
-private val canonicalHotspots = AssistantHotspots(
-    chatPane       = AssistantOverlayMap.panelOuter.rect,
-    dockRow        = AssistantOverlayMap.dockHousing.rect,
-    micButton      = AssistantOverlayMap.dockMic.rect,
-    chestCore      = AssistantOverlayMap.reactorOuter.rect,
-    handProjection = AssistantOverlayMap.handNode.rect,
-    sideModuleLeft = AssistantOverlayMap.leftPower.rect   // proxy for left column
-)
-
-// ─────────────────────────────────────────────────────────────────────────────
 //  Registry
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -111,7 +67,6 @@ object AssistantThemeRegistry {
         id           = AssistantThemeId.PHANTOM_BLACK,
         displayName  = "PHANTOM BLACK",
         backplateRes = R.drawable.assistant_theme_phantom_black,
-        hotspots     = canonicalHotspots,
         palette      = AssistantThemePalette(
             visorGlow           = 0xFF27E7FF,
             coreGlow            = 0xFF27E7FF,
@@ -133,7 +88,6 @@ object AssistantThemeRegistry {
         id           = AssistantThemeId.NERF_ORANGE,
         displayName  = "NERF ORANGE",
         backplateRes = R.drawable.assistant_theme_nerf_orange,
-        hotspots     = canonicalHotspots,
         palette      = AssistantThemePalette(
             visorGlow           = 0xFFFF9F43,
             coreGlow            = 0xFFFF7B1C,
@@ -155,7 +109,6 @@ object AssistantThemeRegistry {
         id           = AssistantThemeId.BLUEPRINT_STONE,
         displayName  = "BLUEPRINT STONE",
         backplateRes = R.drawable.assistant_theme_blueprint_stone,
-        hotspots     = canonicalHotspots,
         palette      = AssistantThemePalette(
             visorGlow           = 0xFF78A8D0,
             coreGlow            = 0xFF5A90C0,
