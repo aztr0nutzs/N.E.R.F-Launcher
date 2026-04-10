@@ -29,6 +29,11 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
     private var activeThemeId: AssistantThemeId = AssistantThemeId.PHANTOM_BLACK
 
     init {
+        // Restore the persisted theme before building the initial UI state so the
+        // assistant screen opens on the last theme the user selected, not always
+        // the compiled-in default.
+        activeThemeId = controller.loadSavedAssistantTheme()
+
         val voiceAvailable = SpeechRecognizer.isRecognitionAvailable(application)
         val snapshot = controller.currentSnapshot()
         val bankLoaded = controller.isResponseBankLoaded()
@@ -289,6 +294,7 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
 
     private fun switchTheme(themeId: AssistantThemeId) {
         activeThemeId = themeId
+        controller.saveAssistantTheme(themeId)
         uiState = uiState.copy(activeTheme = AssistantThemeRegistry.get(themeId))
         controller.speakCategory(
             com.nerf.launcher.util.assistant.AiResponseRepository.Category.THEME_SWITCH
@@ -298,6 +304,7 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
     private fun cycleTheme() {
         val next = AssistantThemeRegistry.next(activeThemeId)
         activeThemeId = next.id
+        controller.saveAssistantTheme(next.id)
         uiState = uiState.copy(activeTheme = next)
         controller.speakCategory(
             com.nerf.launcher.util.assistant.AiResponseRepository.Category.THEME_SWITCH

@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.nerf.launcher.BuildConfig
+import com.nerf.launcher.ui.assistant.AssistantThemeId
 import java.util.LinkedList
 
 class AssistantController(
@@ -43,6 +44,9 @@ class AssistantController(
     private var activeSurface = "launcher"
     private var sessionMemory = sessionStore.loadSessionMemory()
     private var currentVoiceProfile = ReactorAssistant.VoiceProfile.SNARKY
+    /** Persisted assistant visual theme — restored from [sessionStore] on construction. */
+    private var savedThemeId: AssistantThemeId =
+        sessionStore.loadPreferences().themeId
 
     private var pendingListeningTransition: Runnable? = null
     private var pendingIdleTimeout: Runnable? = null
@@ -619,7 +623,8 @@ class AssistantController(
                 mood = currentMood,
                 voiceProfile = currentVoiceProfile,
                 muted = isMutedByPreference,
-                verbosityLevel = currentVerbosityLevel
+                verbosityLevel = currentVerbosityLevel,
+                themeId = savedThemeId
             )
         )
     }
@@ -630,9 +635,26 @@ class AssistantController(
         currentVoiceProfile = preferences.voiceProfile
         currentVerbosityLevel = preferences.verbosityLevel
         isMutedByPreference = preferences.muted
+        savedThemeId = preferences.themeId
         personalityLayer.setVoiceProfile(currentVoiceProfile)
         sessionMemory = sessionStore.loadSessionMemory()
     }
+
+    /**
+     * Persists [themeId] to the session store immediately.
+     * Call this whenever the user selects a new assistant theme so the
+     * choice survives process death.
+     */
+    fun saveAssistantTheme(themeId: AssistantThemeId) {
+        savedThemeId = themeId
+        persistPreferences()
+    }
+
+    /**
+     * Returns the last persisted [AssistantThemeId], or [AssistantThemeId.PHANTOM_BLACK]
+     * if no preference has been saved yet (first launch / cleared data).
+     */
+    fun loadSavedAssistantTheme(): AssistantThemeId = savedThemeId
 
     private fun deliverSpeech(text: String): Boolean {
         if (isMutedByPreference) {

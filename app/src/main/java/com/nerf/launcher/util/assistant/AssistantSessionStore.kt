@@ -2,6 +2,7 @@ package com.nerf.launcher.util.assistant
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.nerf.launcher.ui.assistant.AssistantThemeId
 
 class AssistantSessionStore(context: Context) {
 
@@ -9,7 +10,13 @@ class AssistantSessionStore(context: Context) {
         val mood: PersonalityMood = PersonalityMood.SNARKY,
         val voiceProfile: ReactorAssistant.VoiceProfile = ReactorAssistant.VoiceProfile.SNARKY,
         val muted: Boolean = false,
-        val verbosityLevel: Int = DEFAULT_VERBOSITY
+        val verbosityLevel: Int = DEFAULT_VERBOSITY,
+        /**
+         * The last assistant visual theme selected by the user.
+         * Defaults to [AssistantThemeId.PHANTOM_BLACK] so existing installs
+         * (where the key is absent) get the original default behaviour.
+         */
+        val themeId: AssistantThemeId = AssistantThemeId.PHANTOM_BLACK
     )
 
     data class AssistantSessionMemory(
@@ -26,6 +33,7 @@ class AssistantSessionStore(context: Context) {
         private const val KEY_VOICE_PROFILE = "assistant_voice_profile"
         private const val KEY_MUTED = "assistant_muted"
         private const val KEY_VERBOSITY_LEVEL = "assistant_verbosity"
+        private const val KEY_ASSISTANT_THEME_ID = "assistant_theme_id"
 
         private const val KEY_LAST_COMMAND = "assistant_last_command"
         private const val KEY_LAST_RESPONSE = "assistant_last_response"
@@ -50,12 +58,16 @@ class AssistantSessionStore(context: Context) {
         val muted = prefs.getBoolean(KEY_MUTED, false)
         val verbosity = prefs.getInt(KEY_VERBOSITY_LEVEL, DEFAULT_VERBOSITY)
             .coerceIn(MIN_VERBOSITY, MAX_VERBOSITY)
+        val themeId = prefs.getString(KEY_ASSISTANT_THEME_ID, AssistantThemeId.PHANTOM_BLACK.name)
+            ?.let(::resolveThemeId)
+            ?: AssistantThemeId.PHANTOM_BLACK
 
         return AssistantPreferences(
             mood = mood,
             voiceProfile = voiceProfile,
             muted = muted,
-            verbosityLevel = verbosity
+            verbosityLevel = verbosity,
+            themeId = themeId
         )
     }
 
@@ -65,6 +77,7 @@ class AssistantSessionStore(context: Context) {
             .putString(KEY_VOICE_PROFILE, preferences.voiceProfile.name)
             .putBoolean(KEY_MUTED, preferences.muted)
             .putInt(KEY_VERBOSITY_LEVEL, preferences.verbosityLevel.coerceIn(MIN_VERBOSITY, MAX_VERBOSITY))
+            .putString(KEY_ASSISTANT_THEME_ID, preferences.themeId.name)
             .apply()
     }
 
@@ -89,4 +102,7 @@ class AssistantSessionStore(context: Context) {
 
     private fun resolveVoiceProfile(name: String): ReactorAssistant.VoiceProfile? =
         ReactorAssistant.VoiceProfile.values().firstOrNull { it.name == name }
+
+    private fun resolveThemeId(name: String): AssistantThemeId? =
+        AssistantThemeId.values().firstOrNull { it.name == name }
 }
