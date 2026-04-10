@@ -1,9 +1,5 @@
 package com.nerf.launcher.ui.screens
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -34,8 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,79 +55,54 @@ import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.theme.LauncherTheme
 import com.nerf.launcher.util.AppUtils
 import com.nerf.launcher.util.ConfigRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  AppDrawerScreen
 //
 //  Browsable installed-app surface. Reachable from HomeLauncherScreen via the
-//  "APPS" utility pill in the top bar. Loads apps using AppUtils.loadInstalledApps()
-//  on the IO dispatcher. Apps render real icons via rememberAppIcon() (backed by
-//  IconProvider + LRU cache). A BroadcastReceiver refreshes the list when apps
-//  are installed or removed. Tapping any cell launches it via AppUtils.launchApp().
+//  "APPS" utility pill in the top bar.
 //
-//  Navigation: onNavigateBack() returns to HomeLauncherScreen.
+//  APP LIST OWNERSHIP:
+//  The installed app list is now owned by LauncherViewModel and stored in
+//  LauncherUiState.installedApps / appsLoaded. LauncherAppRoot passes the
+//  live lists down here as parameters. This screen performs NO independent
+//  loading and registers NO BroadcastReceiver — that concern lives entirely
+//  in LauncherViewModel, which listens for PACKAGE_ADDED/REMOVED/REPLACED
+//  via an Application-context BroadcastReceiver and updates uiState when
+//  the package manifest changes.
+//
+//  This screen is responsible only for:
+//    · Accepting the pre-loaded app list
+//    · Filtering it by the user's search query
+//    · Rendering each app cell with a real icon via rememberAppIcon()
+//    · Dispatching taps via AppUtils.launchApp()
 // ─────────────────────────────────────────────────────────────────────────────
 
 private const val GRID_COLUMNS = 4
 
 @Composable
 fun AppDrawerScreen(
+    installedApps: List<AppInfo>,
+    appsLoaded: Boolean,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context  = LocalContext.current
     val colors   = LauncherTheme.colors
 
-    // ── Config: read iconPack reactively so drawer re-icons on pack change ─
+    // Read iconPack reactively so drawer re-icons on pack change.
     val config by ConfigRepository.get().config.collectAsState()
     val iconPack = config.iconPack
 
-    // ── State ─────────────────────────────────────────────────────────────
-    var allApps  by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
-    var isLoaded by remember { mutableStateOf(false) }
-    var query    by rememberSaveable { mutableStateOf("") }
+    // Local search query — stays within the drawer's scope.
+    var query by rememberSaveable { mutableStateOf("") }
 
-    // Load apps initially — pure IO, never blocks main thread.
-    LaunchedEffect(Unit) {
-        allApps  = withContext(Dispatchers.IO) { AppUtils.loadInstalledApps(context) }
-        isLoaded = true
-    }
-
-    // ── Refresh list when apps are installed / uninstalled ──────────────
-    DisposableEffect(Unit) {
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(ctx: Context, intent: Intent) {
-                // Trigger recomposition by invalidating the list.
-                // The LaunchedEffect key change will re-run the load.
-                isLoaded = false
-            }
-        }
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addAction(Intent.ACTION_PACKAGE_REPLACED)
-            addDataScheme("package")
-        }
-        context.registerReceiver(receiver, filter)
-        onDispose { context.unregisterReceiver(receiver) }
-    }
-
-    // Re-load when isLoaded is reset by the receiver.
-    LaunchedEffect(isLoaded) {
-        if (!isLoaded) {
-            allApps  = withContext(Dispatchers.IO) { AppUtils.loadInstalledApps(context) }
-            isLoaded = true
-        }
-    }
-
-    // ── Derived filtered list ─────────────────────────────────────────────
-    val filteredApps = remember(allApps, query) {
-        if (query.isBlank()) allApps
+    // Derive filtered list from the ViewModel-owned app list.
+    val filteredApps = remember(installedApps, query) {
+        if (query.isBlank()) installedApps
         else {
             val q = query.lowercase()
-            allApps.filter {
+            installedApps.filter {
                 it.normalizedAppName.contains(q) || it.normalizedPackageName.contains(q)
             }
         }
@@ -143,7 +112,6 @@ fun AppDrawerScreen(
     val surface = colors.panelOuter
     val frame   = colors.frameLine
 
-    // ── Root ─────────────────────────────────────────────────────────────
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -154,18 +122,18 @@ fun AppDrawerScreen(
             )
     ) {
         DrawerHeader(
-            appCount    = filteredApps.size,
-            isLoaded    = isLoaded,
-            query       = query,
-            onQuery     = { query = it },
-            onBack      = onNavigateBack,
-            accent      = accent,
-            surface     = surface,
-            frame       = frame
+            appCount = filteredApps.size,
+            isLoaded = appsLoaded,
+            query    = query,
+            onQuery  = { query = it },
+            onBack   = onNavigateBack,
+            accent   = accent,
+            surface  = surface,
+            frame    = frame
         )
 
         AnimatedVisibility(
-            visible = isLoaded,
+            visible = appsLoaded,
             enter   = fadeIn(tween(280)) + slideInVertically(
                 animationSpec  = tween(320),
                 initialOffsetY = { it / 6 }
@@ -198,14 +166,14 @@ fun AppDrawerScreen(
             }
         }
 
-        if (!isLoaded) {
+        if (!appsLoaded) {
             DrawerLoadingState(accent = accent)
         }
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Sub-components
+//  Sub-components  (UI unchanged from previous version)
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -250,9 +218,9 @@ private fun DrawerHeader(
             Spacer(Modifier.width(12.dp))
 
             Column(Modifier.weight(1f)) {
-                Text("APP MATRIX", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp, letterSpacing = 1.8.sp,
-                    color = LauncherTheme.colors.textPrimary)
+                Text("APP MATRIX", fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold, fontSize = 13.sp,
+                    letterSpacing = 1.8.sp, color = LauncherTheme.colors.textPrimary)
                 Text("LAUNCH MATRIX  ·  N.E.R.F. SHELL",
                     fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Normal,
                     fontSize = 8.sp, letterSpacing = 1.2.sp,
@@ -337,10 +305,7 @@ private fun AppCell(
         label         = "cell_scale_${app.packageName}"
     )
 
-    // Load real icon via IconProvider — uses pack assets, then system icon as fallback.
     val icon: ImageBitmap? = rememberAppIcon(packageName = app.packageName, iconPack = iconPack)
-
-    // Glyph fallback rendered while the icon is still loading (or on error).
     val glyph = app.appName.take(2).uppercase()
 
     Column(
@@ -369,16 +334,14 @@ private fun AppCell(
             contentAlignment = Alignment.Center
         ) {
             if (icon != null) {
-                // Real app icon — loaded from icon pack or system.
                 Image(
-                    bitmap              = icon,
-                    contentDescription  = app.appName,
-                    modifier            = Modifier
+                    bitmap             = icon,
+                    contentDescription = app.appName,
+                    modifier           = Modifier
                         .size(34.dp)
                         .clip(CutCornerShape(4.dp))
                 )
             } else {
-                // Loading placeholder: 2-char glyph.
                 Text(glyph, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
                     fontSize = 12.sp, color = accent.copy(alpha = 0.85f),
                     textAlign = TextAlign.Center)

@@ -109,6 +109,8 @@ fun LauncherAppRoot(
 
             LauncherDestination.APP_DRAWER -> {
                 AppDrawerScreen(
+                    installedApps  = launcherViewModel.uiState.installedApps,
+                    appsLoaded     = launcherViewModel.uiState.appsLoaded,
                     onNavigateBack = { destination = LauncherDestination.HOME },
                     modifier       = Modifier.fillMaxSize()
                 )

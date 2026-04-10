@@ -1,15 +1,21 @@
 package com.nerf.launcher.state
 
 import android.app.Application
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.theme.IndustrialLauncherColors
 import com.nerf.launcher.theme.LauncherColors
 import com.nerf.launcher.ui.reactor.ReactorInteractionState
 import com.nerf.launcher.util.AppConfig
+import com.nerf.launcher.util.AppUtils
 import com.nerf.launcher.util.ConfigRepository
 import com.nerf.launcher.util.SystemModuleSnapshot
 import kotlinx.coroutines.launch
@@ -33,7 +39,20 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     private val telemetry = SystemTelemetryRepository(application)
 
-    // ── Config observation ────────────────────────────────────────────────────
+    // ── Package change receiver ───────────────────────────────────────────────
+
+    /**
+     * Listens for app installs, uninstalls, and updates so [installedApps] in
+     * [uiState] is always fresh. Registered in [init] against the Application
+     * context (not an Activity) so it persists for the launcher's process lifetime.
+     */
+    private val packageReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            loadInstalledApps()
+        }
+    }
+
+    // ── Config observation ─────────────────────────────────────────────────────
 
     init {
         // Config: collect StateFlow on the main dispatcher (viewModelScope default).
@@ -51,10 +70,22 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 if (snap != null) onTelemetryUpdated(snap)
             }
         }
+
+        // Installed apps: load once on init, then keep fresh via BroadcastReceiver.
+        loadInstalledApps()
+
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addDataScheme("package")
+        }
+        application.registerReceiver(packageReceiver, filter)
     }
 
     override fun onCleared() {
         telemetry.stop()
+        getApplication<Application>().unregisterReceiver(packageReceiver)
         super.onCleared()
     }
 
@@ -135,6 +166,21 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     // ── Private update paths ──────────────────────────────────────────────────
 
     /**
+     * Launches an IO coroutine to load the installed app list, then posts the
+     * result into [uiState]. The BroadcastReceiver calls this whenever the
+     * package manifest changes so the list stays current.
+     */
+    private fun loadInstalledApps() {
+        viewModelScope.launch {
+            val apps = AppUtils.loadInstalledApps(getApplication())
+            uiState = uiState.copy(
+                installedApps = apps,
+                appsLoaded    = true
+            )
+        }
+    }
+
+    /**
      * Called on the main thread whenever [ConfigRepository] emits a new [AppConfig].
      * Converts the config into a new [LauncherColors] palette and rebuilds [uiState]
      * so config-driven module values (theme name, grid, taskbar) are refreshed.
@@ -167,7 +213,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             config           = config,
             telemetry        = snap,
             transportLabel   = telemetry.activeTransportLabel(),
-            wifiSignalLabel  = telemetry.wifiSignalLabel()
+            wifiSignalLabel  = telemetry.wifiSignalLabel(),
+            // Preserve app list across all config/telemetry-triggered rebuilds.
+            installedApps    = uiState.installedApps,
+            appsLoaded       = uiState.appsLoaded
         )
     }
 
@@ -182,7 +231,10 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             config           = config,
             telemetry        = telemetry,
             transportLabel   = this.telemetry.activeTransportLabel(),
-            wifiSignalLabel  = this.telemetry.wifiSignalLabel()
+            wifiSignalLabel  = this.telemetry.wifiSignalLabel(),
+            // Preserve app list across all config/telemetry-triggered rebuilds.
+            installedApps    = uiState.installedApps,
+            appsLoaded       = uiState.appsLoaded
         )
     }
 }

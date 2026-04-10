@@ -1,6 +1,5 @@
-package com.nerf.launcher.state
-
 import androidx.compose.runtime.Immutable
+import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.theme.LauncherAccent
 import com.nerf.launcher.ui.reactor.ReactorCoreModel
 import com.nerf.launcher.ui.reactor.ReactorDefaults
@@ -129,7 +128,11 @@ data class LauncherUiState(
     /** True for exactly one frame when the user taps the Assistant utility action. */
     val assistantRequested: Boolean = false,
     /** True for exactly one frame when the user taps the AppMatrix utility action. */
-    val appDrawerRequested: Boolean = false
+    val appDrawerRequested: Boolean = false,
+    /** Full list of installed launchable apps — owned by LauncherViewModel. */
+    val installedApps: List<AppInfo> = emptyList(),
+    /** True once the initial app list load has completed. */
+    val appsLoaded: Boolean = false
 )
 
 object LauncherUiStateFactory {
@@ -154,7 +157,9 @@ object LauncherUiStateFactory {
         config: AppConfig? = null,
         telemetry: SystemModuleSnapshot? = null,
         transportLabel: String = "OFFLINE",
-        wifiSignalLabel: String? = null
+        wifiSignalLabel: String? = null,
+        installedApps: List<AppInfo> = emptyList(),
+        appsLoaded: Boolean = false
     ): LauncherUiState {
         return LauncherUiState(
             headerTitle    = "N.E.R.F. LAUNCHER",
@@ -167,7 +172,9 @@ object LauncherUiStateFactory {
             reactorInteractionState = interactionState,
             statusModules  = buildModules(config, telemetry, transportLabel, wifiSignalLabel),
             dockItems      = buildDockItems(),
-            utilityActions = LauncherUtilityAction.entries
+            utilityActions = LauncherUtilityAction.entries,
+            installedApps  = installedApps,
+            appsLoaded     = appsLoaded
         )
     }
 
