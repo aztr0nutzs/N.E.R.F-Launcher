@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -259,6 +260,8 @@ private fun PinnedAppsPanel(
 ) {
     val colors  = LauncherTheme.colors
     val context = LocalContext.current
+    // Destructive-action red — conventional and intentionally not theme-driven.
+    val destructiveRed = Color(0xFFEF4444)
 
     SettingsPanel(label = "PINNED APPS  (${pinnedApps.size})", accent = accent) {
         if (pinnedApps.isEmpty()) {
@@ -306,14 +309,14 @@ private fun PinnedAppsPanel(
                 .clip(CutCornerShape(4.dp))
                 .background(
                     if (pinnedApps.isNotEmpty())
-                        colors.danger.copy(alpha = 0.12f)
+                        destructiveRed.copy(alpha = 0.12f)
                     else
                         colors.panelInset
                 )
                 .border(
                     0.5.dp,
                     if (pinnedApps.isNotEmpty())
-                        colors.danger.copy(alpha = 0.45f)
+                        destructiveRed.copy(alpha = 0.45f)
                     else
                         colors.frameLine.copy(alpha = 0.20f),
                     CutCornerShape(4.dp)
@@ -332,7 +335,7 @@ private fun PinnedAppsPanel(
                 fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
                 fontSize = 9.sp, letterSpacing = 1.sp,
                 color = if (pinnedApps.isNotEmpty())
-                    colors.danger.copy(alpha = 0.85f)
+                    destructiveRed.copy(alpha = 0.85f)
                 else
                     colors.textSecondary.copy(alpha = 0.30f))
         }

@@ -1,3 +1,5 @@
+package com.nerf.launcher.state
+
 import androidx.compose.runtime.Immutable
 import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.theme.LauncherAccent
