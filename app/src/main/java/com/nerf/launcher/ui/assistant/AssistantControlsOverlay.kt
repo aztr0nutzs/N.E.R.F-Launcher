@@ -198,12 +198,12 @@ fun AssistantControlsOverlayMapped(
                 }
             }
 
-            // ── Emoji button (stub) — expanded touch target ────────────────
+            // ── Repeat-last button — re-speaks the assistant's last response ─
             ExpandedIconButton(
                 visualNormRect    = AssistantOverlayMap.inputEmoji,
                 hitTargetNormRect = AssistantOverlayMap.inputEmojiHit,
                 imageRect         = imageRect,
-                onClick           = { /* emoji stub */ }
+                onClick           = { onEvent(AssistantEvent.RepeatLast) }
             ) {
                 Box(
                     modifier = Modifier
@@ -214,9 +214,9 @@ fun AssistantControlsOverlayMapped(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text      = "☺",
+                        text      = "↩",
                         fontSize  = 9.sp,
-                        color     = accent.copy(0.60f),
+                        color     = accent.copy(0.75f),
                         textAlign = TextAlign.Center
                     )
                 }
