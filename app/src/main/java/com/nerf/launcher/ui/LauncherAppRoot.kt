@@ -1,6 +1,5 @@
 package com.nerf.launcher.ui
 
-import android.app.Application
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -14,7 +13,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nerf.launcher.state.LauncherViewModel
 import com.nerf.launcher.ui.assistant.AssistantScreen
@@ -24,7 +22,7 @@ import com.nerf.launcher.ui.screens.HomeLauncherScreen
 // ─────────────────────────────────────────────────────────────────────────────
 //  Destination
 //
-//  Minimal screen routing enum for the Compose portion of the launcher.
+//  Minimal screen routing enum for the Compose launcher.
 //  The launcher has exactly two Compose destinations:
 //    HOME      — HomeLauncherScreen (reactor command core)
 //    ASSISTANT — AssistantScreen (themed assistant overlay)
@@ -41,15 +39,17 @@ private enum class LauncherDestination {
 // ─────────────────────────────────────────────────────────────────────────────
 //  LauncherAppRoot
 //
-//  Top-level Compose root owned by MainActivity.setContent.
+//  Top-level Compose router owned by NerfLauncherRoot → MainActivity.setContent.
 //  Responsibilities:
 //    1. Hold the active destination in local state.
 //    2. React to LauncherUiState.assistantRequested to switch to ASSISTANT.
 //    3. React to AssistantUiState.isVisible == false to return to HOME.
 //    4. Render the correct screen for the active destination.
 //
-//  Both ViewModels are acquired here and passed down; they are never recreated
-//  across destination switches because they live in the Activity's ViewModelStore.
+//  Both ViewModels live in the Activity's ViewModelStore and are never recreated
+//  across destination switches. AssistantViewModel is an AndroidViewModel —
+//  Compose's viewModel() resolves it via the default SavedStateViewModelFactory
+//  provided by the Activity, so no explicit factory is needed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -57,13 +57,8 @@ fun LauncherAppRoot(
     launcherViewModel: LauncherViewModel,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val application = context.applicationContext as Application
-
-    // AssistantViewModel is an AndroidViewModel — acquire via factory.
-    val assistantViewModel: AssistantViewModel = viewModel(
-        factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory(application)
-    )
+    // AssistantViewModel is an AndroidViewModel; the Activity's default factory handles it.
+    val assistantViewModel: AssistantViewModel = viewModel()
 
     var destination by remember { mutableStateOf(LauncherDestination.HOME) }
 
@@ -71,8 +66,7 @@ fun LauncherAppRoot(
     val assistantRequested = launcherViewModel.uiState.assistantRequested
     LaunchedEffect(assistantRequested) {
         if (assistantRequested) {
-            // Consume the flag before switching destination
-            launcherViewModel.clearAssistantRequest()
+            launcherViewModel.clearAssistantRequest()  // consume the one-shot flag
             assistantViewModel.show()
             destination = LauncherDestination.ASSISTANT
         }
@@ -99,14 +93,14 @@ fun LauncherAppRoot(
             LauncherDestination.HOME -> {
                 HomeLauncherScreen(
                     viewModel = launcherViewModel,
-                    modifier = Modifier.fillMaxSize()
+                    modifier  = Modifier.fillMaxSize()
                 )
             }
 
             LauncherDestination.ASSISTANT -> {
                 AssistantScreen(
                     viewModel = assistantViewModel,
-                    modifier = Modifier.fillMaxSize()
+                    modifier  = Modifier.fillMaxSize()
                 )
             }
         }

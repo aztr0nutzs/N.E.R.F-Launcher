@@ -115,12 +115,6 @@ class AssistantViewModel(application: Application) : AndroidViewModel(applicatio
         uiState = uiState.copy(isVisible = false)
     }
 
-    /**
-     * Provides the controller for legacy ViewBinding integration.
-     * Compose screens should use [onEvent] instead.
-     */
-    fun provideController(): AssistantController = controller
-
     // ── Internal Handlers ────────────────────────────────────────────────────
 
     private fun handleStateChange(snapshot: AssistantStateSnapshot) {
