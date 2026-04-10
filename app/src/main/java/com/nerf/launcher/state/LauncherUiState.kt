@@ -1,15 +1,12 @@
 package com.nerf.launcher.state
 
 import androidx.compose.runtime.Immutable
-import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.theme.LauncherAccent
 import com.nerf.launcher.ui.reactor.ReactorCoreModel
 import com.nerf.launcher.ui.reactor.ReactorDefaults
 import com.nerf.launcher.ui.reactor.ReactorInteractionState
 import com.nerf.launcher.ui.reactor.ReactorModel
 import com.nerf.launcher.ui.reactor.ReactorSegmentModel
-import com.nerf.launcher.util.AppConfig
-import com.nerf.launcher.util.SystemModuleSnapshot
 
 enum class LauncherMode(
     val displayName: String,
@@ -77,20 +74,15 @@ enum class LauncherUtilityAction(
     val accent: LauncherAccent,
     val note: String
 ) {
-    AppMatrix(
-        label = "APPS",
+    QuickScan(
+        label = "SCAN",
         accent = LauncherAccent.Cyan,
-        note = "Opening app matrix surface."
+        note = "Quick telemetry scan primed."
     ),
     LockGrid(
         label = "LOCK",
         accent = LauncherAccent.Magenta,
         note = "Chrome frame lock grid engaged."
-    ),
-    Assistant(
-        label = "A.I.",
-        accent = LauncherAccent.Green,
-        note = "Opening assistant link."
     )
 }
 
@@ -126,224 +118,127 @@ data class LauncherUiState(
     val reactorInteractionState: ReactorInteractionState,
     val statusModules: List<LauncherStatusModule>,
     val dockItems: List<LauncherDockItem>,
-    val utilityActions: List<LauncherUtilityAction>,
-    /** True for exactly one frame when the user taps the Assistant utility action. */
-    val assistantRequested: Boolean = false,
-    /** True for exactly one frame when the user taps the AppMatrix utility action. */
-    val appDrawerRequested: Boolean = false,
-    /** Full list of installed launchable apps — owned by LauncherViewModel. */
-    val installedApps: List<AppInfo> = emptyList(),
-    /** True once the initial app list load has completed. */
-    val appsLoaded: Boolean = false
+    val utilityActions: List<LauncherUtilityAction>
 )
 
 object LauncherUiStateFactory {
-
-    /**
-     * Build a full [LauncherUiState].
-     *
-     * Live data inputs:
-     * @param config         Live [AppConfig] from [ConfigRepository] (theme, grid, taskbar, pinned apps).
-     * @param telemetry      Live [SystemModuleSnapshot] from [SystemTelemetryRepository]
-     *                       (battery, uptime, storage, power-save state).
-     * @param transportLabel Active network transport resolved by [SystemTelemetryRepository].
-     * @param wifiSignalLabel Wi-Fi signal quality string, or null if not on Wi-Fi.
-     *
-     * All parameters default to null/empty so that [create()] is safe to call
-     * on the first frame before any live data has arrived.
-     */
     fun create(
         selectedMode: LauncherMode = LauncherMode.Hub,
         interactionState: ReactorInteractionState = ReactorInteractionState(),
-        statusMessage: String = selectedMode.summary,
-        config: AppConfig? = null,
-        telemetry: SystemModuleSnapshot? = null,
-        transportLabel: String = "OFFLINE",
-        wifiSignalLabel: String? = null,
-        installedApps: List<AppInfo> = emptyList(),
-        appsLoaded: Boolean = false
+        statusMessage: String = selectedMode.summary
     ): LauncherUiState {
         return LauncherUiState(
-            headerTitle    = "N.E.R.F. LAUNCHER",
+            headerTitle = "N.E.R.F. LAUNCHER",
             headerSubtitle = "Industrial command shell for reactor-first launcher control",
-            headerEyebrow  = "HOME SECTOR",
-            selectedMode   = selectedMode,
+            headerEyebrow = "HOME SECTOR",
+            selectedMode = selectedMode,
             statusHeadline = selectedMode.displayName,
-            statusMessage  = statusMessage,
-            reactor        = buildHomeReactor(selectedMode),
+            statusMessage = statusMessage,
+            reactor = buildHomeReactor(selectedMode),
             reactorInteractionState = interactionState,
-            statusModules  = buildModules(config, telemetry, transportLabel, wifiSignalLabel),
-            dockItems      = buildDockItems(),
-            utilityActions = LauncherUtilityAction.entries,
-            installedApps  = installedApps,
-            appsLoaded     = appsLoaded
+            statusModules = buildModules(),
+            dockItems = buildDockItems(),
+            utilityActions = LauncherUtilityAction.entries
         )
     }
-
-    // ── Reactor ───────────────────────────────────────────────────────────────
 
     private fun buildHomeReactor(selectedMode: LauncherMode): ReactorModel {
         val activeSegmentIds = selectedMode.segmentId?.let(::setOf).orEmpty()
         return ReactorModel(
             segments = listOf(
                 ReactorSegmentModel(
-                    id       = LauncherMode.Systems.segmentId.orEmpty(),
-                    label    = "SYS / NET / DIAG",
-                    accent   = LauncherMode.Systems.accent,
+                    id = LauncherMode.Systems.segmentId.orEmpty(),
+                    label = "SYS / NET / DIAG",
+                    accent = LauncherMode.Systems.accent,
                     isActive = LauncherMode.Systems.segmentId in activeSegmentIds
                 ),
                 ReactorSegmentModel(
-                    id       = LauncherMode.StabilityMonitor.segmentId.orEmpty(),
-                    label    = "STABILITY MONITOR",
-                    accent   = LauncherMode.StabilityMonitor.accent,
+                    id = LauncherMode.StabilityMonitor.segmentId.orEmpty(),
+                    label = "STABILITY MONITOR",
+                    accent = LauncherMode.StabilityMonitor.accent,
                     isActive = LauncherMode.StabilityMonitor.segmentId in activeSegmentIds
                 ),
                 ReactorSegmentModel(
-                    id       = LauncherMode.ReCalibration.segmentId.orEmpty(),
-                    label    = "RE-CALIBRATION",
-                    accent   = LauncherMode.ReCalibration.accent,
+                    id = LauncherMode.ReCalibration.segmentId.orEmpty(),
+                    label = "RE-CALIBRATION",
+                    accent = LauncherMode.ReCalibration.accent,
                     isActive = LauncherMode.ReCalibration.segmentId in activeSegmentIds
                 ),
                 ReactorSegmentModel(
-                    id       = LauncherMode.InterfaceConfig.segmentId.orEmpty(),
-                    label    = "INTERFACE CONFIG",
-                    accent   = LauncherMode.InterfaceConfig.accent,
+                    id = LauncherMode.InterfaceConfig.segmentId.orEmpty(),
+                    label = "INTERFACE CONFIG",
+                    accent = LauncherMode.InterfaceConfig.accent,
                     isActive = LauncherMode.InterfaceConfig.segmentId in activeSegmentIds
                 )
             ),
-            supportRings           = ReactorDefaults.supportRings(),
+            supportRings = ReactorDefaults.supportRings(),
             core = ReactorCoreModel(
-                title    = "N.E.R.F.",
+                title = "N.E.R.F.",
                 subtitle = "HUB",
-                status   = if (selectedMode == LauncherMode.Hub) "PRIMARY" else "READY",
-                accent   = selectedMode.accent,
+                status = if (selectedMode == LauncherMode.Hub) "PRIMARY" else "READY",
+                accent = selectedMode.accent,
                 isOnline = true
             ),
-            startAngle               = -132f,
-            segmentGapAngle          = 10f,
-            outerPaddingFraction     = 0.09f,
+            startAngle = -132f,
+            segmentGapAngle = 10f,
+            outerPaddingFraction = 0.09f,
             outerRingThicknessFraction = 0.14f,
-            labelRadiusFraction      = 0.68f,
-            coreRadiusFraction       = 0.27f
+            labelRadiusFraction = 0.68f,
+            coreRadiusFraction = 0.27f
         )
     }
 
-    // ── Status modules ────────────────────────────────────────────────────────
-
-    /**
-     * Builds the four reactor status modules with live values where available.
-     *
-     * Module → Data source:
-     *
-     * [LauncherMode.Systems] — SYS / NET / DIAG
-     *   value  : active transport type (Wi-Fi / Mobile Data / Ethernet / Offline) — LIVE
-     *   footer : Wi-Fi signal quality string when on Wi-Fi; otherwise transport label — LIVE
-     *
-     * [LauncherMode.StabilityMonitor] — STABILITY MONITOR
-     *   value  : battery percentage with charging indicator — LIVE
-     *   footer : device uptime in days and hours — LIVE
-     *
-     * [LauncherMode.ReCalibration] — RE-CALIBRATION
-     *   value  : taskbar enabled state from AppConfig — LIVE (config-driven)
-     *   footer : storage usage percentage — LIVE
-     *
-     * [LauncherMode.InterfaceConfig] — INTERFACE CONFIG
-     *   value  : active theme name from AppConfig — LIVE (config-driven)
-     *   footer : grid size from AppConfig — LIVE (config-driven)
-     */
-    private fun buildModules(
-        config: AppConfig?,
-        snap: SystemModuleSnapshot?,
-        transportLabel: String,
-        wifiSignalLabel: String?
-    ): List<LauncherStatusModule> {
-
-        // ── Systems module: network connectivity ─────────────────────────────
-        val networkValue  = transportLabel
-        val networkFooter = wifiSignalLabel ?: transportLabel
-
-        // ── Stability module: battery + uptime ───────────────────────────────
-        val batteryValue = when {
-            snap == null           -> "—"
-            snap.batteryPercent == null -> "— %"
-            snap.isCharging        -> "${snap.batteryPercent}% ⚡"
-            else                   -> "${snap.batteryPercent}%"
-        }
-        val uptimeFooter = when {
-            snap == null           -> "Uptime —"
-            snap.uptimeDays > 0    -> "Up ${snap.uptimeDays}d ${snap.uptimeHours}h"
-            else                   -> "Up ${snap.uptimeHours}h"
-        }
-
-        // ── ReCalibration module: taskbar + storage ─────────────────────────
-        val taskbarState = when {
-            config == null                   -> "—"
-            config.taskbarSettings.enabled   -> "DOCK ON"
-            else                             -> "DOCK OFF"
-        }
-        val storageFooter = when (snap?.storageUsagePercent) {
-            null -> "Storage —"
-            else -> "Storage ${snap.storageUsagePercent}% used"
-        }
-
-        // ── InterfaceConfig module: theme + grid (config-driven) ─────────────
-        val themeName  = config?.themeName?.uppercase() ?: "—"
-        val gridSize   = config?.gridSize?.toString() ?: "—"
-
-        return listOf(
-            LauncherStatusModule(
-                id     = "module_systems",
-                mode   = LauncherMode.Systems,
-                title  = "SYSTEM TRIAD",
-                value  = networkValue,
-                detail = "SYS, NET, and DIAG channels remain phase-locked to the reactor wheel.",
-                footer = networkFooter,
-                accent = LauncherMode.Systems.accent
-            ),
-            LauncherStatusModule(
-                id     = "module_stability",
-                mode   = LauncherMode.StabilityMonitor,
-                title  = "STABILITY MONITOR",
-                value  = batteryValue,
-                detail = "Thermal cage, pressure shell, and uptime harmonics are holding steady.",
-                footer = uptimeFooter,
-                accent = LauncherMode.StabilityMonitor.accent
-            ),
-            LauncherStatusModule(
-                id     = "module_recal",
-                mode   = LauncherMode.ReCalibration,
-                title  = "RE-CALIBRATION",
-                value  = taskbarState,
-                detail = "Queued trim passes for dock geometry and shell pacing remain available.",
-                footer = storageFooter,
-                accent = LauncherMode.ReCalibration.accent
-            ),
-            LauncherStatusModule(
-                id     = "module_config",
-                mode   = LauncherMode.InterfaceConfig,
-                title  = "INTERFACE CONFIG",
-                value  = themeName,
-                detail = "Overlay routing, command bindings, and chrome banks are synced.",
-                footer = "Grid $gridSize × $gridSize",
-                accent = LauncherMode.InterfaceConfig.accent
-            )
+    private fun buildModules(): List<LauncherStatusModule> = listOf(
+        LauncherStatusModule(
+            id = "module_systems",
+            mode = LauncherMode.Systems,
+            title = "SYSTEM TRIAD",
+            value = "03 LINKS",
+            detail = "SYS, NET, and DIAG channels remain phase-locked to the reactor wheel.",
+            footer = "Latency 04 ms",
+            accent = LauncherMode.Systems.accent
+        ),
+        LauncherStatusModule(
+            id = "module_stability",
+            mode = LauncherMode.StabilityMonitor,
+            title = "STABILITY MONITOR",
+            value = "99.982%",
+            detail = "Thermal cage, pressure shell, and uptime harmonics are holding steady.",
+            footer = "Variance 0.018",
+            accent = LauncherMode.StabilityMonitor.accent
+        ),
+        LauncherStatusModule(
+            id = "module_recal",
+            mode = LauncherMode.ReCalibration,
+            title = "RE-CALIBRATION",
+            value = "02 TASKS",
+            detail = "Queued trim passes for dock geometry and shell pacing remain available.",
+            footer = "Next pass 00:42",
+            accent = LauncherMode.ReCalibration.accent
+        ),
+        LauncherStatusModule(
+            id = "module_config",
+            mode = LauncherMode.InterfaceConfig,
+            title = "INTERFACE CONFIG",
+            value = "PROFILE A3",
+            detail = "Overlay routing, command bindings, and chrome banks are synced.",
+            footer = "Theme Reactor-Black",
+            accent = LauncherMode.InterfaceConfig.accent
         )
-    }
-
-    // ── Dock ──────────────────────────────────────────────────────────────────
+    )
 
     private fun buildDockItems(): List<LauncherDockItem> = LauncherMode.entries.map { mode ->
         LauncherDockItem(
             mode = mode,
             label = mode.dockLabel,
             supportingText = when (mode) {
-                LauncherMode.Hub              -> "Primary"
-                LauncherMode.Systems          -> "SYS/NET/DIAG"
+                LauncherMode.Hub -> "Primary"
+                LauncherMode.Systems -> "SYS/NET/DIAG"
                 LauncherMode.StabilityMonitor -> "Shielding"
-                LauncherMode.ReCalibration    -> "Trim Pass"
-                LauncherMode.InterfaceConfig  -> "Profiles"
+                LauncherMode.ReCalibration -> "Trim Pass"
+                LauncherMode.InterfaceConfig -> "Profiles"
             },
-            glyph  = mode.glyph,
+            glyph = mode.glyph,
             accent = mode.accent
         )
     }

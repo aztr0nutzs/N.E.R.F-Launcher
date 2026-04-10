@@ -1,115 +1,92 @@
-package com.nerf.launcher.ui.assistant
-
-import com.nerf.launcher.util.assistant.AssistantController
-import com.nerf.launcher.util.assistant.AssistantState
-import com.nerf.launcher.util.assistant.PersonalityMood
+package com.nerf.launcher.state
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  AssistantUiState
-//
-//  Immutable snapshot of everything the Compose assistant screen needs to
-//  render a single frame. Produced by AssistantViewModel and consumed by
-//  the AssistantScreen composable hierarchy.
+// Assistant Screen State, Themes, Events
 // ─────────────────────────────────────────────────────────────────────────────
 
-data class AssistantUiState(
-    /** Active robot state (idle, listening, thinking, speaking, …). */
-    val robotState: AssistantState = AssistantState.IDLE,
+enum class AssistantTheme {
+    PHANTOM_BLACK,   // Image 1: dark holographic neon
+    NERF_ORANGE,     // Image 2: orange / navy NERF colorway
+    BLUEPRINT_STONE, // Image 3: orange / blueprint background
+    CYBER_GRAFFITI   // Image 4: dark graffiti / mic-centric
+}
 
-    /** Currently active assistant theme configuration. */
-    val activeTheme: AssistantThemeConfig = AssistantThemeRegistry.defaultTheme,
+enum class AssistantState {
+    IDLE,
+    LISTENING,
+    THINKING,
+    SPEAKING
+}
 
-    /** Current personality mood. */
-    val mood: PersonalityMood = PersonalityMood.SNARKY,
-
-    /** Latest assistant text response (rendered in the response area). */
-    val latestResponse: String = "",
-
-    /** Full chat transcript (newest first). */
-    val transcript: List<TranscriptMessage> = emptyList(),
-
-    /** Whether the chat pane overlay is expanded. */
-    val isChatPaneOpen: Boolean = true,
-
-    /** Whether the chest/core overlay is active. */
-    val isChestCoreActive: Boolean = false,
-
-    /** Whether the hand projection overlay is showing. */
-    val isHandProjectionActive: Boolean = false,
-
-    /** Whether a side telemetry panel (left) is open. */
-    val isSidePanelLeftOpen: Boolean = false,
-
-    /** Whether a side telemetry panel (right) is open. */
-    val isSidePanelRightOpen: Boolean = false,
-
-    /** Whether voice/mic input is available on this device. */
-    val isVoiceAvailable: Boolean = false,
-
-    /** Whether we're actively listening for voice input. */
-    val isListening: Boolean = false,
-
-    /** Response bank loaded status text. */
-    val bankStatusLabel: String = "RESPONSE BANK LOADING",
-
-    /** Total interaction count for telemetry display. */
-    val interactionCount: Int = 0,
-
-    /** Whether the assistant screen is visible. */
-    val isVisible: Boolean = false,
-
-    /** Current text in the input field (for controlled input). */
-    val inputText: String = "",
-
-    // ── Reactor State ────────────────────────────────────────────────────────
-
-    /** Which reactor sector is currently highlighted (null = none). */
-    val activeSector: ReactorSector? = null,
-
-    /** True while the reactor core ring was recently tapped (triggers FX burst). */
-    val isReactorCoreBurst: Boolean = false,
-
-    // ── Left Action Stack State ──────────────────────────────────────────────
-
-    /** Which left-stack button is currently toggled on. */
-    val activeLeftAction: LeftAction? = null,
-
-    // ── Dock State ───────────────────────────────────────────────────────────
-
-    /** Which dock button is currently selected / glowing. */
-    val activeDockAction: DockAction? = null,
-
-    /** Whether the dock center (NERF logo) is pulsing. */
-    val isDockCenterActive: Boolean = false,
-
-    // ── Input Focus State ────────────────────────────────────────────────────
-
-    /** Whether the input shell currently has focus (for glow). */
-    val isInputFocused: Boolean = false,
-
-    // ── Toggle Module State ──────────────────────────────────────────────────
-
-    /** Toggle module on/off state. */
-    val isToggleModuleOn: Boolean = false
+data class ChatMessage(
+    val id: String,
+    val isAI: Boolean,
+    val text: String
 )
 
 /**
- * Single message in the chat transcript.
+ * Fractional overlay bounds: values are fractions of the screen width/height.
+ * topLeft = Offset(x fraction, y fraction), size = Size(w fraction, h fraction).
+ * Applied as:  absoluteX = fraction * screenWidth
  */
-data class TranscriptMessage(
-    val speaker: Speaker,
-    val text: String,
-    val timestampMs: Long = System.currentTimeMillis()
-) {
-    enum class Speaker {
-        USER,
-        ASSISTANT;
+data class OverlayBounds(
+    val xFraction: Float,
+    val yFraction: Float,
+    val wFraction: Float,
+    val hFraction: Float
+)
 
-        companion object {
-            fun from(controllerSpeaker: AssistantController.Speaker): Speaker = when (controllerSpeaker) {
-                AssistantController.Speaker.USER -> USER
-                AssistantController.Speaker.ASSISTANT -> ASSISTANT
-            }
-        }
-    }
+/**
+ * Per-theme color palette and layout anchors.
+ * Bounds are tuned to match the exact pane/control positions in each artwork.
+ */
+data class AssistantThemeConfig(
+    val theme: AssistantTheme,
+    val drawableResId: Int,                  // R.drawable.asst_screen_X
+    val accentPrimary: androidx.compose.ui.graphics.Color,
+    val accentSecondary: androidx.compose.ui.graphics.Color,
+    val accentGlow: androidx.compose.ui.graphics.Color,
+    val chatPaneBounds: OverlayBounds,        // transcript text area
+    val dockBounds: OverlayBounds,            // bottom icon row
+    val micBounds: OverlayBounds,             // mic / central action button
+    val chestBounds: OverlayBounds,           // chest/core reactor tap zone
+    val handBounds: OverlayBounds,            // left hand projection zone
+    val dartStripBounds: OverlayBounds?,      // dart count + fire-mode strip (null if absent)
+    val chatTextYStart: Float,                // y fraction where chat text begins inside pane
+    val chatTextXPad: Float,                  // x fraction padding inside pane for text
+    val showDartStrip: Boolean,
+    val showModeToggle: Boolean,
+    val progressDotsVisible: Boolean,         // theme 4 only
+    val visorGlowColor: androidx.compose.ui.graphics.Color,
+    val chestGlowColor: androidx.compose.ui.graphics.Color
+)
+
+data class AssistantUiState(
+    val activeTheme: AssistantTheme = AssistantTheme.PHANTOM_BLACK,
+    val assistantState: AssistantState = AssistantState.IDLE,
+    val chatMessages: List<ChatMessage> = listOf(
+        ChatMessage("1", true,  "[AI] V-Core 5 online. Ready, Commander."),
+        ChatMessage("2", false, "[USER] Run a deep diagnostic on my primary weapon system"),
+        ChatMessage("3", true,  "[AI] Initializing deep diagnostic on M.K. POWER systems..."),
+        ChatMessage("4", false, "[USER] What's the status of the DIMENSIONAL RESONANCE?"),
+        ChatMessage("5", true,  "[AI] Dim. Resonance stable at 98%. Scanning VOID.")
+    ),
+    val dartCount: Int = 12,
+    val fireMode: FireMode = FireMode.SEMI_AUTO,
+    val chestPanelOpen: Boolean = false,
+    val handPanelOpen: Boolean = false,
+    val inputText: String = ""
+)
+
+enum class FireMode { SEMI_AUTO, FULL_AUTO }
+
+sealed class AssistantEvent {
+    data class ThemeSelected(val theme: AssistantTheme) : AssistantEvent()
+    object MicTapped : AssistantEvent()
+    object ChestTapped : AssistantEvent()
+    object HandTapped : AssistantEvent()
+    object SendMessage : AssistantEvent()
+    data class InputChanged(val text: String) : AssistantEvent()
+    data class FireModeChanged(val mode: FireMode) : AssistantEvent()
+    object DismissOverlays : AssistantEvent()
 }

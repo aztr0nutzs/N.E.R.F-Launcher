@@ -1,332 +1,174 @@
-package com.nerf.launcher.ui.assistant
+package com.nerf.launcher.state
 
-import android.app.Application
-import android.speech.SpeechRecognizer
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
-import com.nerf.launcher.util.assistant.AssistantAction
-import com.nerf.launcher.util.assistant.AssistantController
-import com.nerf.launcher.util.assistant.AssistantState
-import com.nerf.launcher.util.assistant.AssistantStateSnapshot
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import java.util.UUID
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  AssistantViewModel
-//
-//  Bridges the existing AssistantController (text, voice, TTS, response bank)
-//  to the Compose AssistantScreen. Exposes a single [uiState] snapshot and
-//  handles [onEvent] dispatch.
+// Theme Configuration Registry
+// These fractional bounds are calibrated against each artwork's exact composition.
+// xFraction/yFraction = top-left corner as fraction of screen dimensions.
+// wFraction/hFraction = size as fraction of screen dimensions.
 // ─────────────────────────────────────────────────────────────────────────────
+object AssistantThemeRegistry {
 
-class AssistantViewModel(application: Application) : AndroidViewModel(application) {
+    // ── THEME 1: Phantom Black (dark holographic neon)
+    // Chat pane: ~y=0.57 to 0.82 of screen, full width with padding
+    // Dart strip: ~y=0.82 to 0.88
+    // Dock: ~y=0.88 to 0.97
+    // Mic: center of dock at ~x=0.45, y=0.89, ~10% wide
+    val PHANTOM_BLACK = AssistantThemeConfig(
+        theme              = AssistantTheme.PHANTOM_BLACK,
+        drawableResId      = 0, // placeholder — wire to R.drawable.asst_screen1 in project
+        accentPrimary      = Color(0xFF00FFCC),
+        accentSecondary    = Color(0xFFFF00FF),
+        accentGlow         = Color(0x8800FFCC),
+        chatPaneBounds     = OverlayBounds(0.01f, 0.565f, 0.98f, 0.255f),
+        dockBounds         = OverlayBounds(0.00f, 0.883f, 1.00f, 0.095f),
+        micBounds          = OverlayBounds(0.38f, 0.883f, 0.24f, 0.095f),
+        chestBounds        = OverlayBounds(0.28f, 0.40f, 0.44f, 0.18f),
+        handBounds         = OverlayBounds(0.00f, 0.46f, 0.28f, 0.18f),
+        dartStripBounds    = OverlayBounds(0.01f, 0.824f, 0.98f, 0.058f),
+        chatTextYStart     = 0.03f,
+        chatTextXPad       = 0.03f,
+        showDartStrip      = true,
+        showModeToggle     = true,
+        progressDotsVisible = false,
+        visorGlowColor     = Color(0x9900FFCC),
+        chestGlowColor     = Color(0x99FF00FF)
+    )
 
-    private val controller = AssistantController(application)
+    // ── THEME 2: NERF Orange (orange / navy)
+    // Same structural layout as theme 1, different palette
+    val NERF_ORANGE = AssistantThemeConfig(
+        theme              = AssistantTheme.NERF_ORANGE,
+        drawableResId      = 0, // wire to R.drawable.asst_screen2
+        accentPrimary      = Color(0xFFFF6600),
+        accentSecondary    = Color(0xFF0066CC),
+        accentGlow         = Color(0x88FF6600),
+        chatPaneBounds     = OverlayBounds(0.01f, 0.565f, 0.98f, 0.255f),
+        dockBounds         = OverlayBounds(0.00f, 0.883f, 1.00f, 0.095f),
+        micBounds          = OverlayBounds(0.38f, 0.883f, 0.24f, 0.095f),
+        chestBounds        = OverlayBounds(0.28f, 0.40f, 0.44f, 0.18f),
+        handBounds         = OverlayBounds(0.00f, 0.46f, 0.28f, 0.18f),
+        dartStripBounds    = OverlayBounds(0.01f, 0.824f, 0.98f, 0.058f),
+        chatTextYStart     = 0.03f,
+        chatTextXPad       = 0.03f,
+        showDartStrip      = true,
+        showModeToggle     = true,
+        progressDotsVisible = false,
+        visorGlowColor     = Color(0x9900AAFF),
+        chestGlowColor     = Color(0x99FF6600)
+    )
 
-    var uiState by mutableStateOf(AssistantUiState())
-        private set
+    // ── THEME 3: Blueprint Stone (orange/navy, blueprint bg)
+    // Identical composition to theme 2; background asset differs only
+    val BLUEPRINT_STONE = AssistantThemeConfig(
+        theme              = AssistantTheme.BLUEPRINT_STONE,
+        drawableResId      = 0, // wire to R.drawable.asst_screen3
+        accentPrimary      = Color(0xFFFF6600),
+        accentSecondary    = Color(0xFF2255AA),
+        accentGlow         = Color(0x88FF8800),
+        chatPaneBounds     = OverlayBounds(0.01f, 0.565f, 0.98f, 0.255f),
+        dockBounds         = OverlayBounds(0.00f, 0.883f, 1.00f, 0.095f),
+        micBounds          = OverlayBounds(0.38f, 0.883f, 0.24f, 0.095f),
+        chestBounds        = OverlayBounds(0.28f, 0.40f, 0.44f, 0.18f),
+        handBounds         = OverlayBounds(0.00f, 0.46f, 0.28f, 0.18f),
+        dartStripBounds    = OverlayBounds(0.01f, 0.824f, 0.98f, 0.058f),
+        chatTextYStart     = 0.03f,
+        chatTextXPad       = 0.03f,
+        showDartStrip      = true,
+        showModeToggle     = true,
+        progressDotsVisible = false,
+        visorGlowColor     = Color(0x9900CCFF),
+        chestGlowColor     = Color(0x99FF6600)
+    )
 
-    private var activeThemeId: AssistantThemeId = AssistantThemeId.PHANTOM_BLACK
+    // ── THEME 4: Cyber Graffiti (dark, mic-centric layout)
+    // Layout differs: no dart strip, mic is large center of dock,
+    // chat pane extends higher, progress dots shown inside pane
+    val CYBER_GRAFFITI = AssistantThemeConfig(
+        theme              = AssistantTheme.CYBER_GRAFFITI,
+        drawableResId      = 0, // wire to R.drawable.asst_screen4
+        accentPrimary      = Color(0xFF00CCFF),
+        accentSecondary    = Color(0xFFFF00AA),
+        accentGlow         = Color(0x8800CCFF),
+        chatPaneBounds     = OverlayBounds(0.01f, 0.535f, 0.98f, 0.295f),
+        dockBounds         = OverlayBounds(0.00f, 0.895f, 1.00f, 0.090f),
+        micBounds          = OverlayBounds(0.36f, 0.877f, 0.28f, 0.108f),
+        chestBounds        = OverlayBounds(0.24f, 0.34f, 0.52f, 0.22f),
+        handBounds         = OverlayBounds(0.00f, 0.46f, 0.26f, 0.18f),
+        dartStripBounds    = null,
+        chatTextYStart     = 0.03f,
+        chatTextXPad       = 0.02f,
+        showDartStrip      = false,
+        showModeToggle     = false,
+        progressDotsVisible = true,
+        visorGlowColor     = Color(0x9900FFCC),
+        chestGlowColor     = Color(0xAAFF00AA)
+    )
 
-    init {
-        // Restore the persisted theme before building the initial UI state so the
-        // assistant screen opens on the last theme the user selected, not always
-        // the compiled-in default.
-        activeThemeId = controller.loadSavedAssistantTheme()
-
-        val voiceAvailable = SpeechRecognizer.isRecognitionAvailable(application)
-        val snapshot = controller.currentSnapshot()
-        val bankLoaded = controller.isResponseBankLoaded()
-
-        uiState = uiState.copy(
-            robotState = snapshot.state,
-            mood = snapshot.mood,
-            latestResponse = snapshot.response ?: "",
-            isVoiceAvailable = voiceAvailable,
-            bankStatusLabel = if (bankLoaded) "RESPONSE BANK LOADED" else "RESPONSE BANK FALLBACK",
-            interactionCount = snapshot.interactionCount,
-            activeTheme = AssistantThemeRegistry.get(activeThemeId)
-        )
-
-        controller.onStateChanged = { snap -> handleStateChange(snap) }
-        controller.onTranscriptChanged = { entries -> handleTranscriptChange(entries) }
-        controller.onMoodChanged = { mood ->
-            uiState = uiState.copy(mood = mood)
-        }
+    fun forTheme(theme: AssistantTheme): AssistantThemeConfig = when (theme) {
+        AssistantTheme.PHANTOM_BLACK   -> PHANTOM_BLACK
+        AssistantTheme.NERF_ORANGE     -> NERF_ORANGE
+        AssistantTheme.BLUEPRINT_STONE -> BLUEPRINT_STONE
+        AssistantTheme.CYBER_GRAFFITI  -> CYBER_GRAFFITI
     }
+}
 
-    // ── Public API ───────────────────────────────────────────────────────────
+class AssistantViewModel : ViewModel() {
+
+    private val _uiState = MutableStateFlow(AssistantUiState())
+    val uiState: StateFlow<AssistantUiState> = _uiState.asStateFlow()
+
+    val themeConfig: AssistantThemeConfig
+        get() = AssistantThemeRegistry.forTheme(_uiState.value.activeTheme)
 
     fun onEvent(event: AssistantEvent) {
         when (event) {
-            is AssistantEvent.SubmitText          -> submitText(event.text)
-            AssistantEvent.MicTapped              -> onMicTapped()
-            AssistantEvent.RepeatLast             -> repeatLast()
-            AssistantEvent.InterruptSpeaking      -> interruptSpeaking()
-
-            // Input focus
-            AssistantEvent.InputFocused           -> uiState = uiState.copy(isInputFocused = true)
-            AssistantEvent.InputUnfocused         -> uiState = uiState.copy(isInputFocused = false)
-
-            // Reactor
-            AssistantEvent.ReactorCoreTapped      -> onReactorCoreTapped()
-            is AssistantEvent.ReactorSectorTapped -> onReactorSectorTapped(event.sector)
-
-            // Robot body
-            AssistantEvent.ChestCoreTapped        -> onReactorCoreTapped()   // alias
-            AssistantEvent.HandProjectionTapped   -> toggleHandProjection()
-            is AssistantEvent.SideModuleTapped    -> toggleSideModule(event.side)
-
-            // Left action stack
-            is AssistantEvent.LeftActionTapped    -> onLeftActionTapped(event.action)
-
-            // Dock
-            is AssistantEvent.DockActionTapped    -> onDockActionTapped(event.action)
-            AssistantEvent.DockCenterTapped       -> onDockCenterTapped()
-
-            // Toggle module
-            AssistantEvent.ToggleModuleTapped     -> uiState = uiState.copy(
-                isToggleModuleOn = !uiState.isToggleModuleOn
-            )
-
-            // Quick launcher commands
-            is AssistantEvent.LauncherCommandTapped -> executeLauncherCommand(event.command)
-
-            // Theme
-            is AssistantEvent.SwitchTheme         -> switchTheme(event.themeId)
-            AssistantEvent.CycleTheme             -> cycleTheme()
-
-            // Mood
-            AssistantEvent.CycleMood              -> cycleMood()
-
-            // Overlay
-            AssistantEvent.Dismiss                -> dismiss()
-            AssistantEvent.ToggleChatPane         -> toggleChatPane()
-            is AssistantEvent.ToggleSidePanel     -> toggleSidePanelDirect(event.side)
-        }
-    }
-
-    fun onInputTextChanged(text: String) {
-        uiState = uiState.copy(inputText = text)
-    }
-
-    fun show() {
-        controller.wakeAssistant()
-        uiState = uiState.copy(isVisible = true)
-    }
-
-    fun hide() {
-        controller.setIdle()
-        uiState = uiState.copy(isVisible = false)
-    }
-
-    // ── Internal Handlers ────────────────────────────────────────────────────
-
-    private fun handleStateChange(snapshot: AssistantStateSnapshot) {
-        uiState = uiState.copy(
-            robotState = snapshot.state,
-            mood = snapshot.mood,
-            latestResponse = snapshot.response ?: uiState.latestResponse,
-            interactionCount = snapshot.interactionCount,
-            bankStatusLabel = if (controller.isResponseBankLoaded()) "RESPONSE BANK LOADED" else "RESPONSE BANK FALLBACK",
-            // Auto-deactivate overlays when state returns to idle
-            isChestCoreActive = if (snapshot.state == AssistantState.IDLE) false else uiState.isChestCoreActive,
-            isHandProjectionActive = if (snapshot.state == AssistantState.IDLE) false else uiState.isHandProjectionActive,
-            isReactorCoreBurst = false   // burst is one-shot; clear on state change
-        )
-    }
-
-    private fun handleTranscriptChange(entries: List<AssistantController.TranscriptEntry>) {
-        val messages = entries.map { entry ->
-            TranscriptMessage(
-                speaker = TranscriptMessage.Speaker.from(entry.speaker),
-                text = entry.text,
-                timestampMs = entry.timestampMs
-            )
-        }
-        uiState = uiState.copy(transcript = messages)
-    }
-
-    private fun submitText(text: String) {
-        val trimmed = text.trim()
-        if (trimmed.isEmpty()) return
-        controller.respondToInput(trimmed)
-        uiState = uiState.copy(inputText = "")
-    }
-
-    private fun onMicTapped() {
-        if (!uiState.isVoiceAvailable) return
-        if (uiState.isListening) {
-            uiState = uiState.copy(isListening = false)
-            controller.interruptSpeaking()
-        } else {
-            uiState = uiState.copy(isListening = true)
-            controller.wakeForCommand()
-        }
-    }
-
-    private fun repeatLast() {
-        controller.repeatLast()
-    }
-
-    private fun interruptSpeaking() {
-        controller.interruptSpeaking()
-        uiState = uiState.copy(isListening = false)
-    }
-
-    // ── Reactor ──────────────────────────────────────────────────────────────
-
-    private fun onReactorCoreTapped() {
-        val wasActive = uiState.isChestCoreActive
-        uiState = uiState.copy(
-            isChestCoreActive = !wasActive,
-            isHandProjectionActive = false,     // mutual exclusion
-            isReactorCoreBurst = !wasActive,    // one-shot FX burst on activation
-            activeSector = null                  // deselect any sector
-        )
-        if (!wasActive) {
-            controller.speakCategory(
-                com.nerf.launcher.util.assistant.AiResponseRepository.Category.SCANNING
-            )
-        }
-    }
-
-    private fun onReactorSectorTapped(sector: ReactorSector) {
-        val isAlreadyActive = uiState.activeSector == sector
-        uiState = uiState.copy(
-            activeSector = if (isAlreadyActive) null else sector,
-            isChestCoreActive = false   // deactivate core when a sector is selected
-        )
-        if (!isAlreadyActive) {
-            // Map reactor sector to a response category
-            when (sector) {
-                ReactorSector.STABILITY_MONITOR -> controller.speakCategory(
-                    com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
-                )
-                ReactorSector.INTERFACE_CONFIG -> controller.speakCategory(
-                    com.nerf.launcher.util.assistant.AiResponseRepository.Category.THEME_SWITCH
-                )
-                ReactorSector.RECALIBRATION -> controller.speakCategory(
-                    com.nerf.launcher.util.assistant.AiResponseRepository.Category.SCANNING
-                )
-                ReactorSector.SYS_NET_DIAG -> controller.speakCategory(
-                    com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
-                )
+            is AssistantEvent.ThemeSelected -> {
+                _uiState.update { it.copy(activeTheme = event.theme) }
+            }
+            is AssistantEvent.MicTapped -> {
+                val next = when (_uiState.value.assistantState) {
+                    AssistantState.IDLE      -> AssistantState.LISTENING
+                    AssistantState.LISTENING -> AssistantState.IDLE
+                    else                     -> AssistantState.IDLE
+                }
+                _uiState.update { it.copy(assistantState = next) }
+            }
+            is AssistantEvent.ChestTapped -> {
+                _uiState.update { it.copy(chestPanelOpen = !it.chestPanelOpen, handPanelOpen = false) }
+            }
+            is AssistantEvent.HandTapped -> {
+                _uiState.update { it.copy(handPanelOpen = !it.handPanelOpen, chestPanelOpen = false) }
+            }
+            is AssistantEvent.SendMessage -> {
+                val text = _uiState.value.inputText.trim()
+                if (text.isBlank()) return
+                val userMsg = ChatMessage(UUID.randomUUID().toString(), false, "[USER] $text")
+                val aiReply = ChatMessage(UUID.randomUUID().toString(), true, "[AI] Processing: $text")
+                _uiState.update { st ->
+                    st.copy(
+                        chatMessages = st.chatMessages + userMsg + aiReply,
+                        inputText    = "",
+                        assistantState = AssistantState.THINKING
+                    )
+                }
+            }
+            is AssistantEvent.InputChanged -> {
+                _uiState.update { it.copy(inputText = event.text) }
+            }
+            is AssistantEvent.FireModeChanged -> {
+                _uiState.update { it.copy(fireMode = event.mode) }
+            }
+            is AssistantEvent.DismissOverlays -> {
+                _uiState.update { it.copy(chestPanelOpen = false, handPanelOpen = false) }
             }
         }
-    }
-
-    // ── Hand Projection ───────────────────────────────────────────────────────
-
-    private fun toggleHandProjection() {
-        val wasActive = uiState.isHandProjectionActive
-        uiState = uiState.copy(
-            isHandProjectionActive = !wasActive,
-            isChestCoreActive = false
-        )
-        if (!wasActive) {
-            controller.speakCategory(
-                com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
-            )
-        }
-    }
-
-    // ── Side Modules ─────────────────────────────────────────────────────────
-
-    private fun toggleSideModule(side: AssistantEvent.SideModuleTapped.Side) {
-        when (side) {
-            AssistantEvent.SideModuleTapped.Side.LEFT ->
-                uiState = uiState.copy(isSidePanelLeftOpen = !uiState.isSidePanelLeftOpen)
-            AssistantEvent.SideModuleTapped.Side.RIGHT ->
-                uiState = uiState.copy(isSidePanelRightOpen = !uiState.isSidePanelRightOpen)
-        }
-    }
-
-    private fun toggleSidePanelDirect(side: AssistantEvent.SideModuleTapped.Side) = toggleSideModule(side)
-
-    // ── Left Action Stack ─────────────────────────────────────────────────────
-
-    private fun onLeftActionTapped(action: LeftAction) {
-        val isAlreadyActive = uiState.activeLeftAction == action
-        uiState = uiState.copy(activeLeftAction = if (isAlreadyActive) null else action)
-        when (action) {
-            LeftAction.POWER    -> controller.speakCategory(
-                com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
-            )
-            LeftAction.NETWORK  -> controller.speakCategory(
-                com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
-            )
-            LeftAction.ALERTS   -> controller.speakCategory(
-                com.nerf.launcher.util.assistant.AiResponseRepository.Category.SCANNING
-            )
-            LeftAction.SETTINGS -> executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_SETTINGS)
-        }
-    }
-
-    // ── Dock ─────────────────────────────────────────────────────────────────
-
-    private fun onDockActionTapped(action: DockAction) {
-        val isAlreadyActive = uiState.activeDockAction == action
-        uiState = uiState.copy(activeDockAction = if (isAlreadyActive) null else action)
-        when (action) {
-            DockAction.SETTINGS -> executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_SETTINGS)
-            DockAction.MAP      -> executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_DIAGNOSTICS)
-            DockAction.MODULES  -> executeLauncherCommand(AssistantAction.LauncherCommand.OPEN_NODE_HUNTER)
-            DockAction.MIC      -> onMicTapped()
-            DockAction.PROFILE  -> controller.speakCategory(
-                com.nerf.launcher.util.assistant.AiResponseRepository.Category.STATUS_REPORT
-            )
-        }
-    }
-
-    private fun onDockCenterTapped() {
-        uiState = uiState.copy(isDockCenterActive = !uiState.isDockCenterActive)
-        controller.wakeAssistant()
-    }
-
-    // ── Launcher Commands ─────────────────────────────────────────────────────
-
-    private fun executeLauncherCommand(command: AssistantAction.LauncherCommand) {
-        controller.executeLauncherCommand(command)
-    }
-
-    // ── Theme ─────────────────────────────────────────────────────────────────
-
-    private fun switchTheme(themeId: AssistantThemeId) {
-        activeThemeId = themeId
-        controller.saveAssistantTheme(themeId)
-        uiState = uiState.copy(activeTheme = AssistantThemeRegistry.get(themeId))
-        controller.speakCategory(
-            com.nerf.launcher.util.assistant.AiResponseRepository.Category.THEME_SWITCH
-        )
-    }
-
-    private fun cycleTheme() {
-        val next = AssistantThemeRegistry.next(activeThemeId)
-        activeThemeId = next.id
-        controller.saveAssistantTheme(next.id)
-        uiState = uiState.copy(activeTheme = next)
-        controller.speakCategory(
-            com.nerf.launcher.util.assistant.AiResponseRepository.Category.THEME_SWITCH
-        )
-    }
-
-    // ── Misc ──────────────────────────────────────────────────────────────────
-
-    private fun cycleMood() {
-        controller.cycleMood()
-    }
-
-    private fun dismiss() {
-        hide()
-    }
-
-    private fun toggleChatPane() {
-        uiState = uiState.copy(isChatPaneOpen = !uiState.isChatPaneOpen)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        controller.dispose()
     }
 }

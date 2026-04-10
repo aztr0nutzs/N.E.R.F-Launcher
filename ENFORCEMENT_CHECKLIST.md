@@ -1,161 +1,276 @@
-This project must result in:
-A fully reactive, high-performance, deeply customizable Android launcher with a cohesive Nerf-inspired visual system and zero architectural shortcuts.
-If it feels like:
-a demo → ❌ fail
-a themed skin → ❌ fail
-inconsistent UI → ❌ fail
-It should feel like:
-a real product
-a system-level experience
-a polished, responsive UI engine
-🧱 NON-NEGOTIABLE ARCHITECTURE RULES
-✅ SINGLE SOURCE OF TRUTH
-AppConfig is the ONLY state authority
-No duplicate state anywhere
-❌ FAIL IF:
-ThemeManager stores its own state
-Taskbar has independent config
-Settings write directly to UI
-✅ CENTRALIZED DATA FLOW
-Required flow:
+# ENFORCEMENT_CHECKLIST.md
 
-User Action → ConfigRepository → AppConfig → UI Observers → UI Update
-❌ FAIL IF:
-UI is updated manually
-Functions like applyTheme() exist
-Direct view manipulation bypasses config
-✅ FULL REACTIVITY
-ALL UI must:
-Observe config changes
-Update instantly
-Never require restart
-❌ FAIL IF:
-Activity recreation is used
-RecyclerView fully reloads unnecessarily
-UI flickers or resets
-🎨 THEME SYSTEM REQUIREMENTS
-✅ TRUE THEME ENGINE
-Each theme MUST define:
-primary color
-secondary color
-accent color
-background style
-glow intensity
-✅ ZERO HARDCODED VALUES
-❌ FAIL IF:
-#FFxxxx exists in XML
-setBackgroundColor() uses literals
-Any UI element defines its own color
-✅ CONSISTENT THEME APPLICATION
-ALL UI must derive from:
-ThemeManager → AppConfig → NerfTheme
-❌ FAIL IF:
-Taskbar uses different colors than app grid
-HUD ignores theme
-Mixed styling approaches exist
-🎯 ICON SYSTEM REQUIREMENTS
-✅ CENTRAL ICON RESOLUTION
-ALL icons MUST go through:
-IconProvider
-✅ ICON FALLBACK CHAIN
+This project MUST result in:
 
-Custom Pack → Selected Pack → System Icon
+A fully reactive, high-performance, assistant-driven launcher with:
+- precision overlay mapping
+- real interaction systems
+- cohesive NERD visual identity
+- zero architectural shortcuts
+
+-----------------------------------
+
+# 🧱 NON-NEGOTIABLE RULES
+
+## SINGLE SOURCE OF TRUTH
+
+AppConfig = ONLY authority
+
 ❌ FAIL IF:
-Adapter loads icons directly
-Missing icons crash or show blank
-No caching exists
-✅ PERFORMANCE
-Icons cached efficiently
-No repeated loading during scroll
+- duplicate state exists
+- UI reads preferences directly
+- ViewModel stores config independently
+
+---
+
+## CENTRALIZED DATA FLOW
+
+User → ViewModel → Config → State → UI
+
 ❌ FAIL IF:
-Jank while scrolling
-Icons reload unnecessarily
-⚙️ SETTINGS SYSTEM REQUIREMENTS
-✅ FULLY FUNCTIONAL CONTROLS
-Each setting MUST:
-Persist
-Apply instantly
-Reflect in UI
-✅ NO FAKE SETTINGS
+- manual UI updates
+- applyTheme() patterns
+- direct view manipulation
+
+---
+
+## FULL REACTIVITY
+
+UI must:
+- update instantly
+- never require restart
+
 ❌ FAIL IF:
-Setting exists but does nothing
-UI changes but logic doesn’t
-Requires restart to apply
-🧨 TASKBAR SYSTEM REQUIREMENTS
-✅ FULL CONFIG CONTROL
-Must support:
-size
-icon size
-transparency
-background style
-enable/disable
-✅ FULL THEME INTEGRATION
+- activity recreation
+- full recomposition abuse
+- flickering UI
+
+-----------------------------------
+
+# 🤖 ASSISTANT SYSTEM REQUIREMENTS
+
+## MUST HAVE:
+
+- dedicated AssistantScreen
+- real chat system
+- state-driven messages
+- working input field
+- working send + mic
+
 ❌ FAIL IF:
-Taskbar styling is hardcoded
-Doesn’t update with theme changes
-⚡ PERFORMANCE REQUIREMENTS
-✅ SMOOTH UI
-No lag when scrolling
-No dropped frames
-✅ EFFICIENT DATA HANDLING
-RecyclerView uses DiffUtil
-No full refresh spam
-✅ THREADING
-App loading is async
-No main-thread blocking
-🧠 CODE QUALITY REQUIREMENTS
-✅ CLEAN STRUCTURE
-No duplicate logic
-No unused classes
-No dead code
-✅ NO PLACEHOLDERS
+- fake chat
+- static UI
+- no interaction loop
+
+---
+
+## VISUAL SYSTEM
+
+- background image = fixed backplate
+- UI = overlays only
+
 ❌ FAIL IF:
-“TODO”
-“mock”
-empty functions
-fake data
-🚨 CRITICAL FAILURE CONDITIONS (AUTO-REJECT)
-Immediately reject ANY AI output that:
-Removes working features
-Simplifies existing logic
-Breaks UI layout
-Introduces hardcoded values
-Duplicates state
-Adds manual UI updates
-Downgrades performance
-🔍 INSPECTION CHECKLIST (USE THIS EVERY TIME)
-🧾 STRUCTURE
-[ ] All expected files exist
-[ ] No misplaced files
-[ ] Clean package organization
-🎨 THEME
-[ ] No hardcoded colors
-[ ] All UI pulls from theme
-[ ] Theme updates instantly
-🎯 ICONS
-[ ] All icons via IconProvider
-[ ] Cache implemented
-[ ] No direct drawable usage
-⚙️ SETTINGS
-[ ] All settings persist
-[ ] All settings apply instantly
-[ ] No fake toggles
-🧨 TASKBAR
-[ ] Fully configurable
-[ ] Reacts to config changes
-[ ] No hardcoded layout values
-⚡ PERFORMANCE
-[ ] Smooth scrolling
-[ ] No unnecessary reloads
-[ ] Async operations in place
-🧠 ARCHITECTURE
-[ ] Single source of truth enforced
-[ ] No duplicate state
-[ ] Reactive UI everywhere
-🧭 WHAT “DONE” ACTUALLY LOOKS LIKE
+- recreating UI with Compose shapes
+- misaligned overlays
+
+-----------------------------------
+
+# 🎯 OVERLAY SYSTEM (CRITICAL)
+
+## MUST:
+
+- use normalized coordinates
+- map to image rect
+- support all devices
+
+## REQUIRED REGIONS:
+
+- chat panel
+- input field
+- send button
+- mic
+- emoji
+- reactor
+- left controls
+- dock
+- hand node
+
+❌ FAIL IF:
+- pixel-based positioning
+- drift across devices
+- overlapping hitboxes
+
+-----------------------------------
+
+# ⚛️ REACTOR SYSTEM
+
+## MUST:
+
+- support:
+  - core tap
+  - sector detection
+- angle-based logic
+- correct boundaries
+
+❌ FAIL IF:
+- wrong sector triggers
+- dead zones trigger actions
+- core overlaps sectors
+
+-----------------------------------
+
+# 🎨 THEME SYSTEM
+
+## MUST:
+
+- support multiple assistant themes
+- no hardcoded colors
+- consistent application
+
+❌ FAIL IF:
+- hex values exist
+- inconsistent UI colors
+- assistant ignores theme
+
+-----------------------------------
+
+# 🎯 ICON SYSTEM
+
+## MUST:
+
+- use IconProvider
+- cache icons
+- fallback chain works
+
+❌ FAIL IF:
+- direct drawable usage
+- no caching
+- missing fallback
+
+-----------------------------------
+
+# ⚙️ SETTINGS SYSTEM
+
+## MUST:
+
+- persist
+- apply instantly
+- affect real behavior
+
+❌ FAIL IF:
+- fake toggles
+- restart required
+- UI only changes visually
+
+-----------------------------------
+
+# 🧨 TASKBAR SYSTEM
+
+## MUST:
+
+- be config-driven
+- react to theme
+- support customization
+
+❌ FAIL IF:
+- hardcoded values
+- static layout
+
+-----------------------------------
+
+# ⚡ PERFORMANCE
+
+## MUST:
+
+- smooth UI
+- async loading
+- minimal recomposition
+
+❌ FAIL IF:
+- jank
+- blocking calls
+- heavy redraws
+
+-----------------------------------
+
+# 🧠 CODE QUALITY
+
+## MUST:
+
+- no dead code
+- no duplication
+- no placeholders
+
+❌ FAIL IF:
+- TODO
+- mock logic
+- unused classes
+
+-----------------------------------
+
+# 🔍 INSPECTION CHECKLIST
+
+## STRUCTURE
+[ ] correct file organization  
+[ ] no misplaced files  
+
+## ASSISTANT
+[ ] chat functional  
+[ ] input works  
+[ ] overlays aligned  
+
+## OVERLAY
+[ ] normalized mapping  
+[ ] correct hitboxes  
+[ ] no drift  
+
+## REACTOR
+[ ] core works  
+[ ] sectors accurate  
+
+## THEME
+[ ] no hardcoded colors  
+[ ] consistent application  
+
+## ICONS
+[ ] provider used  
+[ ] cache active  
+
+## SETTINGS
+[ ] persist  
+[ ] apply instantly  
+
+## TASKBAR
+[ ] configurable  
+[ ] reactive  
+
+## PERFORMANCE
+[ ] smooth  
+[ ] async  
+
+## ARCHITECTURE
+[ ] single source of truth  
+[ ] no duplicate state  
+
+-----------------------------------
+
+# 🧭 WHAT “DONE” ACTUALLY LOOKS LIKE
+
 You’re done when:
-Changing a theme updates everything instantly
-Switching icon packs updates without reload
-Adjusting settings feels real-time and fluid
-UI looks cohesive, not patched together
-Codebase has zero ambiguity in data flow
+
+- assistant feels alive, not static  
+- reactor responds precisely to touch  
+- overlays align perfectly on all devices  
+- chat system feels real and responsive  
+- theme switching affects everything instantly  
+- UI looks engineered, not assembled  
+
+If it feels like:
+- a demo → FAIL  
+- a wallpaper with buttons → FAIL  
+- inconsistent UI → FAIL  
+
+It must feel like:
+a system
+a tool
+a product

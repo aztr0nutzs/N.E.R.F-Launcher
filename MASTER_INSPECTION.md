@@ -1,56 +1,66 @@
-You are performing a FULL, DEEP, READ-ONLY INSPECTION of an Android launcher project.
+# MASTER_INSPECTION.md
+
+You are performing a FULL, DEEP, READ-ONLY INSPECTION of the NERD Launcher Android project.
 
 STRICT RULES:
-- DO NOT MODIFY ANY FILES
-- DO NOT SUGGEST PARTIAL FIXES
+- DO NOT MODIFY FILES
 - DO NOT WRITE CODE
-- ONLY ANALYZE AND REPORT
-- BE EXHAUSTIVE AND PRECISE
-- ASSUME NOTHING IS CORRECT WITHOUT VERIFICATION
+- DO NOT SUGGEST PARTIAL FIXES
+- DO NOT ASSUME ANYTHING IS CORRECT
+- TRACE REAL EXECUTION PATHS
+- VERIFY AGAINST ACTUAL UI BEHAVIOR
 
 GOAL:
-Determine whether this project meets production-level standards for:
+Determine whether the project meets production-level standards for:
 - architecture
 - reactivity
-- customization depth
 - performance
-- code quality
+- UI precision
+- assistant system fidelity
+- overlay mapping accuracy
 
 -----------------------------------
 
 # 🧠 CORE ARCHITECTURE VALIDATION
 
-VERIFY:
-
-1. SINGLE SOURCE OF TRUTH
-- Confirm existence of AppConfig (or equivalent)
-- Confirm ALL systems read from it:
-  - ThemeManager
-  - IconPackManager
-  - TaskbarController
-  - UI layers
-
-REPORT:
-- Any duplicated state
-- Any manager storing its own config
-- Any direct preference reads bypassing config
-
------------------------------------
-
-2. DATA FLOW INTEGRITY
-
-TRACE COMPLETE FLOW:
-
-User Action → Config Update → AppConfig → UI Observers → UI Update
+## 1. SINGLE SOURCE OF TRUTH
 
 VERIFY:
-- No manual UI update calls
-- No direct view manipulation bypassing observers
+- AppConfig (or equivalent) exists and is authoritative
+- ALL systems read from it:
+  - Theme system
+  - Assistant system
+  - Overlay system
+  - Taskbar
+  - Settings
 
 FLAG:
-- applyTheme() style functions
-- manual refresh logic
-- inconsistent update patterns
+- Any duplicate state
+- ViewModel storing persistent UI config
+- UI directly reading SharedPreferences
+
+---
+
+## 2. DATA FLOW INTEGRITY
+
+TRACE FULL PATH:
+
+User Interaction →
+ViewModel →
+ConfigRepository →
+AppConfig →
+StateFlow →
+Composable UI
+
+VERIFY:
+- No manual UI refresh calls
+- No direct UI manipulation
+- No "applyTheme()" style functions
+
+FLAG:
+- Imperative UI updates
+- bypassed state flow
+- inconsistent patterns
 
 -----------------------------------
 
@@ -58,14 +68,87 @@ FLAG:
 
 VERIFY:
 
-- ALL UI components observe config changes
-- RecyclerView updates are efficient (DiffUtil or equivalent)
-- No activity recreation required
+- ALL UI driven by observable state
+- Assistant screen updates without recomposition issues
+- Overlay system responds to state instantly
 
 FLAG:
-- notifyDataSetChanged misuse
-- full UI redraws
-- flicker risks
+- Activity recreation
+- full recomposition for small changes
+- flickering overlays
+
+-----------------------------------
+
+# 🤖 ASSISTANT SYSTEM AUDIT (NEW - CRITICAL)
+
+## VERIFY:
+
+### 1. STRUCTURE
+- Dedicated AssistantScreen
+- Dedicated ViewModel
+- State-driven chat system
+- Input → Response → UI update loop
+
+### 2. BACKGROUND RENDERING MODEL
+- Assistant UI uses:
+  - static image backplate
+  - dynamic overlay system
+- NO layout recreation of artwork
+
+### 3. INTERACTION SYSTEM
+- Reactor interactions implemented
+- Hitboxes mapped precisely
+- Chat input fully functional
+
+FLAG:
+- fake chat UI
+- placeholder assistant responses
+- static-only assistant visuals
+
+-----------------------------------
+
+# 🎯 OVERLAY / HITBOX SYSTEM AUDIT (NEW - CRITICAL)
+
+VERIFY:
+
+### 1. NORMALIZED COORDINATE SYSTEM
+- All overlays use normalized (0–1) mapping
+- Based on rendered image rect
+
+### 2. HITBOX ACCURACY
+- Each region correctly mapped:
+  - chat panel
+  - input field
+  - send button
+  - dock icons
+  - reactor core + sectors
+  - left action stack
+  - hand node
+
+### 3. DEVICE SCALING
+- Works across aspect ratios
+- No drift on different screen sizes
+
+FLAG:
+- hardcoded pixel positioning
+- incorrect alignment on different devices
+- overlapping hitboxes
+
+-----------------------------------
+
+# ⚛️ REACTOR SYSTEM AUDIT
+
+VERIFY:
+
+- Core tap detection works
+- Sector detection uses angle-based logic
+- No overlap between core and sectors
+- Feedback visually matches interaction
+
+FLAG:
+- incorrect sector triggering
+- dead zones triggering actions
+- inconsistent detection
 
 -----------------------------------
 
@@ -73,25 +156,17 @@ FLAG:
 
 VERIFY:
 
-1. Theme completeness:
-- primary color
-- secondary color
-- accent
-- background style
-- glow intensity
+- Supports:
+  - multiple assistant themes
+  - background image switching
+  - overlay color adaptation
 
-2. NO HARDCODED VALUES:
+- NO hardcoded colors
 
-SCAN:
-- XML files for #HEX colors
-- Kotlin files for inline color usage
-
-FLAG ALL INSTANCES.
-
-3. CONSISTENCY:
-- Taskbar uses same theme system
-- HUD uses same theme system
-- No mixed styling approaches
+FLAG:
+- hex colors in code
+- theme inconsistencies
+- assistant UI ignoring theme
 
 -----------------------------------
 
@@ -99,15 +174,14 @@ FLAG ALL INSTANCES.
 
 VERIFY:
 
-- ALL icons resolved through IconProvider
-- IconCache is implemented and used
-- Proper fallback chain exists:
-  custom → selected pack → system icon
+- IconProvider used globally
+- caching implemented
+- no direct drawable usage
 
 FLAG:
-- direct drawable usage
-- missing caching
-- inefficient loading
+- icon flickering
+- repeated loading
+- inconsistent sources
 
 -----------------------------------
 
@@ -115,16 +189,17 @@ FLAG:
 
 VERIFY:
 
-- ALL settings persist correctly
-- ALL settings apply instantly
-- NO fake toggles
-
-TRACE:
-- setting change → config update → UI update
+- settings persist
+- apply instantly
+- affect:
+  - assistant theme
+  - overlays
+  - behavior
 
 FLAG:
-- settings requiring restart
-- settings with no real effect
+- fake toggles
+- restart-required settings
+- disconnected UI
 
 -----------------------------------
 
@@ -132,17 +207,13 @@ FLAG:
 
 VERIFY:
 
-- Taskbar fully driven by config
-- Supports:
-  - size
-  - icon size
-  - transparency
-  - background style
+- config-driven
+- theme-aware
+- responsive to changes
 
 FLAG:
-- hardcoded layout values
-- weak theme integration
-- limited customization
+- hardcoded layout
+- no reactivity
 
 -----------------------------------
 
@@ -150,14 +221,15 @@ FLAG:
 
 VERIFY:
 
-- RecyclerView efficiency
-- Icon loading optimization
-- Background threading for app loading
+- no main-thread blocking
+- overlay rendering efficient
+- image rendering optimized
+- no unnecessary recomposition
 
 FLAG:
-- main-thread blocking
-- redundant work
-- excessive overdraw
+- jank
+- overdraw
+- heavy layout nesting
 
 -----------------------------------
 
@@ -166,56 +238,60 @@ FLAG:
 SCAN FOR:
 
 - duplicate logic
-- dead code
 - unused classes
-- poor separation of concerns
+- dead code
+- placeholder logic
 
 FLAG:
-- any placeholder content:
-  - TODO
-  - mock
-  - stub logic
+- TODO
+- mock data
+- incomplete features
 
 -----------------------------------
 
-# 🚨 CRITICAL FAILURE DETECTION
+# 🚨 CRITICAL FAILURE CONDITIONS
 
-IMMEDIATELY FLAG IF FOUND:
+AUTO-FAIL IF:
 
-- hardcoded UI values
-- duplicate state systems
-- non-reactive UI components
-- broken data flow
-- partial implementations
+- overlay system not normalized
+- assistant not interactive
+- reactor not functional
+- UI alignment inconsistent
+- duplicate state exists
+- hardcoded values present
 
 -----------------------------------
 
-# 📊 OUTPUT FORMAT (MANDATORY)
+# 📊 OUTPUT FORMAT
 
 1. OVERALL SCORE (0–10)
-2. CATEGORY SCORES:
-   - Architecture
-   - Reactivity
-   - Theme System
-   - Icon System
-   - Settings System
-   - Taskbar
-   - Performance
 
-3. CRITICAL FAILURES (must fix immediately)
+2. CATEGORY SCORES:
+- Architecture
+- Reactivity
+- Assistant System
+- Overlay Accuracy
+- Theme System
+- Icon System
+- Settings
+- Taskbar
+- Performance
+
+3. CRITICAL FAILURES
 
 4. STRUCTURAL WEAKNESSES
 
 5. MISSED REQUIREMENTS
 
-6. RISK ASSESSMENT:
-- What will break first if project scales?
+6. RISK ASSESSMENT
 
-7. FINAL VERDICT:
-- Is this production-ready, or not?
+7. FINAL VERDICT
 
 -----------------------------------
 
 REMEMBER:
-You are NOT fixing anything.
-You are exposing EVERYTHING.
+This is not a launcher skin.
+
+This is a system-level interactive UI engine.
+
+Anything less = fail.

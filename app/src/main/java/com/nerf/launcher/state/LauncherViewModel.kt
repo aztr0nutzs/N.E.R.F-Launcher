@@ -1,98 +1,20 @@
 package com.nerf.launcher.state
 
-import android.app.Application
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import com.nerf.launcher.model.AppInfo
-import com.nerf.launcher.theme.IndustrialLauncherColors
-import com.nerf.launcher.theme.LauncherColors
+import androidx.lifecycle.ViewModel
 import com.nerf.launcher.ui.reactor.ReactorInteractionState
-import com.nerf.launcher.util.AppConfig
-import com.nerf.launcher.util.AppUtils
-import com.nerf.launcher.util.ConfigRepository
-import com.nerf.launcher.util.SystemModuleSnapshot
-import kotlinx.coroutines.launch
 
-class LauncherViewModel(application: Application) : AndroidViewModel(application) {
-
-    // ── UI state exposed to the Compose tree ─────────────────────────────────
-
+class LauncherViewModel : ViewModel() {
     var uiState by mutableStateOf(LauncherUiStateFactory.create())
         private set
 
-    /**
-     * Live [LauncherColors] palette — updated whenever [ConfigRepository] emits
-     * a new theme name or glow-intensity value. Injected into [LauncherTheme]
-     * at the root by [NerfLauncherRoot].
-     */
-    var launcherColors by mutableStateOf(IndustrialLauncherColors)
-        private set
-
-    // ── Internal repositories ─────────────────────────────────────────────────
-
-    private val telemetry = SystemTelemetryRepository(application)
-
-    // ── Package change receiver ───────────────────────────────────────────────
-
-    /**
-     * Listens for app installs, uninstalls, and updates so [installedApps] in
-     * [uiState] is always fresh. Registered in [init] against the Application
-     * context (not an Activity) so it persists for the launcher's process lifetime.
-     */
-    private val packageReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            loadInstalledApps()
-        }
-    }
-
-    // ── Config observation ─────────────────────────────────────────────────────
-
-    init {
-        // Config: collect StateFlow on the main dispatcher (viewModelScope default).
-        // Cancelled automatically when onCleared() is called — no manual tracking needed.
-        viewModelScope.launch {
-            ConfigRepository.get().config.collect { config ->
-                onConfigChanged(config)
-            }
-        }
-
-        // Telemetry: start the controller; collect its StateFlow on the IO dispatcher.
-        telemetry.start()
-        viewModelScope.launch {
-            telemetry.snapshot.collect { snap ->
-                if (snap != null) onTelemetryUpdated(snap)
-            }
-        }
-
-        // Installed apps: load once on init, then keep fresh via BroadcastReceiver.
-        loadInstalledApps()
-
-        val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_PACKAGE_ADDED)
-            addAction(Intent.ACTION_PACKAGE_REMOVED)
-            addAction(Intent.ACTION_PACKAGE_REPLACED)
-            addDataScheme("package")
-        }
-        application.registerReceiver(packageReceiver, filter)
-    }
-
-    override fun onCleared() {
-        telemetry.stop()
-        getApplication<Application>().unregisterReceiver(packageReceiver)
-        super.onCleared()
-    }
-
-    // ── Interaction handlers ──────────────────────────────────────────────────
-
     fun selectMode(mode: LauncherMode) {
-        rebuild(selectedMode = mode, statusMessage = mode.summary)
+        rebuild(
+            selectedMode = mode,
+            statusMessage = mode.summary
+        )
     }
 
     fun onDockItemTap(mode: LauncherMode) {
@@ -103,37 +25,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun onUtilityActionTap(action: LauncherUtilityAction) {
-        when (action) {
-            LauncherUtilityAction.Assistant -> {
-                uiState = uiState.copy(
-                    assistantRequested = true,
-                    statusMessage = action.note
-                )
-            }
-            LauncherUtilityAction.AppMatrix -> {
-                uiState = uiState.copy(
-                    appDrawerRequested = true,
-                    statusMessage = action.note
-                )
-            }
-            else -> {
-                rebuild(statusMessage = action.note)
-            }
-        }
-    }
-
-    /** Called by LauncherAppRoot after it has consumed the assistantRequested flag. */
-    fun clearAssistantRequest() {
-        if (uiState.assistantRequested) {
-            uiState = uiState.copy(assistantRequested = false)
-        }
-    }
-
-    /** Called by LauncherAppRoot after it has consumed the appDrawerRequested flag. */
-    fun clearAppDrawerRequest() {
-        if (uiState.appDrawerRequested) {
-            uiState = uiState.copy(appDrawerRequested = false)
-        }
+        rebuild(statusMessage = action.note)
     }
 
     fun onReactorCoreTap() {
@@ -163,78 +55,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         rebuild(interactionState = interactionState)
     }
 
-    // ── Private update paths ──────────────────────────────────────────────────
-
-    /**
-     * Launches an IO coroutine to load the installed app list, then posts the
-     * result into [uiState]. The BroadcastReceiver calls this whenever the
-     * package manifest changes so the list stays current.
-     */
-    private fun loadInstalledApps() {
-        viewModelScope.launch {
-            val apps = AppUtils.loadInstalledApps(getApplication())
-            uiState = uiState.copy(
-                installedApps = apps,
-                appsLoaded    = true
-            )
-        }
-    }
-
-    /**
-     * Called on the main thread whenever [ConfigRepository] emits a new [AppConfig].
-     * Converts the config into a new [LauncherColors] palette and rebuilds [uiState]
-     * so config-driven module values (theme name, grid, taskbar) are refreshed.
-     */
-    private fun onConfigChanged(config: AppConfig) {
-        launcherColors = LauncherColorsMapper.fromConfig(getApplication(), config)
-        rebuildWithCurrentTelemetry(config = config)
-    }
-
-    /**
-     * Called on the coroutine collector (main-default) whenever [SystemTelemetryRepository]
-     * emits a fresh [SystemModuleSnapshot]. Rebuilds [uiState] so telemetry module values
-     * (battery, uptime, storage, network) reflect the new data.
-     */
-    private fun onTelemetryUpdated(snap: SystemModuleSnapshot) {
-        rebuildWithCurrentTelemetry(telemetry = snap)
-    }
-
     private fun rebuild(
         selectedMode: LauncherMode = uiState.selectedMode,
         interactionState: ReactorInteractionState = uiState.reactorInteractionState,
         statusMessage: String = uiState.statusMessage
     ) {
-        val config = ConfigRepository.get().config.value
-        val snap   = telemetry.snapshot.value
         uiState = LauncherUiStateFactory.create(
-            selectedMode     = selectedMode,
+            selectedMode = selectedMode,
             interactionState = interactionState,
-            statusMessage    = statusMessage,
-            config           = config,
-            telemetry        = snap,
-            transportLabel   = telemetry.activeTransportLabel(),
-            wifiSignalLabel  = telemetry.wifiSignalLabel(),
-            // Preserve app list across all config/telemetry-triggered rebuilds.
-            installedApps    = uiState.installedApps,
-            appsLoaded       = uiState.appsLoaded
-        )
-    }
-
-    private fun rebuildWithCurrentTelemetry(
-        config: AppConfig?   = ConfigRepository.get().config.value,
-        telemetry: SystemModuleSnapshot? = this.telemetry.snapshot.value
-    ) {
-        uiState = LauncherUiStateFactory.create(
-            selectedMode     = uiState.selectedMode,
-            interactionState = uiState.reactorInteractionState,
-            statusMessage    = uiState.statusMessage,
-            config           = config,
-            telemetry        = telemetry,
-            transportLabel   = this.telemetry.activeTransportLabel(),
-            wifiSignalLabel  = this.telemetry.wifiSignalLabel(),
-            // Preserve app list across all config/telemetry-triggered rebuilds.
-            installedApps    = uiState.installedApps,
-            appsLoaded       = uiState.appsLoaded
+            statusMessage = statusMessage
         )
     }
 }
