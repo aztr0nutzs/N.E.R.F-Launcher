@@ -1,144 +1,72 @@
 package com.nerf.launcher.ui
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.nerf.launcher.R
-import com.nerf.launcher.databinding.ActivitySettingsBinding
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import com.nerf.launcher.state.LauncherColorsMapper
+import com.nerf.launcher.theme.IndustrialLauncherColors
+import com.nerf.launcher.theme.LauncherTheme
+import com.nerf.launcher.ui.screens.SettingsScreen
+import com.nerf.launcher.util.AppConfig
 import com.nerf.launcher.util.ConfigRepository
-import com.nerf.launcher.util.IconPackManager
-import com.nerf.launcher.util.SettingChange
-import com.nerf.launcher.util.SettingItem
-import com.nerf.launcher.util.NerfTheme
-import com.nerf.launcher.util.ThemeManager
-import com.nerf.launcher.util.ThemeRepository
 
-class SettingsActivity : AppCompatActivity() {
+// ─────────────────────────────────────────────────────────────────────────────
+//  SettingsActivity
+//
+//  Thin Compose host for the settings surface. Bridges ConfigRepository.config
+//  (LiveData) to Compose State using produceState so any change written through
+//  ConfigRepository immediately triggers recomposition.
+//
+//  No ViewBinding. No imperative applySettingsTheme(). No RecyclerView adapter.
+// ─────────────────────────────────────────────────────────────────────────────
 
-    private lateinit var binding: ActivitySettingsBinding
-    private lateinit var adapter: SettingsAdapter
-    private var lastThemeKey: Pair<String, Float>? = null
+class SettingsActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivitySettingsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        enableEdgeToEdge()
 
-        // Set up toolbar
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setTitle(R.string.settings_surface_title)
-
-        binding.openTaskbarSettingsButton.setOnClickListener {
-            startActivity(TaskbarSettingsActivity.createIntent(this))
-        }
-
-        // Build settings list
-        val settings = buildSettingsList()
-        adapter = SettingsAdapter(settings) { settingChange ->
-            handleSettingChange(settingChange)
-        }
-        ConfigRepository.get().config.value?.let(adapter::updateFromConfig)
-        binding.settingsRecyclerView.apply {
-            layoutManager = LinearLayoutManager(this@SettingsActivity)
-            adapter = this@SettingsActivity.adapter
-            setHasFixedSize(true)
-        }
-
-        ConfigRepository.get().config.observe(this) { config ->
-            val themeKey = ThemeManager.themeKey(config)
-            if (themeKey != lastThemeKey) {
-                val theme = ThemeManager.resolveConfigTheme(this, config)
-                applySettingsTheme(theme)
-                lastThemeKey = themeKey
-            }
-            adapter.updateFromConfig(config)
-        }
-    }
-
-    private fun applySettingsTheme(theme: NerfTheme) {
-        ThemeManager.applyWindowAndToolbarTheme(
-            activity = this,
-            root = binding.root,
-            toolbar = binding.toolbar,
-            theme = theme
-        )
-        val buttonDrawable = ThemeManager.createHudActionTileDrawable(this, theme)
-        binding.openTaskbarSettingsButton.background = ThemeManager.cloneMutableDrawable(buttonDrawable)
-        binding.settingsHeaderTitle.setTextColor(theme.hudInfoColor)
-        binding.settingsHeaderSubtitle.setTextColor(theme.hudWarningColor)
-        binding.openTaskbarSettingsButton.setTextColor(theme.hudAccentColor)
-    }
-
-    /**
-     * Build the list of setting items to display.
-     */
-    private fun buildSettingsList(): List<SettingItem> {
-        val config = ConfigRepository.get().config.value
-        return listOf(
-            SettingItem.Theme(
-                title = getString(R.string.settings_theme),
-                options = ThemeRepository.allThemeNames
-            ),
-            SettingItem.IconPack(
-                title = getString(R.string.settings_icon_pack),
-                options = IconPackManager.getAvailablePacks(this)
-            ),
-            SettingItem.GlowIntensity(
-                title = getString(R.string.settings_glow_intensity),
-                initialValue = config?.glowIntensity ?: 0f
-            ),
-            SettingItem.AnimationSpeed(
-                title = getString(R.string.settings_animation_speed),
-                initialValue = config?.animationSpeedEnabled ?: false
-            ),
-            SettingItem.GridSize(
-                title = getString(R.string.settings_grid_size),
-                initialValue = config?.gridSize ?: 4
-            )
-        )
-    }
-
-    /** React to a setting change from the adapter. */
-    private fun handleSettingChange(settingChange: SettingChange) {
-        val repo = ConfigRepository.get()
-        val current = repo.config.value ?: return
-        when (settingChange) {
-            is SettingChange.Theme -> {
-                if (current.themeName != settingChange.themeName) {
-                    repo.updateTheme(settingChange.themeName)
-                }
+        setContent {
+            // Bridge LiveData → Compose State with no extra dependencies.
+            // produceState seeds from the current LiveData value and re-emits
+            // on every subsequent update via observeForever.
+            val config: AppConfig? by produceState<AppConfig?>(
+                initialValue = ConfigRepository.get().config.value
+            ) {
+                val liveData = ConfigRepository.get().config
+                val observer = androidx.lifecycle.Observer<AppConfig> { value = it }
+                liveData.observeForever(observer)
+                awaitDispose { liveData.removeObserver(observer) }
             }
 
-            is SettingChange.IconPack -> {
-                if (current.iconPack != settingChange.packName) {
-                    IconPackManager.setCurrentPack(this, settingChange.packName)
-                }
-            }
+            // Derive LauncherColors from the live config exactly as LauncherViewModel
+            // does — single derivation path, no parallel state.
+            val launcherColors = config
+                ?.let { LauncherColorsMapper.fromConfig(this, it) }
+                ?: IndustrialLauncherColors
 
-            is SettingChange.GlowIntensity -> {
-                if (current.glowIntensity != settingChange.intensity) {
-                    repo.updateGlowIntensity(settingChange.intensity)
-                }
-            }
-
-            is SettingChange.AnimationSpeed -> {
-                if (current.animationSpeedEnabled != settingChange.enabled) {
-                    repo.updateAnimationSpeed(settingChange.enabled)
-                }
-            }
-
-            is SettingChange.GridSize -> {
-                if (current.gridSize != settingChange.size) {
-                    repo.updateGridSize(settingChange.size)
+            LauncherTheme(colors = launcherColors) {
+                config?.let { safeConfig ->
+                    SettingsScreen(
+                        config                = safeConfig,
+                        onOpenTaskbarSettings = {
+                            startActivity(TaskbarSettingsActivity.createIntent(this@SettingsActivity))
+                        },
+                        onNavigateBack        = { finish() }
+                    )
                 }
             }
         }
     }
 
-    // Support for up navigation
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
+    companion object {
+        fun createIntent(context: Context): Intent =
+            Intent(context, SettingsActivity::class.java)
     }
 }
+
