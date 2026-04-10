@@ -73,13 +73,22 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun onUtilityActionTap(action: LauncherUtilityAction) {
-        if (action == LauncherUtilityAction.Assistant) {
-            uiState = uiState.copy(
-                assistantRequested = true,
-                statusMessage = action.note
-            )
-        } else {
-            rebuild(statusMessage = action.note)
+        when (action) {
+            LauncherUtilityAction.Assistant -> {
+                uiState = uiState.copy(
+                    assistantRequested = true,
+                    statusMessage = action.note
+                )
+            }
+            LauncherUtilityAction.AppMatrix -> {
+                uiState = uiState.copy(
+                    appDrawerRequested = true,
+                    statusMessage = action.note
+                )
+            }
+            else -> {
+                rebuild(statusMessage = action.note)
+            }
         }
     }
 
@@ -87,6 +96,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun clearAssistantRequest() {
         if (uiState.assistantRequested) {
             uiState = uiState.copy(assistantRequested = false)
+        }
+    }
+
+    /** Called by LauncherAppRoot after it has consumed the appDrawerRequested flag. */
+    fun clearAppDrawerRequest() {
+        if (uiState.appDrawerRequested) {
+            uiState = uiState.copy(appDrawerRequested = false)
         }
     }
 

@@ -76,10 +76,10 @@ enum class LauncherUtilityAction(
     val accent: LauncherAccent,
     val note: String
 ) {
-    QuickScan(
-        label = "SCAN",
+    AppMatrix(
+        label = "APPS",
         accent = LauncherAccent.Cyan,
-        note = "Quick telemetry scan primed."
+        note = "Opening app matrix surface."
     ),
     LockGrid(
         label = "LOCK",
@@ -127,7 +127,9 @@ data class LauncherUiState(
     val dockItems: List<LauncherDockItem>,
     val utilityActions: List<LauncherUtilityAction>,
     /** True for exactly one frame when the user taps the Assistant utility action. */
-    val assistantRequested: Boolean = false
+    val assistantRequested: Boolean = false,
+    /** True for exactly one frame when the user taps the AppMatrix utility action. */
+    val appDrawerRequested: Boolean = false
 )
 
 object LauncherUiStateFactory {

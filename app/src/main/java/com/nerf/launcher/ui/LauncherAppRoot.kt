@@ -17,22 +17,25 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nerf.launcher.state.LauncherViewModel
 import com.nerf.launcher.ui.assistant.AssistantScreen
 import com.nerf.launcher.ui.assistant.AssistantViewModel
+import com.nerf.launcher.ui.screens.AppDrawerScreen
 import com.nerf.launcher.ui.screens.HomeLauncherScreen
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Destination
 //
 //  Minimal screen routing enum for the Compose launcher.
-//  The launcher has exactly two Compose destinations:
-//    HOME      — HomeLauncherScreen (reactor command core)
-//    ASSISTANT — AssistantScreen (themed assistant overlay)
+//  The launcher has three Compose destinations:
+//    HOME       — HomeLauncherScreen (reactor command core)
+//    APP_DRAWER — AppDrawerScreen    (browsable installed app surface)
+//    ASSISTANT  — AssistantScreen    (themed assistant overlay)
 //
 //  No Jetpack Navigation dependency is required; destination ownership is kept
-//  inside this file to stay understandable and explicit.
+//  inside this file to stay explicit and understandable.
 // ─────────────────────────────────────────────────────────────────────────────
 
 private enum class LauncherDestination {
     HOME,
+    APP_DRAWER,
     ASSISTANT
 }
 
@@ -42,14 +45,13 @@ private enum class LauncherDestination {
 //  Top-level Compose router owned by NerfLauncherRoot → MainActivity.setContent.
 //  Responsibilities:
 //    1. Hold the active destination in local state.
-//    2. React to LauncherUiState.assistantRequested to switch to ASSISTANT.
-//    3. React to AssistantUiState.isVisible == false to return to HOME.
-//    4. Render the correct screen for the active destination.
+//    2. React to LauncherUiState.assistantRequested   → switch to ASSISTANT.
+//    3. React to LauncherUiState.appDrawerRequested   → switch to APP_DRAWER.
+//    4. React to AssistantUiState.isVisible == false  → return to HOME.
+//    5. Render the correct screen for the active destination.
 //
 //  Both ViewModels live in the Activity's ViewModelStore and are never recreated
-//  across destination switches. AssistantViewModel is an AndroidViewModel —
-//  Compose's viewModel() resolves it via the default SavedStateViewModelFactory
-//  provided by the Activity, so no explicit factory is needed.
+//  across destination switches.
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -57,18 +59,26 @@ fun LauncherAppRoot(
     launcherViewModel: LauncherViewModel,
     modifier: Modifier = Modifier
 ) {
-    // AssistantViewModel is an AndroidViewModel; the Activity's default factory handles it.
     val assistantViewModel: AssistantViewModel = viewModel()
 
     var destination by remember { mutableStateOf(LauncherDestination.HOME) }
 
-    // ── React to assistant request from HomeLauncherScreen ─────────────────
+    // ── React to assistant request ─────────────────────────────────────────
     val assistantRequested = launcherViewModel.uiState.assistantRequested
     LaunchedEffect(assistantRequested) {
         if (assistantRequested) {
-            launcherViewModel.clearAssistantRequest()  // consume the one-shot flag
+            launcherViewModel.clearAssistantRequest()
             assistantViewModel.show()
             destination = LauncherDestination.ASSISTANT
+        }
+    }
+
+    // ── React to app drawer request ────────────────────────────────────────
+    val appDrawerRequested = launcherViewModel.uiState.appDrawerRequested
+    LaunchedEffect(appDrawerRequested) {
+        if (appDrawerRequested) {
+            launcherViewModel.clearAppDrawerRequest()
+            destination = LauncherDestination.APP_DRAWER
         }
     }
 
@@ -94,6 +104,13 @@ fun LauncherAppRoot(
                 HomeLauncherScreen(
                     viewModel = launcherViewModel,
                     modifier  = Modifier.fillMaxSize()
+                )
+            }
+
+            LauncherDestination.APP_DRAWER -> {
+                AppDrawerScreen(
+                    onNavigateBack = { destination = LauncherDestination.HOME },
+                    modifier       = Modifier.fillMaxSize()
                 )
             }
 
