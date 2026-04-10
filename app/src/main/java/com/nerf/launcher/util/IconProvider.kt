@@ -85,6 +85,19 @@ class IconProvider(
         }
     }
 
+    /**
+     * Suspend version for Compose consumers — routes through the same cache and
+     * deduplication path as [loadIconInto]. Call from a [kotlinx.coroutines.Dispatchers.IO]
+     * context (e.g. via [androidx.compose.runtime.produceState]).
+     *
+     * @param packageName The app package name to load an icon for.
+     * @param iconPack    The currently active icon pack name (read from [IconPackManager]).
+     */
+    suspend fun loadIconSuspend(packageName: String, iconPack: String): Drawable {
+        val cacheKey = "$iconPack:$packageName"
+        return getOrLoadIcon(cacheKey, packageName, iconPack)
+    }
+
     private suspend fun getOrLoadIcon(
         cacheKey: String,
         packageName: String,

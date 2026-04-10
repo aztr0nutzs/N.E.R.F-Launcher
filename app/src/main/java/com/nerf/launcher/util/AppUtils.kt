@@ -38,7 +38,13 @@ object AppUtils {
             setClassName(appInfo.packageName, appInfo.className)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
-        context.startActivity(intent)
+        try {
+            context.startActivity(intent)
+        } catch (_: android.content.ActivityNotFoundException) {
+            // App was uninstalled or updated between drawer load and tap — silently no-op.
+        } catch (_: IllegalArgumentException) {
+            // Malformed package/class — silently no-op.
+        }
     }
 
     fun openDefaultHomeSettings(context: Context) {

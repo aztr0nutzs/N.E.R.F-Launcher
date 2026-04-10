@@ -1,10 +1,15 @@
 package com.nerf.launcher.ui.screens
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,7 +34,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -52,14 +60,18 @@ import androidx.compose.ui.unit.sp
 import com.nerf.launcher.model.AppInfo
 import com.nerf.launcher.theme.LauncherTheme
 import com.nerf.launcher.util.AppUtils
+import com.nerf.launcher.util.ConfigRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  AppDrawerScreen
 //
 //  Browsable installed-app surface. Reachable from HomeLauncherScreen via the
 //  "APPS" utility pill in the top bar. Loads apps using AppUtils.loadInstalledApps()
-//  on the IO dispatcher. Renders apps as a grid of N.E.R.F.-styled cells with
-//  a searchable header. Tapping any app cell launches it via AppUtils.launchApp().
+//  on the IO dispatcher. Apps render real icons via rememberAppIcon() (backed by
+//  IconProvider + LRU cache). A BroadcastReceiver refreshes the list when apps
+//  are installed or removed. Tapping any cell launches it via AppUtils.launchApp().
 //
 //  Navigation: onNavigateBack() returns to HomeLauncherScreen.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -71,19 +83,49 @@ fun AppDrawerScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val colors  = LauncherTheme.colors
-    val tokens  = LauncherTheme.tokens
+    val context  = LocalContext.current
+    val colors   = LauncherTheme.colors
+
+    // ── Config: read iconPack reactively so drawer re-icons on pack change ─
+    val config by ConfigRepository.get().config.collectAsState()
+    val iconPack = config.iconPack
 
     // ── State ─────────────────────────────────────────────────────────────
     var allApps  by remember { mutableStateOf<List<AppInfo>>(emptyList()) }
     var isLoaded by remember { mutableStateOf(false) }
     var query    by rememberSaveable { mutableStateOf("") }
 
-    // Load on first composition — pure IO work, never blocks main thread.
+    // Load apps initially — pure IO, never blocks main thread.
     LaunchedEffect(Unit) {
-        allApps  = AppUtils.loadInstalledApps(context)
+        allApps  = withContext(Dispatchers.IO) { AppUtils.loadInstalledApps(context) }
         isLoaded = true
+    }
+
+    // ── Refresh list when apps are installed / uninstalled ──────────────
+    DisposableEffect(Unit) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context, intent: Intent) {
+                // Trigger recomposition by invalidating the list.
+                // The LaunchedEffect key change will re-run the load.
+                isLoaded = false
+            }
+        }
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_REPLACED)
+            addDataScheme("package")
+        }
+        context.registerReceiver(receiver, filter)
+        onDispose { context.unregisterReceiver(receiver) }
+    }
+
+    // Re-load when isLoaded is reset by the receiver.
+    LaunchedEffect(isLoaded) {
+        if (!isLoaded) {
+            allApps  = withContext(Dispatchers.IO) { AppUtils.loadInstalledApps(context) }
+            isLoaded = true
+        }
     }
 
     // ── Derived filtered list ─────────────────────────────────────────────
@@ -99,7 +141,6 @@ fun AppDrawerScreen(
 
     val accent  = colors.accentCyan
     val surface = colors.panelOuter
-    val bg      = colors.backgroundTop
     val frame   = colors.frameLine
 
     // ── Root ─────────────────────────────────────────────────────────────
@@ -112,8 +153,6 @@ fun AppDrawerScreen(
                 )
             )
     ) {
-
-        // ── Header ──────────────────────────────────────────────────────
         DrawerHeader(
             appCount    = filteredApps.size,
             isLoaded    = isLoaded,
@@ -125,11 +164,10 @@ fun AppDrawerScreen(
             frame       = frame
         )
 
-        // ── Grid ─────────────────────────────────────────────────────────
         AnimatedVisibility(
             visible = isLoaded,
             enter   = fadeIn(tween(280)) + slideInVertically(
-                animationSpec = tween(320),
+                animationSpec  = tween(320),
                 initialOffsetY = { it / 6 }
             )
         ) {
@@ -137,29 +175,29 @@ fun AppDrawerScreen(
                 DrawerEmptyState(query = query, accent = accent)
             } else {
                 LazyVerticalGrid(
-                    columns              = GridCells.Fixed(GRID_COLUMNS),
-                    contentPadding       = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+                    columns               = GridCells.Fixed(GRID_COLUMNS),
+                    contentPadding        = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement  = Arrangement.spacedBy(8.dp),
-                    modifier             = Modifier.fillMaxSize()
+                    verticalArrangement   = Arrangement.spacedBy(8.dp),
+                    modifier              = Modifier.fillMaxSize()
                 ) {
                     items(
                         items = filteredApps,
                         key   = { "${it.packageName}/${it.className}" }
                     ) { app ->
                         AppCell(
-                            app     = app,
-                            accent  = accent,
-                            surface = surface,
-                            frame   = frame,
-                            onClick = { AppUtils.launchApp(context, app) }
+                            app      = app,
+                            iconPack = iconPack,
+                            accent   = accent,
+                            surface  = surface,
+                            frame    = frame,
+                            onClick  = { AppUtils.launchApp(context, app) }
                         )
                     }
                 }
             }
         }
 
-        // ── Loading state (before first emit) ────────────────────────────
         if (!isLoaded) {
             DrawerLoadingState(accent = accent)
         }
@@ -184,24 +222,14 @@ private fun DrawerHeader(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    listOf(surface, surface.copy(alpha = 0.75f))
-                )
-            )
-            .border(
-                width = 0.5.dp,
-                color = frame.copy(alpha = 0.40f),
-                shape = RoundedCornerShape(bottomStart = 0.dp, bottomEnd = 0.dp)
-            )
+            .background(Brush.verticalGradient(listOf(surface, surface.copy(alpha = 0.75f))))
+            .border(0.5.dp, frame.copy(alpha = 0.40f), RoundedCornerShape(0.dp))
             .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
-        // ── Title row ────────────────────────────────────────────────────
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier          = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Back button
             Box(
                 modifier = Modifier
                     .size(34.dp)
@@ -210,42 +238,27 @@ private fun DrawerHeader(
                     .border(0.5.dp, accent.copy(alpha = 0.35f), CutCornerShape(6.dp))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick    = onBack
+                        indication        = null,
+                        onClick           = onBack
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text       = "←",
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold,
-                    fontSize   = 14.sp,
-                    color      = accent
-                )
+                Text("←", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp, color = accent)
             }
 
             Spacer(Modifier.width(12.dp))
 
             Column(Modifier.weight(1f)) {
-                Text(
-                    text          = "APP MATRIX",
-                    fontFamily    = FontFamily.Monospace,
-                    fontWeight    = FontWeight.Bold,
-                    fontSize      = 13.sp,
-                    letterSpacing = 1.8.sp,
-                    color         = LauncherTheme.colors.textPrimary
-                )
-                Text(
-                    text          = "LAUNCH MATRIX  ·  N.E.R.F. SHELL",
-                    fontFamily    = FontFamily.Monospace,
-                    fontWeight    = FontWeight.Normal,
-                    fontSize      = 8.sp,
-                    letterSpacing = 1.2.sp,
-                    color         = LauncherTheme.colors.textSecondary.copy(alpha = 0.70f)
-                )
+                Text("APP MATRIX", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp, letterSpacing = 1.8.sp,
+                    color = LauncherTheme.colors.textPrimary)
+                Text("LAUNCH MATRIX  ·  N.E.R.F. SHELL",
+                    fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Normal,
+                    fontSize = 8.sp, letterSpacing = 1.2.sp,
+                    color = LauncherTheme.colors.textSecondary.copy(alpha = 0.70f))
             }
 
-            // App count badge
             Box(
                 modifier = Modifier
                     .clip(CutCornerShape(4.dp))
@@ -253,19 +266,14 @@ private fun DrawerHeader(
                     .border(0.5.dp, accent.copy(alpha = 0.30f), CutCornerShape(4.dp))
                     .padding(horizontal = 8.dp, vertical = 3.dp)
             ) {
-                Text(
-                    text       = if (isLoaded) "$appCount APPS" else "· · ·",
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold,
-                    fontSize   = 8.sp,
-                    color      = accent
-                )
+                Text(if (isLoaded) "$appCount APPS" else "· · ·",
+                    fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
+                    fontSize = 8.sp, color = accent)
             }
         }
 
         Spacer(Modifier.height(10.dp))
 
-        // ── Search field ─────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -275,30 +283,21 @@ private fun DrawerHeader(
                 .padding(horizontal = 10.dp, vertical = 7.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text       = "⌕",
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                fontSize   = 12.sp,
-                color      = accent.copy(alpha = 0.60f)
-            )
+            Text("⌕", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
+                fontSize = 12.sp, color = accent.copy(alpha = 0.60f))
             Spacer(Modifier.width(8.dp))
             Box(Modifier.weight(1f)) {
                 if (query.isEmpty()) {
-                    Text(
-                        text       = "Search launch matrix",
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Normal,
-                        fontSize   = 9.sp,
-                        color      = LauncherTheme.colors.textSecondary
-                    )
+                    Text("Search launch matrix", fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Normal, fontSize = 9.sp,
+                        color = LauncherTheme.colors.textSecondary)
                 }
                 BasicTextField(
-                    value          = query,
-                    onValueChange  = onQuery,
-                    singleLine     = true,
-                    cursorBrush    = SolidColor(accent),
-                    textStyle      = TextStyle(
+                    value         = query,
+                    onValueChange = onQuery,
+                    singleLine    = true,
+                    cursorBrush   = SolidColor(accent),
+                    textStyle     = TextStyle(
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Normal,
                         fontSize   = 9.sp,
@@ -312,19 +311,11 @@ private fun DrawerHeader(
                 Box(
                     modifier = Modifier
                         .clip(CutCornerShape(4.dp))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { onQuery("") }
+                        .clickable(remember { MutableInteractionSource() }, null) { onQuery("") }
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
-                    Text(
-                        text       = "✕",
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold,
-                        fontSize   = 9.sp,
-                        color      = accent.copy(alpha = 0.55f)
-                    )
+                    Text("✕", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
+                        fontSize = 9.sp, color = accent.copy(alpha = 0.55f))
                 }
             }
         }
@@ -334,20 +325,23 @@ private fun DrawerHeader(
 @Composable
 private fun AppCell(
     app: AppInfo,
+    iconPack: String,
     accent: androidx.compose.ui.graphics.Color,
     surface: androidx.compose.ui.graphics.Color,
     frame: androidx.compose.ui.graphics.Color,
     onClick: () -> Unit
 ) {
-    val pressed = remember { mutableStateOf(false) }
-    val scale   by animateFloatAsState(
-        targetValue   = if (pressed.value) 0.94f else 1.0f,
+    val scale by animateFloatAsState(
+        targetValue   = 1.0f,
         animationSpec = tween(80),
         label         = "cell_scale_${app.packageName}"
     )
 
-    // Abbreviated glyph from first two chars of app name (HUD aesthetic)
-    val glyph = app.appName.take(2).uppercase().trimEnd()
+    // Load real icon via IconProvider — uses pack assets, then system icon as fallback.
+    val icon: ImageBitmap? = rememberAppIcon(packageName = app.packageName, iconPack = iconPack)
+
+    // Glyph fallback rendered while the icon is still loading (or on error).
+    val glyph = app.appName.take(2).uppercase()
 
     Column(
         modifier = Modifier
@@ -355,21 +349,17 @@ private fun AppCell(
             .alpha(scale)
             .clip(CutCornerShape(topStart = 8.dp, topEnd = 2.dp, bottomEnd = 8.dp, bottomStart = 2.dp))
             .background(surface)
-            .border(
-                0.5.dp,
-                frame.copy(alpha = 0.22f),
-                CutCornerShape(topStart = 8.dp, topEnd = 2.dp, bottomEnd = 8.dp, bottomStart = 2.dp)
-            )
+            .border(0.5.dp, frame.copy(alpha = 0.22f),
+                CutCornerShape(topStart = 8.dp, topEnd = 2.dp, bottomEnd = 8.dp, bottomStart = 2.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick    = onClick
+                indication        = null,
+                onClick           = onClick
             )
             .padding(horizontal = 6.dp, vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        // Icon placeholder — HUD glyph tile
         Box(
             modifier = Modifier
                 .size(42.dp)
@@ -378,17 +368,23 @@ private fun AppCell(
                 .border(0.5.dp, accent.copy(alpha = 0.30f), CutCornerShape(8.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text       = glyph,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                fontSize   = 12.sp,
-                color      = accent.copy(alpha = 0.85f),
-                textAlign  = TextAlign.Center
-            )
+            if (icon != null) {
+                // Real app icon — loaded from icon pack or system.
+                Image(
+                    bitmap              = icon,
+                    contentDescription  = app.appName,
+                    modifier            = Modifier
+                        .size(34.dp)
+                        .clip(CutCornerShape(4.dp))
+                )
+            } else {
+                // Loading placeholder: 2-char glyph.
+                Text(glyph, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp, color = accent.copy(alpha = 0.85f),
+                    textAlign = TextAlign.Center)
+            }
         }
 
-        // App name label
         Text(
             text       = app.appName,
             fontFamily = FontFamily.Monospace,
@@ -404,60 +400,29 @@ private fun AppCell(
 }
 
 @Composable
-private fun DrawerEmptyState(
-    query: String,
-    accent: androidx.compose.ui.graphics.Color
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+private fun DrawerEmptyState(query: String, accent: androidx.compose.ui.graphics.Color) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text          = "NO MATCH",
-                fontFamily    = FontFamily.Monospace,
-                fontWeight    = FontWeight.Bold,
-                fontSize      = 11.sp,
-                letterSpacing = 2.sp,
-                color         = accent.copy(alpha = 0.45f)
-            )
+            Text("NO MATCH", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
+                fontSize = 11.sp, letterSpacing = 2.sp, color = accent.copy(alpha = 0.45f))
             Spacer(Modifier.height(6.dp))
-            Text(
-                text       = "\"$query\" returned 0 launch targets",
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Normal,
-                fontSize   = 8.sp,
-                color      = LauncherTheme.colors.textSecondary
-            )
+            Text("\"$query\" returned 0 launch targets",
+                fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Normal,
+                fontSize = 8.sp, color = LauncherTheme.colors.textSecondary)
         }
     }
 }
 
 @Composable
-private fun DrawerLoadingState(
-    accent: androidx.compose.ui.graphics.Color
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
+private fun DrawerLoadingState(accent: androidx.compose.ui.graphics.Color) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text          = "SCANNING MATRIX",
-                fontFamily    = FontFamily.Monospace,
-                fontWeight    = FontWeight.Bold,
-                fontSize      = 11.sp,
-                letterSpacing = 2.sp,
-                color         = accent.copy(alpha = 0.50f)
-            )
+            Text("SCANNING MATRIX", fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold,
+                fontSize = 11.sp, letterSpacing = 2.sp, color = accent.copy(alpha = 0.50f))
             Spacer(Modifier.height(6.dp))
-            Text(
-                text       = "Querying install manifest…",
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Normal,
-                fontSize   = 8.sp,
-                color      = LauncherTheme.colors.textSecondary
-            )
+            Text("Querying install manifest…",
+                fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Normal,
+                fontSize = 8.sp, color = LauncherTheme.colors.textSecondary)
         }
     }
 }

@@ -12,6 +12,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.ColorUtils
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.button.MaterialButton
 import com.nerf.launcher.R
 import com.nerf.launcher.databinding.ActivityTaskbarSettingsBinding
@@ -20,6 +23,7 @@ import com.nerf.launcher.util.NerfTheme
 import com.nerf.launcher.util.TaskbarBackgroundStyle
 import com.nerf.launcher.util.TaskbarSettings
 import com.nerf.launcher.util.ThemeManager
+import kotlinx.coroutines.launch
 
 class TaskbarSettingsActivity : AppCompatActivity() {
 
@@ -144,15 +148,19 @@ class TaskbarSettingsActivity : AppCompatActivity() {
     }
 
     private fun observeConfig() {
-        ConfigRepository.get().config.observe(this) { config ->
-            val themeKey = ThemeManager.themeKey(config)
-            val theme = ThemeManager.resolveConfigTheme(this, config)
-            if (themeKey != lastThemeKey) {
-                applyTheme(theme)
-                backgroundStyleAdapter.updateTheme(theme)
-                lastThemeKey = themeKey
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                ConfigRepository.get().config.collect { config ->
+                    val themeKey = ThemeManager.themeKey(config)
+                    val theme = ThemeManager.resolveConfigTheme(this@TaskbarSettingsActivity, config)
+                    if (themeKey != lastThemeKey) {
+                        applyTheme(theme)
+                        backgroundStyleAdapter.updateTheme(theme)
+                        lastThemeKey = themeKey
+                    }
+                    bindTaskbarSettings(config.taskbarSettings, theme)
+                }
             }
-            bindTaskbarSettings(config.taskbarSettings, theme)
         }
     }
 

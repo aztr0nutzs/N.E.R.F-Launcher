@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import com.nerf.launcher.theme.IndustrialLauncherColors
 import com.nerf.launcher.theme.LauncherColors
@@ -36,13 +35,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
 
     // ── Config observation ────────────────────────────────────────────────────
 
-    private val configObserver = Observer<AppConfig> { config ->
-        onConfigChanged(config)
-    }
-
     init {
-        // Config: observeForever is safe — we removeObserver in onCleared().
-        ConfigRepository.get().config.observeForever(configObserver)
+        // Config: collect StateFlow on the main dispatcher (viewModelScope default).
+        // Cancelled automatically when onCleared() is called — no manual tracking needed.
+        viewModelScope.launch {
+            ConfigRepository.get().config.collect { config ->
+                onConfigChanged(config)
+            }
+        }
 
         // Telemetry: start the controller; collect its StateFlow on the IO dispatcher.
         telemetry.start()
@@ -54,7 +54,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     }
 
     override fun onCleared() {
-        ConfigRepository.get().config.removeObserver(configObserver)
         telemetry.stop()
         super.onCleared()
     }

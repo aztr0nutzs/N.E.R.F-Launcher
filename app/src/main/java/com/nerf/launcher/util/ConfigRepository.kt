@@ -2,13 +2,14 @@ package com.nerf.launcher.util
 
 import android.app.Application
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * Single source of truth for launcher configuration.
  * Loads from and saves to SharedPreferences via PreferencesManager.
- * Exposes a LiveData<AppConfig> that UI layers observe.
+ * Exposes a StateFlow<AppConfig> that UI layers observe.
  */
 class ConfigRepository(private val context: Context) {
 
@@ -25,8 +26,8 @@ class ConfigRepository(private val context: Context) {
             instance ?: error("ConfigRepository not initialized. Call init() in Application.")
     }
 
-    private val _config = MutableLiveData(loadConfig())
-    val config: LiveData<AppConfig> = _config
+    private val _config = MutableStateFlow(loadConfig())
+    val config: StateFlow<AppConfig> = _config.asStateFlow()
 
     private fun loadConfig(): AppConfig {
         val themeName = PreferencesManager.getSelectedTheme(context)
@@ -84,33 +85,27 @@ class ConfigRepository(private val context: Context) {
     }
 
     fun updateTheme(themeName: String) {
-        val current = _config.value ?: return
-        saveConfig(current.copy(themeName = themeName))
+        saveConfig(_config.value.copy(themeName = themeName))
     }
 
     fun updateIconPack(pack: String) {
-        val current = _config.value ?: return
-        saveConfig(current.copy(iconPack = pack))
+        saveConfig(_config.value.copy(iconPack = pack))
     }
 
     fun updateGridSize(size: Int) {
-        val current = _config.value ?: return
-        saveConfig(current.copy(gridSize = size.coerceIn(2, 6)))
+        saveConfig(_config.value.copy(gridSize = size.coerceIn(2, 6)))
     }
 
     fun updateAnimationSpeed(enabled: Boolean) {
-        val current = _config.value ?: return
-        saveConfig(current.copy(animationSpeedEnabled = enabled))
+        saveConfig(_config.value.copy(animationSpeedEnabled = enabled))
     }
 
     fun updateGlowIntensity(intensity: Float) {
-        val current = _config.value ?: return
-        saveConfig(current.copy(glowIntensity = intensity.coerceIn(0f, 1f)))
+        saveConfig(_config.value.copy(glowIntensity = intensity.coerceIn(0f, 1f)))
     }
 
     fun updateTaskbarSettings(settings: TaskbarSettings) {
-        val current = _config.value ?: return
-        saveConfig(current.copy(taskbarSettings = normalizeTaskbarSettings(settings)))
+        saveConfig(_config.value.copy(taskbarSettings = normalizeTaskbarSettings(settings)))
     }
 
     private fun normalizeTaskbarSettings(settings: TaskbarSettings): TaskbarSettings {
