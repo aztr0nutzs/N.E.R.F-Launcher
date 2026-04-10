@@ -47,9 +47,10 @@ fun AssistantTopBar(
     onSwitchTheme: (AssistantThemeId) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val accent  = Color(palette.controlAccent)
-    val surface = Color(palette.controlSurface)
-    val textSec = Color(palette.textSecondary)
+    val accent     = Color(palette.controlAccent)
+    val surface    = Color(palette.controlSurface)
+    val textSec    = Color(palette.textSecondary)
+    val errorColor = Color(palette.errorGlow)
 
     Box(modifier = modifier) {
         // ── Main top bar ──────────────────────────────────────────────────
@@ -102,8 +103,8 @@ fun AssistantTopBar(
                 modifier = Modifier
                     .size(26.dp)
                     .clip(CutCornerShape(6.dp))
-                    .background(Color(0x33FF4444))
-                    .border(0.5.dp, Color(0x66FF4444), CutCornerShape(6.dp))
+                    .background(errorColor.copy(alpha = 0.20f))
+                    .border(0.5.dp, errorColor.copy(alpha = 0.40f), CutCornerShape(6.dp))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication        = null,
@@ -116,7 +117,7 @@ fun AssistantTopBar(
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold,
                     fontSize   = 11.sp,
-                    color      = Color(0xFFFF6A6A)
+                    color      = errorColor
                 )
             }
         }

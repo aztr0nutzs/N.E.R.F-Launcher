@@ -334,13 +334,13 @@ fun AssistantRobotFxOverlay(
             if (isListening) {
                 drawMicListeningRing(
                     imageRect = imageRect,
-                    color     = Color(0xFF73FF7C),
+                    color     = accentColor,
                     pulse     = micPulse
                 )
                 drawRegionRadialGlow(
                     normRect  = AssistantOverlayMap.dockMic,
                     imageRect = imageRect,
-                    color     = Color(0xFF73FF7C),
+                    color     = accentColor,
                     alpha     = 0.25f + micPulse * 0.40f
                 )
             }

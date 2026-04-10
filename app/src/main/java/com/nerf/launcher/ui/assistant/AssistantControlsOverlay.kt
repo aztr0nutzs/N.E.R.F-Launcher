@@ -183,7 +183,7 @@ fun AssistantControlsOverlayMapped(
                         .background(surface)
                         .border(
                             0.5.dp,
-                            if (uiState.isListening) Color(0xFF73FF7C).copy(0.70f)
+                            if (uiState.isListening) accent.copy(0.70f)
                             else accent.copy(0.30f),
                             CutCornerShape(3.dp)
                         ),
@@ -192,7 +192,7 @@ fun AssistantControlsOverlayMapped(
                     Text(
                         text      = if (uiState.isListening) "●" else "🎙",
                         fontSize  = 9.sp,
-                        color     = if (uiState.isListening) Color(0xFF73FF7C) else accent,
+                        color     = if (uiState.isListening) accent else accent,
                         textAlign = TextAlign.Center
                     )
                 }
