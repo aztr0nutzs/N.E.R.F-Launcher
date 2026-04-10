@@ -135,7 +135,9 @@ data class ReactorPhysics(
                 // atan2: 0° = east, positive = clockwise when y increases downward.
                 val angleDeg = Math.toDegrees(atan2(dy.toDouble(), dx.toDouble())).toFloat()
                     .let { if (it < 0f) it + 360f else it }
-                ReactorZone.Sector(ReactorSector.fromAngle(angleDeg))
+                // fromAngle returns null for gap zones — propagate as a no-op tap.
+                val sector = ReactorSector.fromAngle(angleDeg) ?: return null
+                ReactorZone.Sector(sector)
             }
             else -> null
         }
@@ -178,13 +180,44 @@ enum class ReactorSector(
     val endAngle:   Float get() = arcStartAngle + arcSweepAngle
 
     companion object {
-        fun fromAngle(angleDeg: Float): ReactorSector {
+        /**
+         * Maps [angleDeg] (0° = east, clockwise, normalized to [0, 360)) to the
+         * sector that owns that angle, or **null** if the angle falls in one of the
+         * four 4° visual gap zones between adjacent sectors.
+         *
+         * Sector arcs (each 86° wide, leaving 4° gaps at the boundaries):
+         *
+         *   STABILITY_MONITOR : [315°, 41°)   → wraps through 0°
+         *   INTERFACE_CONFIG  : [ 45°, 131°)
+         *   RECALIBRATION     : [135°, 221°)
+         *   SYS_NET_DIAG      : [225°, 311°)
+         *
+         * Gap dead-zones (return null):
+         *   Gap 1 (SM→IC)  : [41°,  45°)
+         *   Gap 2 (IC→RC)  : [131°, 135°)
+         *   Gap 3 (RC→SND) : [221°, 225°)
+         *   Gap 4 (SND→SM) : [311°, 315°)
+         */
+        fun fromAngle(angleDeg: Float): ReactorSector? {
             val a = ((angleDeg % 360f) + 360f) % 360f
             return when {
-                a >= 315f || a < 45f  -> STABILITY_MONITOR
-                a >= 45f  && a < 135f -> INTERFACE_CONFIG
-                a >= 135f && a < 225f -> RECALIBRATION
-                else                  -> SYS_NET_DIAG
+                // ── Active sector arcs ─────────────────────────────────────
+                // STABILITY_MONITOR wraps through 0°: [315°, 360°) ∪ [0°, 41°)
+                a >= 315f || a < 41f  -> STABILITY_MONITOR
+                // Gap 1: [41°, 45°) — no sector
+                a < 45f              -> null
+                // INTERFACE_CONFIG: [45°, 131°)
+                a < 131f             -> INTERFACE_CONFIG
+                // Gap 2: [131°, 135°) — no sector
+                a < 135f             -> null
+                // RECALIBRATION: [135°, 221°)
+                a < 221f             -> RECALIBRATION
+                // Gap 3: [221°, 225°) — no sector
+                a < 225f             -> null
+                // SYS_NET_DIAG: [225°, 311°)
+                a < 311f             -> SYS_NET_DIAG
+                // Gap 4: [311°, 315°) — no sector
+                else                 -> null
             }
         }
     }
